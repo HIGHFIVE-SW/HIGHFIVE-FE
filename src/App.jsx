@@ -1,12 +1,6 @@
 import React from 'react';
-import LoginPage from './pages/LoginPage';
+import AppRoutes from './routes/Route';
 
-function App() {
-  return (
-    <div>
-      <LoginPage/>
-    </div>
-  );
+export default function App() {
+  return <AppRoutes />;
 }
-
-export default App;

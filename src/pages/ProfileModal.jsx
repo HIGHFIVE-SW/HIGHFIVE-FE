@@ -95,6 +95,7 @@ const ProfileImageWrapper = styled.div`
   height: 250px;
   margin: 24px auto;
   border-radius: 50%;
+  border: 0.1px solid #C4C4C4;
   overflow: visible;
   display: flex;
   align-items: center;

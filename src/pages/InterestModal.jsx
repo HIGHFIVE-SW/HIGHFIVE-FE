@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 
-
 import envCard from '../assets/images/interestmodal/ic_EnvironmentInterest.png';
 import societyCard from '../assets/images/interestmodal/ic_SocietyInterest.png';
 import economyCard from '../assets/images/interestmodal/ic_EconomyInterest.png';
@@ -51,14 +50,13 @@ const interests = [
 
 export default function InterestModal({ onClose }) {
   const [selected, setSelected] = useState(null);
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // 라우터 네비게이터 훅
 
   const handleSelect = (id) => setSelected(id);
 
   const handleComplete = () => {
     if (selected) {
-      console.log('Selected Interest:', selected);
-      onClose();
+      navigate('/main');
     } else {
       alert('관심 분야를 선택해주세요.');
     }
@@ -101,6 +99,7 @@ export default function InterestModal({ onClose }) {
   );
 }
 
+// 스타일드 컴포넌트 정의
 const ModalOverlay = styled.div`
   position: fixed;
   top: 0;
