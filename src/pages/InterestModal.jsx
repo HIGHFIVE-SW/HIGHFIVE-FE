@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
+import { useNavigate } from 'react-router-dom';
+
 
 import envCard from '../assets/images/interests/environment_card.png';
 import societyCard from '../assets/images/interests/society_card.png';
@@ -47,6 +49,7 @@ const interests = [
 
 export default function InterestModal({ onClose }) {
   const [selected, setSelected] = useState(null);
+  const navigate = useNavigate();
 
   const handleSelect = (id) => setSelected(id);
 
