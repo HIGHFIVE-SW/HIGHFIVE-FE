@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import MainNav from '../layout/MainNav/MainNav';
-import Footer from '../layout/footer';
+//import MainNav from '../layout/MainNav/MainNav';
+//import Footer from '../layout/footer';
 
 export default function MainPage() {
   const [bookmarked, setBookmarked] = useState(
@@ -29,7 +29,7 @@ export default function MainPage() {
 
   return (
     <PageWrapper>
-      <MainNav />
+      {/* <MainNav /> */}
       <MainContent>
         <HeroSection>
           <HeroInner>
@@ -94,7 +94,7 @@ export default function MainPage() {
           <img src="/assets/images/chatbot.png" alt="챗봇 아이콘" />
         </ChatbotButton>
       </MainContent>
-      <Footer />
+      {/* <Footer /> */}
     </PageWrapper>
   );
 }
