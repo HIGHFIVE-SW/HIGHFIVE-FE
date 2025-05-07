@@ -3,7 +3,7 @@ import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import LoginPage from '../pages/LoginPage';
 import InterestModal from '../pages/InterestModal';
-import MainPage from '../pages/MainPage';
+import MainPage from '../pages/Mainpage';
 
 export default function AppRoutes() {
   return (
