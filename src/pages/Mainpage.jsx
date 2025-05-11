@@ -1,23 +1,24 @@
 import React, { useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
-import MainNav from '../layout/MainNav/MainNav';
+import MainNav from '../layout/MainNav';
 import Footer from '../layout/Footer';
 
-import globalIssueImage from '../assets/images/main/Global_issue.png';
-import issueSampleImage from '../assets/images/main/issue_card_sample.png';
-import bookmarkIcon from '../assets/images/main/bookmark.png';
-import bookmarkFilledIcon from '../assets/images/main/bookmark_filled.png';
-import chatbotIcon from '../assets/images/main/chatbot.png';
-import card1 from '../assets/images/main/card1.png';
-import card2 from '../assets/images/main/card2.png';
-import card3 from '../assets/images/main/card3.png';
-import daily from '../assets/images/main/daily.png';
-import envCard from '../assets/images/main/environment.png';
-import peopleCard from '../assets/images/main/people.png';
-import economyCard from '../assets/images/main/economy.png';
-import techCard from '../assets/images/main/tech.png';
-import closeIcon from '../assets/images/main/close_icon.png';
-import activityImage from '../assets/images/main/issue_card_sample.png';
+import globalIssueImage from '../assets/images/main/ic_GlobalIssue.png';
+import issueSampleImage from '../assets/images/main/ic_IssueCardSample.png';
+import bookmarkIcon from '../assets/images/main/BookmarkButton.png';
+import bookmarkFilledIcon from '../assets/images/main/BookmarkFilledButton.png';
+import chatbotIcon from '../assets/images/main/ChatbotButton.png';
+import card1 from '../assets/images/main/Card1Button.png';
+import card2 from '../assets/images/main/Card2Button.png';
+import card3 from '../assets/images/main/Card3Button.png';
+import daily from '../assets/images/main/DailyButton.png';
+import envCard from '../assets/images/main/EnvironmentButton.png';
+import peopleCard from '../assets/images/main/PeopleButton.png';
+import economyCard from '../assets/images/main/EconomyButton.png';
+import techCard from '../assets/images/main/TechButton.png';
+import closeIcon from '../assets/images/main/CloseButton.png';
+import activityImage from '../assets/images/main/ic_IssueCardSample.png';
+import sendIcon from '../assets/images/main/SendButton.png';
 
 
 export default function MainPage() {
@@ -209,13 +210,15 @@ export default function MainPage() {
             </ChatContentArea>
 
             <ChatInputWrapper>
-              <ChatInput
-                placeholder="텍스트를 입력하세요."
-                value={userInput}
-                onChange={(e) => setUserInput(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleUserSubmit()}
-              />
-              <SendButton onClick={handleUserSubmit}>전송</SendButton>
+            <ChatInput
+              placeholder="텍스트를 입력하세요."
+              value={userInput}
+              onChange={(e) => setUserInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleUserSubmit()}
+            />
+            <SendButton onClick={handleUserSubmit}>
+              <img src={sendIcon} alt="전송" />
+            </SendButton>
             </ChatInputWrapper>
           </ChatbotPanel>
         )}
@@ -526,26 +529,32 @@ const ChatBubble = styled.div`
 
 const ChatInputWrapper = styled.div`
   display: flex;
-  padding: 8px 16px;
-  border-top: none;
-  margin-top: auto;
+  align-items: center;
+  padding: 12px 16px;
+  gap: 8px;
+  background-color: white;
+  border-radius: 20px;
+  margin: 16px;
 `;
 
 const ChatInput = styled.input`
   flex: 1;
+  border: none;
+  outline: none;
+  font-size: 16px;
   padding: 12px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
 `;
 
 const SendButton = styled.button`
-  margin-left: 8px;
-  padding: 12px;
-  background-color: #235BA9;
-  color: white;
+  background: none;
   border: none;
-  border-radius: 8px;
+  padding: 4px;
   cursor: pointer;
+
+  img {
+    width: 24px;
+    height: 24px;
+  }
 `;
 
 const ActivityBlock = styled.div`

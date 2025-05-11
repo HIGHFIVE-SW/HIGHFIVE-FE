@@ -1,8 +1,8 @@
 import React from 'react';
 import styled from 'styled-components';
-import logoTrend from '../../assets/images/Logo_trend.png';
-import MypageIcon from '../../assets/images/mypage.png';
-import VectorIcon from '../../assets/images/Vector.png';
+import logoTrend from '../assets/images/ic_ImageTextLogo.png';
+import MypageIcon from '../assets/images/ic_Mypage.png';
+import VectorIcon from '../assets/images/ic_Search.png';
 
 
 
