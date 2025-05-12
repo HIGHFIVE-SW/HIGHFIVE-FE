@@ -99,7 +99,6 @@ export default function InterestModal({ onClose }) {
   );
 }
 
-// 스타일드 컴포넌트 정의
 const ModalOverlay = styled.div`
   position: fixed;
   top: 0;

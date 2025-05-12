@@ -4,8 +4,8 @@ import img1 from '../assets/images/login/onboarding/001.png';
 import img2 from '../assets/images/login/onboarding/002.png';
 import img3 from '../assets/images/login/onboarding/003.png';
 import img4 from '../assets/images/login/onboarding/004.png';
-import logo from '../assets/images/common/logo.png';
-import trendistTitle from '../assets/images/common/trendist_title.png';
+import logo from '../assets/images/common/ImageLogo.png';
+import trendistTitle from '../assets/images/common/TextLogo.png';
 import googleLogo from '../assets/images/login/ic_Google.png';
 import RobotoFont from '../assets/fonts/Roboto-VariableFont_wdth,wght.ttf';
 import ProfileModal from './ProfileModal';
@@ -86,6 +86,7 @@ export default function OnboardingPage() {
 
 const Wrapper = styled.div`
   width: 100%;
+  max-width: 100vw;
   height: 100%;
   background: #fff;
   display: flex;
