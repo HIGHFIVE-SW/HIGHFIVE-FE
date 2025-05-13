@@ -1,32 +1,49 @@
-import React from "react";
+// components/BoardNav.jsx
+import React, { useState } from "react";
 import styled from "styled-components";
 import backIcon from "../../assets/images/nav/ic_Back.png";
 import searchIcon from "../../assets/images/nav/ic_Search.png";
 import trendistLogo from "../../assets/images/nav/ImageTextLogo.png";
-
+import Search from "../../component/search/Search";
 
 const BoardNav = () => {
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [query, setQuery] = useState("");
+
   return (
-    <NavBar>
-      <IconButton>
-        <IconImg src={backIcon} alt="뒤로가기" />
-      </IconButton>
+    <>
+      <NavBar>
+        <IconButton>
+          <IconImg src={backIcon} alt="뒤로가기" />
+        </IconButton>
 
-      <Center>
-        <LogoImg src={trendistLogo} alt="Trendist 로고" />
-      </Center>
+        <Center>
+          <LogoImg src={trendistLogo} alt="Trendist 로고" />
+        </Center>
 
-      <IconButton>
-        <IconImg src={searchIcon} alt="검색" />
-      </IconButton>
-    </NavBar>
+        <IconButton onClick={() => setIsSearchOpen(true)}>
+          <IconImg src={searchIcon} alt="검색" />
+        </IconButton>
+      </NavBar>
+
+      {isSearchOpen && (
+        <Search
+          query={query}
+          onChange={setQuery}
+          onClose={() => {
+            setIsSearchOpen(false);
+            setQuery('');
+          }}
+        />
+      )}
+    </>
   );
 };
 
-export default BoardNav; ;
-
+export default BoardNav;
 
 const NavBar = styled.div`
+  position: relative;
   width: 100vw;
   max-width: 100%;
   display: flex;
