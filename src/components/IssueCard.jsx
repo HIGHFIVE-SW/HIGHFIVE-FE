@@ -1,8 +1,16 @@
 import React from 'react';
 import styled from 'styled-components';
 
-export default function IssueCard({ title, tag, image, bookmarked, onToggle }) {
-  return (
+export default function IssueCard({ title, tag, image, bookmarked, onToggle }) { 
+    const insertLineBreak = (text) => {
+        const keywords = ['공모전', '봉사활동', '서포터즈', '인턴십'];
+        let result = text;
+        keywords.forEach((word) => {
+          result = result.replace(word, `\n${word}`);
+        });
+        return result;
+      };
+    return (
     <Card>
       <ImageWrapper>
         <IssueImage src={image} alt="이슈 이미지" />
@@ -12,7 +20,14 @@ export default function IssueCard({ title, tag, image, bookmarked, onToggle }) {
           onClick={onToggle}
         />
       </ImageWrapper>
-      <p className="issue-title">{title}</p>
+      <p className="issue-title">
+        {insertLineBreak(title).split('\n').map((line, idx) => (
+          <span key={idx}>
+            {line}
+            <br />
+          </span>
+        ))}
+      </p>
       <span className="issue-tag">{tag}</span>
     </Card>
   );
@@ -21,9 +36,9 @@ export default function IssueCard({ title, tag, image, bookmarked, onToggle }) {
 const Card = styled.div`
   width: 405px;
   height: 514px;
-  border: 2px solid #235BA9;
+  border: 3px solid #235BA9;
   background-color: #fff;
-  text-align: center;
+  text-align: left;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -31,16 +46,16 @@ const Card = styled.div`
   overflow: visible;
 
   .issue-title {
-    font-size: 35px;
+    font-size: 25px;
     font-weight: bold;
     margin-top: 40px;
     font-family: NotoSansCustom;
   }
 
   .issue-tag {
-    font-size: 30px;
+    font-size: 20px;
     color: #555;
-    margin-top: -20px;
+    margin-top: 20px;
     font-family: NotoSansCustom;
   }
 `;

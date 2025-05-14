@@ -5,6 +5,7 @@ import LoginPage from '../pages/LoginPage';
 import InterestModal from '../pages/InterestModal';
 import MainPage from '../pages/Mainpage';
 import GlobalIssuePage from '../pages/GlobalIssuePage';
+import ActivityPage from '../pages/ActivityPage';
 
 export default function AppRoutes() {
   return (
@@ -13,6 +14,7 @@ export default function AppRoutes() {
       <Route path="/interest" element={<InterestModal />} />
       <Route path="/main" element={<MainPage />} />
       <Route path="/global-issue" element={<GlobalIssuePage />} />
+      <Route path="/activity" element={<ActivityPage />} />
     </Routes>
   );
 }

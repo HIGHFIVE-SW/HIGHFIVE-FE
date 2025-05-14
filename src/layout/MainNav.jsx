@@ -99,9 +99,9 @@ const NavItem = styled.div`
   &.active {
     color: #235ba9;
     background-color: #F6FAFF;
-    padding: 14px 20px 10px;
+    padding: 14px 35px 20px;
     border-radius: 20px 20px 0 0; 
-    margin-bottom: -10px;
+    margin-bottom: -15px;
   }
 `;
 
