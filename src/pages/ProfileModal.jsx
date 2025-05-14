@@ -1,10 +1,9 @@
 import React, { useRef, useState } from 'react';
 import styled from 'styled-components';
-import avatar from '../assets/images/avatar.png';
-import cameraIcon from '../assets/images/camera_icon.png';
+import avatar from '../assets/images/profile/ic_Avater.png';
+import cameraIcon from '../assets/images/profile/ic_ProfileCamera.png';
 import InterestModal from './InterestModal';
 import NotoSansKR from '../assets/fonts/NotoSansKR-VariableFont_wght.ttf';
-
 
 const NotoSansFont = `
   @font-face {
@@ -21,6 +20,8 @@ const GlobalFontStyle = styled.div`
 
 export default function ProfileModal({ onClose }) {
   const [showInterestModal, setShowInterestModal] = useState(false);
+  const [nickname, setNickname] = useState('');
+  const [isFocused, setIsFocused] = useState(false);
   const fileInputRef = useRef();
 
   const handleCameraClick = () => {
@@ -28,7 +29,9 @@ export default function ProfileModal({ onClose }) {
   };
 
   const handleNext = () => {
-    setShowInterestModal(true);
+    if (nickname.trim()) {
+      setShowInterestModal(true);
+    }
   };
 
   return (
@@ -37,15 +40,29 @@ export default function ProfileModal({ onClose }) {
       <ModalOverlay>
         <ModalBox>
           <h2>프로필을 설정해주세요.</h2>
+
           <ProfileImageWrapper>
             <img src={avatar} alt="avatar" />
             <CameraIcon onClick={handleCameraClick} />
             <HiddenFileInput type="file" ref={fileInputRef} accept="image/*" />
           </ProfileImageWrapper>
-          <NicknameInput placeholder="닉네임을 입력해 주세요." />
-          <NextButton onClick={handleNext}>다음</NextButton>
+
+          <NicknameInput
+            value={nickname}
+            onChange={(e) => setNickname(e.target.value)}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
+            placeholder="닉네임을 입력해 주세요."
+            hasText={nickname.trim().length > 0}
+            isFocused={isFocused}
+          />
+
+          <NextButton onClick={handleNext} active={nickname.trim().length > 0}>
+            다음
+          </NextButton>
         </ModalBox>
       </ModalOverlay>
+
       {showInterestModal && <InterestModal onClose={onClose} />}
     </>
   );
@@ -78,7 +95,7 @@ const ProfileImageWrapper = styled.div`
   height: 250px;
   margin: 24px auto;
   border-radius: 50%;
-  border: 3px solid #235BA9;
+  border: 0.1px solid #C4C4C4;
   overflow: visible;
   display: flex;
   align-items: center;
@@ -118,10 +135,14 @@ const NicknameInput = styled.input`
   height: 40px;
   padding: 14px;
   margin-top: 16px;
-  border: 2px solid #235BA9;
+  border: 2px solid
+    ${({ isFocused, hasText }) =>
+      isFocused || hasText ? '#235BA9' : '#C4C4C4'};
   border-radius: 16px;
   font-size: 16px;
   font-family: 'NotoSansCustom';
+  outline: none;
+  transition: border-color 0.2s ease;
 `;
 
 const NextButton = styled.button`
@@ -132,9 +153,10 @@ const NextButton = styled.button`
   font-size: 20px;
   font-family: 'NotoSansCustom';
   font-weight: 600;
-  background-color: #235BA9;
+  background-color: ${({ active }) => (active ? '#235BA9' : '#C4C4C4')};
   color: white;
   border: none;
   border-radius: 30px;
-  cursor: pointer;
+  cursor: ${({ active }) => (active ? 'pointer' : 'default')};
+  transition: background-color 0.2s ease;
 `;

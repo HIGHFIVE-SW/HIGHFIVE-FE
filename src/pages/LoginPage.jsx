@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import img1 from '../assets/images/onboarding/001.png';
-import img2 from '../assets/images/onboarding/002.png';
-import img3 from '../assets/images/onboarding/003.png';
-import img4 from '../assets/images/onboarding/004.png';
-import logo from '../assets/images/common/logo.png';
-import trendistTitle from '../assets/images/common/trendist_title.png';
-import googleLogo from '../assets/images/onboarding/google_logo.png';
+import img1 from '../assets/images/login/onboarding/001.png';
+import img2 from '../assets/images/login/onboarding/002.png';
+import img3 from '../assets/images/login/onboarding/003.png';
+import img4 from '../assets/images/login/onboarding/004.png';
+import logo from '../assets/images/common/ImageLogo.png';
+import trendistTitle from '../assets/images/common/TextLogo.png';
+import googleLogo from '../assets/images/login/ic_Google.png';
 import RobotoFont from '../assets/fonts/Roboto-VariableFont_wdth,wght.ttf';
 import ProfileModal from './ProfileModal';
 
-/* font face처럼 작동하게 */
+/* font face 정의 */
 const Roboto = `
   @font-face {
     font-family: 'RobotoCustom';
@@ -69,12 +69,14 @@ export default function OnboardingPage() {
         </LeftSection>
 
         <RightSection>
-          <Logo src={logo} alt="logo" />
-          <TitleImage src={trendistTitle} alt="Trendist" />
-          <GoogleButton onClick={handleGoogleLoginClick}>
-            <GoogleIcon src={googleLogo} alt="google_icon" />
-            <span>구글로 시작하기</span>
-          </GoogleButton>
+          <RightGroup>
+            <Logo src={logo} alt="logo" />
+            <TitleImage src={trendistTitle} alt="Trendist" />
+            <GoogleButton onClick={handleGoogleLoginClick}>
+              <GoogleIcon src={googleLogo} alt="google_icon" />
+              <span>구글로 시작하기</span>
+            </GoogleButton>
+          </RightGroup>
         </RightSection>
       </Container>
       {showModal && <ProfileModal onClose={() => setShowModal(false)} />}
@@ -83,24 +85,22 @@ export default function OnboardingPage() {
 }
 
 const Wrapper = styled.div`
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
   background: #fff;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 20px;
   box-sizing: border-box;
 `;
 
 const Container = styled.div`
-  width: 1600px;
-  height: 900px;
+  width: 100%;
+  height: 100%;
   display: flex;
-  justify-content: space-between;
+  box-sizing: border-box;
   align-items: center;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.08);
-  border-radius: 12px;
+  justify-content: space-between;
 `;
 
 const LeftSection = styled.div`
@@ -112,10 +112,17 @@ const LeftSection = styled.div`
 
 const RightSection = styled.div`
   flex: 1;
+  position: relative;
+`;
+
+const RightGroup = styled.div`
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -65%); /* 정중앙으로 이동 */
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
 `;
 
 const SlideImage = styled.img`
@@ -125,23 +132,23 @@ const SlideImage = styled.img`
 
 const SlideText = styled.p`
   font-family: 'RobotoCustom';
-  font-size: 40px;
+  font-size: 35px;
   text-align: center;
   line-height: 1.8;
   white-space: pre-line;
   max-width: 714px;
-  mrgin-top: -10px;
+  margin-top: -10px;
 `;
 
 const DotContainer = styled.div`
   display: flex;
-  gap: 8px;
+  gap: 45px;
   margin-top: 20px;
 `;
 
 const Dot = styled.span`
-  width: 10px;
-  height: 10px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   border: 1px solid #235BA9;
   background-color: transparent;
@@ -153,13 +160,13 @@ const Dot = styled.span`
 `;
 
 const Logo = styled.img`
-  width: 213px;
+  width: 200px;
 `;
 
 const TitleImage = styled.img`
-  width: 444px;
-  margin-top: -80px;
-  margin-bottom: -100px;
+  width: 430px;
+  margin-top: -170px;
+  margin-bottom: -70px;
 `;
 
 const GoogleButton = styled.button`
@@ -171,13 +178,12 @@ const GoogleButton = styled.button`
   margin-bottom: -150px;
   gap: 30px;
   padding: 12px 24px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid #fff;
   border-radius: 16px;
   background-color: #fff;
-  color: #5f6368;
-
-  font-weight: 600;
-  font-size: 22px;
+  color: #6F6F6F;
+  font-weight: 400;
+  font-size: 30px;
   box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
   cursor: pointer;
 `;
