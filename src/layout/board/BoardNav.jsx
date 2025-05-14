@@ -4,11 +4,12 @@ import styled from "styled-components";
 import backIcon from "../../assets/images/nav/ic_Back.png";
 import searchIcon from "../../assets/images/nav/ic_Search.png";
 import trendistLogo from "../../assets/images/nav/ImageTextLogo.png";
-import Search from "../../component/search/Search";
+import Search from "../../components/search/Search";
 
 const BoardNav = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [query, setQuery] = useState("");
+  
 
   return (
     <>
@@ -44,7 +45,7 @@ export default BoardNav;
 
 const NavBar = styled.div`
   position: relative;
-  width: 100vw;
+  width: 100%;
   max-width: 100%;
   display: flex;
   justify-content: space-between;

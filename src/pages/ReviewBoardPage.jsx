@@ -2,12 +2,12 @@ import React, { useState } from "react";
 import styled from "styled-components";
 import helpIcon from "../assets/images/common/ic_Help.png";
 import writeIcon from "../assets/images/board/ic_Write.png";
-import ReviewCard from "../component/ReviewBoard/ReviewCard";
-import CategoryFilter from "../component/common/CategoryFilter";
+import ReviewCard from "../components/ReviewBoard/ReviewCard";
+import CategoryFilter from "../components/common/CategoryFilter";
 import SampleReviewImg from "../assets/images/board/SampleReviewImg.png";
 import BoardNav from "../layout/board/BoardNav";
 import BoardSidebar from "../layout/board/BoardSideNav";
-import ReviewBoardGuide from "../component/ReviewBoard/ReviewBoardGuide";
+import ReviewBoardGuide from "../components/ReviewBoard/ReviewBoardGuide";
 
 const reviews = [
   { id: 1, category: "환경", image: SampleReviewImg, title: "국제수면산업박람회 아이디어 공모전 시상식 후기!", content: "국제수면산업 박람회에 참가해서 영예의 대상을 수상했어요! 새롭고 흥미로운 아이디어를 나눌 수 있어서 정말 즐거운 경험이었습니다. 좋은 사람들과 함께한 뜻깊은 자리였어요.",},
@@ -67,6 +67,7 @@ export default function ReviewBoardPage() {
                 value={sortOrder}
                 onChange={(e) => setSortOrder(e.target.value)}
               >
+                <option value="전체">전체</option>
                 <option value="공모전">공모전</option>
                 <option value="봉사활동">봉사활동</option>
                 <option value="서포터즈">서포터즈</option>

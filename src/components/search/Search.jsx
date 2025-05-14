@@ -28,7 +28,7 @@ const Wrapper = styled.div`
   position: absolute;
   top: 64px;
   right: 32px;
-  z-index: 100;
+  z-index:2000;
 `;
 
 const SearchBox = styled.div`

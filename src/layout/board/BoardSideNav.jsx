@@ -1,13 +1,16 @@
 import React from 'react';
 import styled from 'styled-components';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const BoardSidebar = ({ selected, onSelect }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
   return (
     <Sidebar>
       <Title>게시판</Title>
       <Item
         active={selected === '후기 게시판'}
-        onClick={() => onSelect('후기 게시판')}
+        onClick={() => navigate('/board/review')}
       >
         후기 게시판
       </Item>
