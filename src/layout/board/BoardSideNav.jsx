@@ -10,7 +10,7 @@ const BoardSidebar = ({ selected, onSelect }) => {
       <Title>게시판</Title>
       <Item
         active={selected === '후기 게시판'}
-        onClick={() => navigate('/board')}
+        onClick={() => navigate('/board/review')}
       >
         후기 게시판
       </Item>
