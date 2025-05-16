@@ -16,7 +16,7 @@ const BoardSidebar = ({ selected, onSelect }) => {
       </Item>
       <Item
         active={selected === '자유 게시판'}
-        onClick={() => onSelect('자유 게시판')}
+        onClick={() => onSelect('/board/free')}
       >
         자유 게시판
       </Item>
@@ -34,7 +34,7 @@ const Sidebar = styled.div`
   flex-direction: column;
   align-items: center;
   position: sticky;
-  top: 127px; /* 상단 네비게이션 높이에 맞게 조정 */
+  top: 127px;
 `;
 
 const Title = styled.h3`
@@ -54,7 +54,6 @@ const Item = styled.div`
   padding: 8px 16px;
   border-radius: 8px;
 
-  background-color: ${(props) => (props.active ? '#174B8A' : 'transparent')};
   font-weight: ${(props) => (props.active ? 'bold' : 'normal')};
 
   &:hover {
