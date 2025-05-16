@@ -1,6 +1,7 @@
 // components/BoardNav.jsx
 import React, { useState } from "react";
 import styled from "styled-components";
+import { useNavigate } from "react-router-dom";
 import backIcon from "../../assets/images/nav/ic_Back.png";
 import searchIcon from "../../assets/images/nav/ic_Search.png";
 import trendistLogo from "../../assets/images/nav/ImageTextLogo.png";
@@ -9,16 +10,17 @@ import Search from "../../components/search/Search";
 const BoardNav = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const navigate = useNavigate();
   
 
   return (
     <>
       <NavBar>
-        <IconButton>
+        <IconButton onClick={() => navigate(-1)}>
           <IconImg src={backIcon} alt="뒤로가기" />
         </IconButton>
 
-        <Center>
+        <Center onClick={() => navigate("/main")}>
           <LogoImg src={trendistLogo} alt="Trendist 로고" />
         </Center>
 
