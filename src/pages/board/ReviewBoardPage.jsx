@@ -120,13 +120,13 @@ const reviews = [
 ];
 
 export default function ReviewBoardPage() {
+  const TypeCategories = ["전체", "공모전", "봉사활동", "서포터즈", "인턴십"];
+
   const [selectedCategory, setSelectedCategory] = useState("전체");
   const [selectedTypeCategory, setSelectedTypeCategory] = useState("전체");
   const [sortOrder, setSortOrder] = useState("최신순");
   const [isGuideOpen, setIsGuideOpen] = useState(false);
-  const TypeCategories = ["전체", "공모전", "봉사활동", "서포터즈", "인턴십"];
 
-  const itemsPerPage = 9;
   const filteredReviews =
     selectedCategory === "전체"
       ? reviews
@@ -138,6 +138,8 @@ export default function ReviewBoardPage() {
     return 0;
   });
 
+  //페이지네이션 
+  const itemsPerPage = 9;
   const { currentPage, totalPages, currentData, goToPage } = usePagination(sortedReviews, itemsPerPage);
 
   return (
@@ -185,8 +187,7 @@ export default function ReviewBoardPage() {
             ))}
           </CardGrid>
         </RightContent>
-      </MainLayout>
-
+      </MainLayout>      
       <Pagination currentPage={currentPage} totalPages={totalPages} goToPage={goToPage} />
       <Footer />
     </>
