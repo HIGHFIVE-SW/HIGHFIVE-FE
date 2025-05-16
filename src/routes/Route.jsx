@@ -17,7 +17,6 @@ export default function AppRoutes() {
       <Route path="/global-issue" element={<GlobalIssuePage />} />
       <Route path="/activity" element={<ActivityPage />} />
       <Route path="/board" element={<ReviewBoardPage />} />
-      <Route path="/board/review" element={<ReviewBoardPage />} />
     </Routes>
   );
 }
