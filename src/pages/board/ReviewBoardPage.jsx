@@ -3,15 +3,17 @@ import axios from "axios";
 import styled from "styled-components";
 import helpIcon from "../../assets/images/common/ic_Help.png";
 import writeIcon from "../../assets/images/board/ic_Write.png";
-import ReviewCard from "../../components/board/ReviewBoard/ReviewCard";
+import ReviewCard from "../../components/board/reviewboard/ReviewCard";
 import CategoryFilter from "../../components/common/CategoryFilter";
 import SampleReviewImg from "../../assets/images/board/SampleReviewImg.png";
 import BoardNav from "../../layout/board/BoardNav";
 import BoardSidebar from "../../layout/board/BoardSideNav";
-import ReviewBoardGuide from "../../components/board/ReviewBoard/ReviewBoardGuide";
+import ReviewBoardGuide from "../../components/board/reviewboard/ReviewBoardGuide";
 import Footer from "../../layout/Footer";
 import usePagination from "../../hooks/usePagination";
 import Pagination from "../../components/common/Pagination";
+import CustomDropdown from "../../components/common/CustomDropdown";
+
 
 const reviews = [
   {
@@ -119,24 +121,20 @@ const reviews = [
 
 export default function ReviewBoardPage() {
   const [selectedCategory, setSelectedCategory] = useState("전체");
+  const [selectedTypeCategory, setSelectedTypeCategory] = useState("전체");
   const [sortOrder, setSortOrder] = useState("최신순");
   const [isGuideOpen, setIsGuideOpen] = useState(false);
-
+  const TypeCategories = ["전체", "공모전", "봉사활동", "서포터즈", "인턴십"];
 
   const itemsPerPage = 9;
-
   const filteredReviews =
     selectedCategory === "전체"
       ? reviews
       : reviews.filter((r) => r.category === selectedCategory);
 
   const sortedReviews = [...filteredReviews].sort((a, b) => {
-    if (sortOrder === "최신순") {
-      return new Date(b.date) - new Date(a.date);
-    }
-    if (sortOrder === "추천순") {
-      return b.likeCount - a.likeCount;
-    }
+    if (sortOrder === "최신순") return new Date(b.date) - new Date(a.date);
+    if (sortOrder === "추천순") return b.likeCount - a.likeCount;
     return 0;
   });
 
@@ -165,17 +163,16 @@ export default function ReviewBoardPage() {
         <RightContent>
           <SortWriteWrapper>
             <SortBox>
-              <SortSelect value={sortOrder} onChange={(e) => setSortOrder(e.target.value)}>
-                <option value="최신순">최신순</option>
-                <option value="추천순">추천순</option>
-              </SortSelect>
-              <SortSelect value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
-                <option value="전체">전체</option>
-                <option value="공모전">공모전</option>
-                <option value="봉사활동">봉사활동</option>
-                <option value="서포터즈">서포터즈</option>
-                <option value="인턴십">인턴십</option>
-              </SortSelect>
+              <CustomDropdown
+                options={["최신순", "추천순"]}
+                selected={sortOrder}
+                onSelect={setSortOrder}
+              />
+              <CustomDropdown
+                options={TypeCategories}
+                selected={selectedTypeCategory}
+                onSelect={setSelectedTypeCategory}
+              />
             </SortBox>
             <WriteButton>
               <WriteIcon src={writeIcon} alt="글쓰기" /> 글쓰기
@@ -195,6 +192,7 @@ export default function ReviewBoardPage() {
     </>
   );
 }
+
 
 const HeaderSection = styled.div`
   background-color: #f9fbff;
@@ -238,6 +236,7 @@ const MainLayout = styled.div`
   display: flex;
   flex-direction: row;
   align-items: flex-start;
+  margin-top: 8px;
 `;
 
 const RightContent = styled.div`
@@ -252,14 +251,9 @@ const SortWriteWrapper = styled.div`
   margin: 0 16px;
 `;
 
-const SortSelect = styled.select`
-  padding: 6px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-size: 14px;
-  color: #000000;
-  background-color: #ffffff;
-  cursor: pointer;
+const SortBox = styled.div`
+  display: flex;
+  gap: 8px;
 `;
 
 const WriteButton = styled.button`
@@ -287,9 +281,4 @@ const CardGrid = styled.div`
   grid-template-columns: repeat(3, 1fr);
   gap: 24px;
   padding: 24px 0;
-`;
-
-const SortBox = styled.div`
-  display: flex;
-  gap: 8px;
 `;
