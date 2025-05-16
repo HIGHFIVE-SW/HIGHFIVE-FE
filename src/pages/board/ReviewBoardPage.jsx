@@ -3,12 +3,12 @@ import axios from "axios";
 import styled from "styled-components";
 import helpIcon from "../../assets/images/common/ic_Help.png";
 import writeIcon from "../../assets/images/board/ic_Write.png";
-import ReviewCard from "../../components/ReviewBoard/ReviewCard";
+import ReviewCard from "../../components/board/ReviewBoard/ReviewCard";
 import CategoryFilter from "../../components/common/CategoryFilter";
 import SampleReviewImg from "../../assets/images/board/SampleReviewImg.png";
 import BoardNav from "../../layout/board/BoardNav";
 import BoardSidebar from "../../layout/board/BoardSideNav";
-import ReviewBoardGuide from "../../components/ReviewBoard/ReviewBoardGuide";
+import ReviewBoardGuide from "../../components/board/ReviewBoard/ReviewBoardGuide";
 import Footer from "../../layout/Footer";
 import usePagination from "../../hooks/usePagination";
 import Pagination from "../../components/common/Pagination";
@@ -121,6 +121,7 @@ export default function ReviewBoardPage() {
   const [selectedCategory, setSelectedCategory] = useState("전체");
   const [sortOrder, setSortOrder] = useState("최신순");
   const [isGuideOpen, setIsGuideOpen] = useState(false);
+
 
   const itemsPerPage = 9;
 
