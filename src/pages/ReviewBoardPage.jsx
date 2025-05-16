@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import axios from "axios";
 import styled from "styled-components";
 import helpIcon from "../assets/images/common/ic_Help.png";
 import writeIcon from "../assets/images/board/ic_Write.png";
@@ -8,6 +9,10 @@ import SampleReviewImg from "../assets/images/board/SampleReviewImg.png";
 import BoardNav from "../layout/board/BoardNav";
 import BoardSidebar from "../layout/board/BoardSideNav";
 import ReviewBoardGuide from "../components/ReviewBoard/ReviewBoardGuide";
+import Footer from "../layout/Footer";
+import usePagination from "../hooks/usePagination";
+import Pagination from "../components/common/Pagination";
+
 
 const reviews = [
   { id: 1, category: "환경", image: SampleReviewImg, title: "국제수면산업박람회 아이디어 공모전 시상식 후기!", content: "국제수면산업 박람회에 참가해서 영예의 대상을 수상했어요! 새롭고 흥미로운 아이디어를 나눌 수 있어서 정말 즐거운 경험이었습니다. 좋은 사람들과 함께한 뜻깊은 자리였어요.",},
@@ -27,10 +32,14 @@ export default function ReviewBoardPage() {
   const [sortOrder, setSortOrder] = useState("최신순");
   const [isGuideOpen, setIsGuideOpen] = useState(false);
 
+  const itemsPerPage = 9;
   const filteredReviews =
     selectedCategory === "전체"
       ? reviews
       : reviews.filter((r) => r.category === selectedCategory);
+
+  const { currentPage, totalPages, currentData, goToPage } = usePagination(filteredReviews, itemsPerPage);
+
 
   return (
     <>
@@ -80,12 +89,14 @@ export default function ReviewBoardPage() {
             </WriteButton>
           </SortWriteWrapper>
           <CardGrid>
-            {filteredReviews.map((review) => (
+            {currentData.map((review) => (
               <ReviewCard key={review.id} {...review} />
             ))}
           </CardGrid>
         </RightContent>
       </MainLayout>
+      <Pagination currentPage={currentPage} totalPages={totalPages} goToPage={goToPage} />
+      <Footer />
     </>
   );
 }
