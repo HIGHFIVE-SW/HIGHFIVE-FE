@@ -6,7 +6,7 @@ import InterestModal from '../pages/InterestModal';
 import MainPage from '../pages/MainPage';
 import GlobalIssuePage from '../pages/GlobalIssuePage';
 import ActivityPage from '../pages/ActivityPage';
-import ReviewBoardPage from '../pages/ReviewBoardPage';
+import ReviewBoardPage from '../pages/board/ReviewBoardPage';
 
 export default function AppRoutes() {
   return (
@@ -16,7 +16,7 @@ export default function AppRoutes() {
       <Route path="/main" element={<MainPage />} />
       <Route path="/global-issue" element={<GlobalIssuePage />} />
       <Route path="/activity" element={<ActivityPage />} />
-      <Route path="/board" element={<ReviewBoardPage />} />
+      <Route path="/board/review" element={<ReviewBoardPage />} />
     </Routes>
   );
 }
