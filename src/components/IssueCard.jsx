@@ -2,14 +2,6 @@ import React from 'react';
 import styled from 'styled-components';
 
 export default function IssueCard({ title, tag, image, bookmarked, onToggle }) { 
-    const insertLineBreak = (text) => {
-        const keywords = ['공모전', '봉사활동', '서포터즈', '인턴십'];
-        let result = text;
-        keywords.forEach((word) => {
-          result = result.replace(word, `\n${word}`);
-        });
-        return result;
-      };
     return (
     <Card>
       <ImageWrapper>
@@ -20,22 +12,15 @@ export default function IssueCard({ title, tag, image, bookmarked, onToggle }) {
           onClick={onToggle}
         />
       </ImageWrapper>
-      <p className="issue-title">
-        {insertLineBreak(title).split('\n').map((line, idx) => (
-          <span key={idx}>
-            {line}
-            <br />
-          </span>
-        ))}
-      </p>
+      <p className="issue-title">{title}</p>
       <span className="issue-tag">{tag}</span>
     </Card>
   );
 }
 
 const Card = styled.div`
-  width: 405px;
-  height: 514px;
+  width: 330px;
+  height: 430px;
   border: 3px solid #235BA9;
   background-color: #fff;
   text-align: left;
@@ -43,26 +28,26 @@ const Card = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  overflow: visible;
+  overflow: visible; 
 
   .issue-title {
-    font-size: 25px;
+    font-size: 28px;
     font-weight: bold;
-    margin-top: 40px;
+    margin-top: 50px;
     font-family: NotoSansCustom;
   }
 
   .issue-tag {
     font-size: 20px;
     color: #555;
-    margin-top: 20px;
+    margin-top: 10px;
     font-family: NotoSansCustom;
   }
 `;
 
 const ImageWrapper = styled.div`
   width: 100%;
-  height: 288px;
+  height: 230px;
   position: relative;
   display: flex;
   justify-content: center;
@@ -72,16 +57,16 @@ const ImageWrapper = styled.div`
 `;
 
 const IssueImage = styled.img`
-  width: 399px;
-  height: 288px;
+  width: 325px;
+  height: 230px;
   object-fit: cover;
   display: block;
 `;
 
 const BookmarkIcon = styled.img`
   position: absolute;
-  bottom: -32px;
-  right: 15px;
+  bottom: -33px;
+  right: 5px;
   width: 40px;
   height: 40px;
   cursor: pointer;

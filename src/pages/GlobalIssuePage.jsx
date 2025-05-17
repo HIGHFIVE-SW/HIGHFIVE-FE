@@ -11,7 +11,7 @@ import issueCardNo from '../assets/images/main/ic_NoImage.png';
 const dummyData = [
   ...Array.from({ length: 4 }, (_, i) => ({
     id: i + 1,
-    title: '경제 이슈 ' + (i + 1),
+    title: '글로벌 ‘관세 전쟁’ 공포 … 국내 증시 ‘털썩’ ',
     tag: '#경제',
     image: issueCardNo,
   })),
@@ -66,7 +66,7 @@ export default function GlobalIssuePage() {
 
   return (
     <Wrapper>
-      <MainNav />
+      <MainNav /> 
 
       <HeaderSection>
         <PageTitle>글로벌 이슈</PageTitle>
@@ -90,7 +90,7 @@ export default function GlobalIssuePage() {
             tag={item.tag}
             image={item.image}
             bookmarked={bookmarkedIds.includes(item.id)}
-            onToggle={toggleBookmark}
+           onToggle={() => toggleBookmark(item.id)}
           />
         ))}
       </IssueGrid>

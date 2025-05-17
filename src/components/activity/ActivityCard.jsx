@@ -44,8 +44,8 @@ export default function ActivityCard({ title, tags, image, date, bookmarked, onT
   
 
 const Card = styled.div`
-  width: 405px;
-  height: 514px;
+  width: 330px;
+  height: 430px;
   border: 3px solid #235BA9;
   background-color: #fff;
   text-align: left;
@@ -56,7 +56,7 @@ const Card = styled.div`
   overflow: visible;
 
   .issue-title {
-    font-size: 33px;
+    font-size: 28px;
     font-weight: bold;
     margin-top: 30px;
     margin-bottom: 10px;
@@ -66,7 +66,7 @@ const Card = styled.div`
 
 const ImageWrapper = styled.div`
   width: 100%;
-  height: 288px;
+  height: 230px;
   position: relative;
   display: flex;
   justify-content: center;
@@ -76,16 +76,16 @@ const ImageWrapper = styled.div`
 `;
 
 const IssueImage = styled.img`
-  width: 399px;
-  height: 288px;
+  width: 325px;
+  height: 230px;
   object-fit: cover;
   display: block;
 `;
 
 const BookmarkIcon = styled.img`
   position: absolute;
-  bottom: -32px;
-  right: 15px;
+  bottom: -33px;
+  right: 5px;
   width: 40px;
   height: 40px;
   cursor: pointer;

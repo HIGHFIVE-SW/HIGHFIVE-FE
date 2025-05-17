@@ -251,6 +251,7 @@ const HeroSection = styled.section`
 
 const HeroInner = styled.div`
   width: 100%;
+  max-width: 1280px;
   height: 530px;
   display: flex;
   justify-content: space-between;
@@ -258,14 +259,14 @@ const HeroInner = styled.div`
 `;
 
 const HeroLeft = styled.div`
-  margin-left: 100px;
+  margin-left: -80px;
   font-family: 'NotoSansKR-VariableFont_wght';
 `;
 
 const HeroRight = styled.div``;
 
 const HeroTitle = styled.h2`
-  font-size: 70px;
+  font-size: 60px;
   font-weight: 700;
   margin-bottom: 16px;
 `;
@@ -276,8 +277,8 @@ const HeroLink = styled.p`
 `;
 
 const HeroImage = styled.img`
-  width: 578px;
-  height: 578px;
+  width: 400px;
+  height: 400px;
 `;
 
 const Wrapper = styled.section`
@@ -309,7 +310,7 @@ const Category = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  font-size: 30px;
+  font-size: 22px;
   cursor: pointer;
   transition: transform 0.3s;
 
@@ -318,8 +319,8 @@ const Category = styled.div`
   }
 
   img {
-    width: 305px;
-    height: 344px;
+    width: 220px;
+    height: 248px;
     margin-bottom: 8px;
   }
 `;
@@ -356,7 +357,7 @@ const MoreLink = styled.span`
 const IssueGrid = styled.div`
   display: flex;
   justify-content: center;
-  gap: 150px;
+  gap: 90px;
   flex-wrap: wrap;
   margin-bottom: 150px;
 `;
@@ -409,7 +410,7 @@ const IssueImage = styled.img`
 const BookmarkIcon = styled.img`
   position: absolute;
   bottom: -32px;
-  right: 15px;
+  right: 12px;
   width: 40px;
   height: 40px;
   cursor: pointer;
@@ -427,8 +428,8 @@ const ChatbotButton = styled.button`
   z-index: 10000;
 
   img {
-    width: 150px;
-    height: 150px;
+    width: 90px;
+    height: 90px;
     object-fit: contain;
   }
 `;

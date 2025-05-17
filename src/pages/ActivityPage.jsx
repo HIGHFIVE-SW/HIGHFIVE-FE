@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import MainNav from '../layout/MainNav';
 import Footer from '../layout/Footer';
 import ActivityCard from '../components/activity/ActivityCard';
+import Pagination from '../components/Pagination';
 
 import activityImage1 from '../assets/images/activity/ic_ActivityImage.png';
 
@@ -100,22 +101,11 @@ export default function ActivityPage() {
         </CardGrid>
       </ContentSection>
 
-      <Pagination>
-        {Array.from({ length: totalPages }).map((_, i) => (
-          <PageBtn
-            key={i + 1}
-            active={currentPage === i + 1}
-            onClick={() => setCurrentPage(i + 1)}
-          >
-            {i + 1}
-          </PageBtn>
-        ))}
-        {currentPage < totalPages && (
-          <NextBtn onClick={() => setCurrentPage((prev) => prev + 1)}>
-            NEXT &gt;
-          </NextBtn>
-        )}
-      </Pagination>
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+    />
 
       <Footer />
     </Wrapper>
@@ -193,32 +183,3 @@ const CardGrid = styled.div`
   justify-content: center;
 `;
 
-const Pagination = styled.div`
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-  margin: 40px 0 60px;
-`;
-
-const PageBtn = styled.button`
-  background-color: ${(props) =>
-    props.active ? '#F6FAFF' : 'transparent'};
-  color: ${(props) => (props.active ? '#1D4ED8' : '#000')};
-  border: none;
-  font-size: 16px;
-  font-weight: ${(props) => (props.active ? '600' : '400')};
-  border-radius: 50%;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-`;
-
-const NextBtn = styled.button`
-  background: none;
-  border: none;
-  color: #000;
-  cursor: pointer; 
-`;
