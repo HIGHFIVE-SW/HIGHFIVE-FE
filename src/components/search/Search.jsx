@@ -28,7 +28,7 @@ const Wrapper = styled.div`
   position: absolute;
   top: 64px;
   right: 32px;
-  z-index: 100;
+  z-index:2000;
 `;
 
 const SearchBox = styled.div`
@@ -62,7 +62,7 @@ const CloseImage = styled.img`
   position: absolute;
   top: 20px;
   right: 20px;
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
   cursor: pointer;
 `;
