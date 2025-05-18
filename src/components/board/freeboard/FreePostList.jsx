@@ -1,5 +1,7 @@
 import React from "react";
 import styled from "styled-components";
+import heartIcon from "../../../assets/images/board/ic_heart.png";
+
 
 export default function FreePostList({ posts, currentPage, itemsPerPage }) {
   return (
@@ -10,7 +12,9 @@ export default function FreePostList({ posts, currentPage, itemsPerPage }) {
           <TableHead>제목</TableHead>
           <TableHead>작성자</TableHead>
           <TableHead>날짜</TableHead>
-          <TableHead>❤️</TableHead>
+          <TableHead>
+            <IconImage src={heartIcon} alt="좋아요" />
+        </TableHead>
         </tr>
       </thead>
       <tbody>
@@ -61,4 +65,11 @@ const PostRow = styled.tr`
   border-bottom: ${(props) =>
     props.isLastRow ? "2px solid #1C4987" : "1px solid #235BA9"};
   }
+`;
+
+const IconImage = styled.img`
+  width: 16px;
+  height: 16px;
+  display: inline-block;
+  vertical-align: middle;
 `;
