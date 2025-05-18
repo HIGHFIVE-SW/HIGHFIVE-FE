@@ -23,24 +23,25 @@ const Card = styled.div`
   height: 430px;
   border: 3px solid #235BA9;
   background-color: #fff;
-  text-align: left;
+  text-align: center;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  overflow: visible; 
+  overflow: visible;
 
   .issue-title {
     font-size: 28px;
     font-weight: bold;
     margin-top: 50px;
     font-family: NotoSansCustom;
+    padding: 0 20px;
   }
 
   .issue-tag {
     font-size: 20px;
     color: #555;
-    margin-top: 10px;
+    margin-top: -20px;
     font-family: NotoSansCustom;
   }
 `;
@@ -65,10 +66,10 @@ const IssueImage = styled.img`
 
 const BookmarkIcon = styled.img`
   position: absolute;
-  bottom: -33px;
-  right: 5px;
-  width: 40px;
-  height: 40px;
+  bottom: -50px;
+  right: 8px;
+  width: 60px;
+  height: 60px;
   cursor: pointer;
   z-index: 10;
 `;

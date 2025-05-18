@@ -3,8 +3,8 @@ import styled from 'styled-components';
 import MainNav from '../layout/MainNav';
 import Footer from '../layout/Footer';
 import ActivityCard from '../components/activity/ActivityCard';
-import Pagination from '../components/Pagination';
-
+import usePagination from '../hooks/usePagination';
+import Pagination from '../components/common/Pagination';
 import activityImage1 from '../assets/images/activity/ic_ActivityImage.png';
 
 const dummyActivities = [
@@ -26,10 +26,8 @@ const dummyActivities = [
 
 export default function ActivityPage() {
   const [bookmarked, setBookmarked] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
   const [fieldFilter, setFieldFilter] = useState('전체');
   const [typeFilter, setTypeFilter] = useState('전체');
-  const itemsPerPage = 12;
 
   const toggleBookmark = (id) => {
     setBookmarked((prev) =>
@@ -44,12 +42,8 @@ export default function ActivityPage() {
     return matchField && matchType;
   });
 
-  const paginated = filtered.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-
-  const totalPages = Math.ceil(filtered.length / itemsPerPage);
+  const itemsPerPage = 12;
+  const { currentPage, totalPages, currentData, goToPage } = usePagination(filtered, itemsPerPage);
 
   return (
     <Wrapper>
@@ -84,7 +78,7 @@ export default function ActivityPage() {
         </FilterSection>
 
         <CardGrid>
-            {paginated.map((activity) => (
+            {currentData.map((activity) => (
                 <ActivityCard
                 key={activity.id}
                 title={activity.title}
@@ -95,17 +89,19 @@ export default function ActivityPage() {
                 onToggle={() => toggleBookmark(activity.id)}
                 />         
             ))}
-        {Array.from({ length: 4 - paginated.length }).map((_, index) => (
-        <div key={`placeholder-${index}`} style={{ width: '405px' }} />
+        {Array.from({ length: 4 - currentData.length }).map((_, idx) => (
+          <div
+            key={`placeholder-${idx}`}
+            style={{
+              width: '100%',
+              height: '0px',
+            }}
+          />
         ))}
         </CardGrid>
       </ContentSection>
 
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={setCurrentPage}
-    />
+      <Pagination currentPage={currentPage} totalPages={totalPages} goToPage={goToPage} />
 
       <Footer />
     </Wrapper>
@@ -138,7 +134,7 @@ const Subtitle = styled.p`
 `;
 
 const ContentSection = styled.div`
-  padding: 40px 80px;
+  padding: 40px 60px 40px 38px; /* top, right, bottom, left */
 `;
 
 const FilterSection = styled.div`
@@ -148,7 +144,7 @@ const FilterSection = styled.div`
   justify-content: flex-start;
   padding: 0 0 60px 0;
   flex-wrap: wrap;
-  margin-left: -40px;
+  margin-left: 5px;
 `;
 
 const FilterBlock = styled.div`
@@ -163,6 +159,7 @@ const FilterLabel = styled.label`
   font-size: 14px;
   font-weight: 500;
   margin-bottom: 6px;
+  padding-left: 30px;
 `;
 
 const SelectBox = styled.select`
@@ -172,14 +169,15 @@ const SelectBox = styled.select`
   font-size: 14px;
   border: 1px solid #ccc;
   border-radius: 4px;
+  
 `;
 
 const CardGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 32px;
-  max-width: 1600px;
+  width: 100%;
+  max-width: 1540px;
   margin: 0 auto;
-  justify-content: center;
 `;
 

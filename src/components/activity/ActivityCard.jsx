@@ -3,15 +3,7 @@ import styled from 'styled-components';
 
 
 export default function ActivityCard({ title, tags, image, date, bookmarked, onToggle }) {
-    const insertLineBreak = (text) => {
-      const keywords = ['공모전', '봉사활동', '서포터즈', '인턴십'];
-      let result = text;
-      keywords.forEach((word) => {
-        result = result.replace(word, `\n${word}`);
-      });
-      return result;
-    };
-  
+     
     return (
       <Card>
         <ImageWrapper>
@@ -24,19 +16,14 @@ export default function ActivityCard({ title, tags, image, date, bookmarked, onT
             onClick={onToggle}
           />
         </ImageWrapper>
-        <p className="issue-title">
-          {insertLineBreak(title).split('\n').map((line, idx) => (
-            <span key={idx}>
-              {line}
-              <br />
-            </span>
-          ))}
-        </p>
+        <p className="issue-title">{title}</p>
         <Tags>
-        {tags.split(' ').map((t, idx) => (
-          <span key={idx}>{t}</span>
-        ))}
-      </Tags>
+          {Array.isArray(tags)
+            ? tags.map((t, idx) => <span key={idx}>{t}</span>)
+            : typeof tags === 'string'
+            ? tags.split(' ').map((t, idx) => <span key={idx}>{t}</span>)
+            : null}
+        </Tags>
         <DateText>{date}</DateText>
       </Card>
     );
@@ -54,11 +41,12 @@ const Card = styled.div`
   flex-direction: column;
   justify-content: flex-start;
   overflow: visible;
+  padding: 0 20px;
 
   .issue-title {
-    font-size: 28px;
+    font-size: 23px;
     font-weight: bold;
-    margin-top: 30px;
+    margin-top: 50px;
     margin-bottom: 10px;
     font-family: NotoSansCustom;
   }
@@ -84,27 +72,27 @@ const IssueImage = styled.img`
 
 const BookmarkIcon = styled.img`
   position: absolute;
-  bottom: -33px;
+  bottom: -50px;
   right: 5px;
-  width: 40px;
-  height: 40px;
+  width: 60px;
+  height: 60px;
   cursor: pointer;
   z-index: 10;
 `;
 
 const Tags = styled.p`
-  font-size: 20px;
+  font-size: 18px;
   margin: 0 0 4px 0;
   white-space: pre-line;
 
   span {
     color: #235BA9;
-    margin-right: 4px;
+    margin-right: 10px;
   }
 `;
 
 const DateText = styled.p`
-  font-size: 18px;
+  font-size: 15px;
   color: #808080;
   margin: 0;
 `;

@@ -20,6 +20,6 @@ const FooterWrapper = styled.footer`
 
 const FooterText = styled.p`
   color: white;
-  font-size: 25px;
+  font-size: 20px;
   margin: 0;
 `;

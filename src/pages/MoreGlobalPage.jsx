@@ -12,7 +12,7 @@ import globalImage from '../assets/images/main/ic_IssueCardSample.png';
 const dummyGlobalIssues = Array.from({ length: 40 }, (_, idx) => ({
   id: idx + 1,
   title: '제 22회 한국 경제 논문 공모전',
-  tag: '#경제 #공모전',
+  tag: '#경제',
   image: globalImage,
 }));
 
@@ -83,7 +83,7 @@ const Wrapper = styled.div`
 `;
 
 const Content = styled.div`
-  padding: 40px 80px;
+  padding: 40px 60px 40px 38px;
 `;
 
 const Title = styled.h2`
@@ -99,9 +99,9 @@ const Subtitle = styled.h3`
 
 const CardGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(4, minmax(405px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 32px;
-  max-width: 1600px;
+  width: 100%;
+  max-width: 1540px;
   margin: 0 auto;
-  justify-content: center;
 `;

@@ -23,6 +23,7 @@ const FilterButton = styled.button`
 `;
 
 const CategoryFilter = ({ selectedCategory, onSelectCategory }) => {
+  
   return (
     <FilterWrapper>
       {categories.map((category) => (

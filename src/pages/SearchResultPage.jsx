@@ -14,15 +14,18 @@ import { useEffect } from 'react';
 
 const dummyGlobalIssues = [
   { id: 1, title: '글로벌 관세 전쟁 공포', tag: '#경제', image: globalImage },
-  { id: 2, title: '기후 변화와 탄소 중립', tag: '#환경', image: globalImage },
-  { id: 3, title: 'AI 기술의 미래와 사회 변화', tag: '#기술', image: globalImage },
-  { id: 4, title: '세계 경제 포럼: 글로벌 정책 전환', tag: '#정치', image: globalImage },
+  { id: 2, title: '기후 변화와 탄소 중립 경제', tag: '#환경', image: globalImage },
+  { id: 3, title: 'AI 기술의 미래와 사회 변화 경제', tag: '#기술', image: globalImage },
+  { id: 4, title: '세계 경제 포럼: 글로벌 정책 전환 경제', tag: '#정치', image: globalImage },
 ];
 
 const dummyActivities = [
   { id: 1, title: '제 22회 한국 경제 논문 공모전', tags: ['#경제', '#공모전'], date: '2025.04.15~2025.04.20', image: activityImage },
   { id: 2, title: '환경 인턴십', tags: ['#환경', '#인턴십'], date: '2025.04.15~2025.04.20', image: activityImage },
   { id: 3, title: '기술 봉사활동', tags: ['#기술', '#봉사활동'], date: '2025.04.15~2025.04.20', image: activityImage },
+  { id: 4, title: '제 22회 한국 경제 논문 공모전', tags: ['#경제', '#공모전'], date: '2025.04.15~2025.04.20', image: activityImage },
+  { id: 5, title: '제 22회 한국 경제 논문 공모전', tags: ['#경제', '#공모전'], date: '2025.04.15~2025.04.20', image: activityImage },
+  { id: 6, title: '제 22회 한국 경제 논문 공모전', tags: ['#경제', '#공모전'], date: '2025.04.15~2025.04.20', image: activityImage },
 ];
 
 export default function SearchResultPage() {
@@ -204,12 +207,12 @@ const SearchIconImg = styled.img`
 
 const ResultTitle = styled.h2`
   font-size: 40px;
-  margin-bottom: 32px;
-  margin-left: -43px;
+  margin-bottom: 20px;
+  margin-left: -52px;
 `;
 
 const Section = styled.div`
-  margin-bottom: 40px;
+  padding: 20px 60px 40px 80px;
 `;
 
 const SectionHeader = styled.div`
@@ -217,6 +220,7 @@ const SectionHeader = styled.div`
   flex-direction: column;
   align-items: flex-end;
   margin-bottom: 16px;
+  margin-left: -80px;
 
   h3 {
     font-size: 20px;
@@ -231,16 +235,18 @@ const MoreBtn = styled.span`
   font-size: 14px;
   color: #111;
   cursor: pointer;
-  margin-right: -30px;
+  margin-right: -95px;
+  margin-bottom: 20px;
 `;
 
 const CardGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(4, minmax(405px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 32px;
-  max-width: 1600px;
+  width: 100%;
+  max-width: 1540px;
   margin: 0 auto;
-  justify-content: center;
+  margin-left: -123px;
 `;
 
 const NoResult = styled.p`
