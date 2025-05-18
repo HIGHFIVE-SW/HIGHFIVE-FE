@@ -7,6 +7,7 @@ import MainPage from '../pages/MainPage';
 import GlobalIssuePage from '../pages/GlobalIssuePage';
 import ActivityPage from '../pages/ActivityPage';
 import ReviewBoardPage from '../pages/board/ReviewBoardPage';
+import FreeBoardPage from '../pages/board/FreeBoardPage';
 
 export default function AppRoutes() {
   return (
@@ -17,6 +18,7 @@ export default function AppRoutes() {
       <Route path="/global-issue" element={<GlobalIssuePage />} />
       <Route path="/activity" element={<ActivityPage />} />
       <Route path="/board/review" element={<ReviewBoardPage />} />
+      <Route path="/board/free" element={<FreeBoardPage />} />
     </Routes>
   );
 }
