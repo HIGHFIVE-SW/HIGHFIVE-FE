@@ -16,7 +16,11 @@ const BoardSidebar = ({ selected, onSelect }) => {
       </Item>
       <Item
         active={selected === '자유 게시판'}
+
         onClick={() => onSelect('/board/free')}
+
+        onClick={() => navigate('/board/free')}
+
       >
         자유 게시판
       </Item>

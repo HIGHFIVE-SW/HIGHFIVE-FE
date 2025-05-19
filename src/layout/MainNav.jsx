@@ -11,10 +11,13 @@ export default function MainNav() {
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
+<<<<<<< HEAD
 
   const toggleSearch = () => {
     setShowSearch((prev) => !prev);
   };
+=======
+>>>>>>> develop
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef();
 
@@ -91,6 +94,8 @@ export default function MainNav() {
   );
 }
 
+// ================= Styled Components =================
+
 const NavWrapper = styled.nav`
   width: 100%;
   display: flex;
@@ -100,7 +105,10 @@ const NavWrapper = styled.nav`
   background-color: white;
   box-sizing: border-box;
   height: 64px;
+<<<<<<< HEAD
  border-bottom: none; 
+=======
+>>>>>>> develop
 `;
 
 const Logo = styled.div`
