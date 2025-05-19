@@ -1,32 +1,19 @@
 import React from 'react';
 import styled from 'styled-components';
 import CloseIcon from '../../assets/images/search/ic_close.png';
-import { useNavigate } from 'react-router-dom';
 
 export default function Search({ query, onChange, onClose }) {
-  const navigate = useNavigate();
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (query.trim()) {
-      navigate(`/search?query=${encodeURIComponent(query)}`);
-      onClose(); 
-    }
-  };
-
   return (
     <Wrapper>
       <SearchBox>
-        <form onSubmit={handleSubmit}>
-          <InputWrapper>
-            <Input
-              type="text"
-              placeholder="검색어를 입력해주세요."
-              value={query}
-              onChange={(e) => onChange(e.target.value)}
-            />
-          </InputWrapper>
-        </form>
+        <InputWrapper>
+          <Input
+            type="text"
+            placeholder="검색어를 입력해주세요."
+            value={query}
+            onChange={(e) => onChange(e.target.value)}
+          />
+        </InputWrapper>
         <CloseImage
           src={CloseIcon}
           alt="close"
