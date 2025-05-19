@@ -60,10 +60,11 @@ export default function SearchResultPage() {
     }, [location.search]);
   
     const handleSearch = () => {
-      setSearchQuery(inputValue);
-      inputRef.current?.blur();
+      if (inputValue.trim()) {
+        navigate(`/search?query=${inputValue.trim()}`);
+      }
     };
-  
+    
     const lowerQuery = searchQuery.toLowerCase();
   
     const filteredGlobal = dummyGlobalIssues.filter(

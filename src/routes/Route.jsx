@@ -13,7 +13,7 @@ import ReviewBoardPage from '../pages/board/ReviewBoardPage';
 import MainPage from '../pages/MainPage';
 import GlobalIssueDetailPage from '../pages/GlobalIssueDetailPage'; 
 import FreeBoardPage from '../pages/board/FreeBoardPage';
-
+import MoreDetailPage from '../pages/MoreDetailPage';
 
 export default function AppRoutes() {
   return (
@@ -28,6 +28,7 @@ export default function AppRoutes() {
       <Route path="/search" element={<SearchResultPage />} />
       <Route path="/more/global" element={<MoreGlobalPage />} />
       <Route path="/more/activity" element={<MoreActivityPage />} />
+      <Route path="/more-detail" element={<MoreDetailPage />} />
       <Route path="/global-issue/:id" element={<GlobalIssueDetailPage />} />
       <Route path="/board/review" element={<ReviewBoardPage />} />
 

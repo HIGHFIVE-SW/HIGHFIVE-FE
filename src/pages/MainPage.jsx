@@ -73,7 +73,7 @@ export default function MainPage() {
             <Title>최신 이슈</Title>
             <Subtitle>빠르게 알아보는 글로벌 이슈</Subtitle>
           </Header>
-          <MoreLink>더보기 &gt;</MoreLink>
+          <MoreLink onClick={() => navigate('/global-issue')}>더보기 &gt;</MoreLink>
           <IssueGrid>
             {dummyIssues.map((item, idx) => (
               <IssueCard

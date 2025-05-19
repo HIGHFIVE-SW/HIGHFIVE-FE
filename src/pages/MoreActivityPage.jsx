@@ -17,59 +17,65 @@ const dummyGlobalIssues = Array.from({ length: 40 }, (_, idx) => ({
 }));
 
 export default function MoreActivityPage() {
-    const location = useLocation();
-    const query = new URLSearchParams(location.search).get('query')?.toLowerCase() || '';
-    const [bookmarkedIds, setBookmarkedIds] = useState([]);
-  
-    const filtered = query
-      ? dummyGlobalIssues.filter(
-          (item) =>
-            item.title.toLowerCase().includes(query) ||
-            item.tags.some((tag) => tag.toLowerCase().includes(query))
-        )
-      : dummyGlobalIssues;
-  
-    const itemsPerPage = 12;
-    const {
-      currentPage,
-      totalPages,
-      currentData: paginatedData,
-      goToPage,
-    } = usePagination(filtered, itemsPerPage);
-  
-    const toggleBookmark = (id) => {
-      setBookmarkedIds((prev) =>
-        prev.includes(id) ? prev.filter((bid) => bid !== id) : [...prev, id]
-      );
-    };
-  
-    return (
-      <Wrapper>
-        <MainNav />
-        <Content>
-          <Title>‘{query}’의 검색 결과</Title>
-          <Subtitle>활동</Subtitle>
-          <CardGrid>
-            {paginatedData.map((item) => (
-              <ActivityCard
-                key={item.id}
-                title={item.title}
-                tags={item.tags}
-                image={item.image}
-                bookmarked={bookmarkedIds.includes(item.id)}
-                onToggle={() => toggleBookmark(item.id)}
-              />
-            ))}
-          </CardGrid>
-  
-          {filtered.length > itemsPerPage && (
-            <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={goToPage} />
-          )}
-        </Content>
-        <Footer />
-      </Wrapper>
+  const location = useLocation();
+  const query = new URLSearchParams(location.search).get('query')?.toLowerCase() || '';
+  const [bookmarkedIds, setBookmarkedIds] = useState([]);
+
+  const filtered = query
+    ? dummyGlobalIssues.filter(
+        (item) =>
+          item.title.toLowerCase().includes(query) ||
+          item.tags.some((tag) => tag.toLowerCase().includes(query))
+      )
+    : dummyGlobalIssues;
+
+  const itemsPerPage = 12;
+  const {
+    currentPage,
+    totalPages,
+    currentData: paginatedData,
+    goToPage,
+  } = usePagination(filtered, itemsPerPage);
+
+  const toggleBookmark = (id) => {
+    setBookmarkedIds((prev) =>
+      prev.includes(id) ? prev.filter((bid) => bid !== id) : [...prev, id]
     );
-  }
+  };
+
+  return (
+    <Wrapper>
+      <MainNav />
+      <Content>
+        <Title>‘{query}’의 검색 결과</Title>
+        <Subtitle>활동</Subtitle>
+
+        <CardGrid>
+          {paginatedData.map((item) => (
+            <ActivityCard
+              key={item.id}
+              title={item.title}
+              tags={item.tags}
+              date={item.date}
+              image={item.image}
+              bookmarked={bookmarkedIds.includes(item.id)}
+              onToggle={() => toggleBookmark(item.id)}
+            />
+          ))}
+        </CardGrid>
+
+        {filtered.length > itemsPerPage && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={goToPage}
+          />
+        )}
+      </Content>
+      <Footer />
+    </Wrapper>
+  );
+}
 
 const Wrapper = styled.div`
   display: flex;

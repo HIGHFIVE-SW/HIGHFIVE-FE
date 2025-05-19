@@ -34,17 +34,24 @@ const Card = styled.div`
   overflow: visible;
 
   .issue-title {
-    font-size: 28px;
+    font-size: 24px;
     font-weight: bold;
     margin-top: 50px;
     font-family: NotoSansCustom;
     padding: 0 20px;
+
+  height: 68px; 
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2; 
+  -webkit-box-orient: vertical;
   }
 
   .issue-tag {
     font-size: 20px;
     color: #555;
-    margin-top: -20px;
+    margin-top: -10px;
     font-family: NotoSansCustom;
   }
 `;

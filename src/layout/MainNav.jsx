@@ -11,7 +11,9 @@ export default function MainNav() {
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
-
+  const isGlobalIssueActive =
+    location.pathname.startsWith('/global-issue') ||
+    location.pathname.startsWith('/more-detail');
 
   const toggleSearch = () => {
     setShowSearch((prev) => !prev);
@@ -37,12 +39,13 @@ export default function MainNav() {
       </Logo>
 
       <NavMenu>
-        <NavItem
-          className={location.pathname === '/global-issue' ? 'active' : ''}
-          onClick={() => navigate('/global-issue')}
-        >
-          글로벌 이슈
-        </NavItem>
+      <NavItem
+        className={isGlobalIssueActive ? 'active' : ''}
+        onClick={() => navigate('/global-issue')}
+      >
+        글로벌 이슈
+      </NavItem>
+
         <NavItem
           className={location.pathname === '/activity' ? 'active' : ''}
           onClick={() => navigate('/activity')}
@@ -93,7 +96,6 @@ export default function MainNav() {
   );
 }
 
-// ================= Styled Components =================
 
 const NavWrapper = styled.nav`
   width: 100%;
@@ -104,10 +106,7 @@ const NavWrapper = styled.nav`
   background-color: white;
   box-sizing: border-box;
   height: 64px;
-<<<<<<< HEAD
  border-bottom: none; 
-=======
->>>>>>> develop
 `;
 
 const Logo = styled.div`

@@ -1,4 +1,4 @@
- import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import MainNav from '../layout/MainNav';
 import Footer from '../layout/Footer';
@@ -83,7 +83,7 @@ export default function GlobalIssuePage() {
         selectedCategory={activeCategory}
         onSelectCategory={(cat) => {
           setActiveCategory(cat);
-          goToPage(1); // 선택 시 1페이지로 초기화
+          goToPage(1); 
         }}
       />
 
@@ -97,7 +97,7 @@ export default function GlobalIssuePage() {
             image={item.image}
             bookmarked={bookmarkedIds.includes(item.id)}
             onToggle={() => toggleBookmark(item.id)}
-            onClick={() => navigate(`/global-issue/${item.id}`)} 
+            onClick={() => navigate(`/global-issue/${item.id}`, { state: { label: item.tag, title: item.title } })} 
           />
         ))}
       </IssueGrid>
