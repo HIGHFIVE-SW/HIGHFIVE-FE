@@ -11,13 +11,12 @@ export default function MainNav() {
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
-<<<<<<< HEAD
+
 
   const toggleSearch = () => {
     setShowSearch((prev) => !prev);
   };
-=======
->>>>>>> develop
+
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef();
 
