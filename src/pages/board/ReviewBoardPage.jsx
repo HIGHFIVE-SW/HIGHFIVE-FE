@@ -1,18 +1,13 @@
 import React, { useState } from "react";
-
 import styled from "styled-components";
 import helpIcon from "../../assets/images/common/ic_Help.png";
 import writeIcon from "../../assets/images/board/ic_Write.png";
-import ReviewCard from "../../components/board/ReviewBoard/ReviewCard";
-
-/*import axios from "axios";*/
-
+import ReviewCard from "../../components/board/reviewboard/ReviewCard";
 import CategoryFilter from "../../components/common/CategoryFilter";
 import SampleReviewImg from "../../assets/images/board/SampleReviewImg.png";
 import BoardNav from "../../layout/board/BoardNav";
 import BoardSidebar from "../../layout/board/BoardSideNav";
 import ReviewBoardGuide from "../../components/board/ReviewBoard/ReviewBoardGuide";
-
 import Footer from "../../layout/Footer";
 import usePagination from "../../hooks/usePagination";
 import Pagination from "../../components/common/Pagination";

@@ -3,8 +3,7 @@ import styled from 'styled-components';
 import MainNav from '../layout/MainNav';
 import Footer from '../layout/Footer';
 import ActivityCard from '../components/activity/ActivityCard';
-import usePagination from '../hooks/usePagination';
-import Pagination from '../components/common/Pagination';
+
 import activityImage1 from '../assets/images/activity/ic_ActivityImage.png';
 
 const dummyActivities = [
@@ -26,8 +25,10 @@ const dummyActivities = [
 
 export default function ActivityPage() {
   const [bookmarked, setBookmarked] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
   const [fieldFilter, setFieldFilter] = useState('전체');
   const [typeFilter, setTypeFilter] = useState('전체');
+  const itemsPerPage = 12;
 
   const toggleBookmark = (id) => {
     setBookmarked((prev) =>
@@ -42,8 +43,12 @@ export default function ActivityPage() {
     return matchField && matchType;
   });
 
-  const itemsPerPage = 12;
-  const { currentPage, totalPages, currentData, goToPage } = usePagination(filtered, itemsPerPage);
+  const paginated = filtered.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const totalPages = Math.ceil(filtered.length / itemsPerPage);
 
   return (
     <Wrapper>
@@ -78,7 +83,7 @@ export default function ActivityPage() {
         </FilterSection>
 
         <CardGrid>
-            {currentData.map((activity) => (
+            {paginated.map((activity) => (
                 <ActivityCard
                 key={activity.id}
                 title={activity.title}
@@ -89,19 +94,28 @@ export default function ActivityPage() {
                 onToggle={() => toggleBookmark(activity.id)}
                 />         
             ))}
-        {Array.from({ length: 4 - currentData.length }).map((_, idx) => (
-          <div
-            key={`placeholder-${idx}`}
-            style={{
-              width: '100%',
-              height: '0px',
-            }}
-          />
+        {Array.from({ length: 4 - paginated.length }).map((_, index) => (
+        <div key={`placeholder-${index}`} style={{ width: '405px' }} />
         ))}
         </CardGrid>
       </ContentSection>
 
-      <Pagination currentPage={currentPage} totalPages={totalPages} goToPage={goToPage} />
+      <Pagination>
+        {Array.from({ length: totalPages }).map((_, i) => (
+          <PageBtn
+            key={i + 1}
+            active={currentPage === i + 1}
+            onClick={() => setCurrentPage(i + 1)}
+          >
+            {i + 1}
+          </PageBtn>
+        ))}
+        {currentPage < totalPages && (
+          <NextBtn onClick={() => setCurrentPage((prev) => prev + 1)}>
+            NEXT &gt;
+          </NextBtn>
+        )}
+      </Pagination>
 
       <Footer />
     </Wrapper>
@@ -134,7 +148,7 @@ const Subtitle = styled.p`
 `;
 
 const ContentSection = styled.div`
-  padding: 40px 60px 40px 38px; /* top, right, bottom, left */
+  padding: 40px 80px;
 `;
 
 const FilterSection = styled.div`
@@ -144,7 +158,7 @@ const FilterSection = styled.div`
   justify-content: flex-start;
   padding: 0 0 60px 0;
   flex-wrap: wrap;
-  margin-left: 5px;
+  margin-left: -40px;
 `;
 
 const FilterBlock = styled.div`
@@ -159,7 +173,6 @@ const FilterLabel = styled.label`
   font-size: 14px;
   font-weight: 500;
   margin-bottom: 6px;
-  padding-left: 30px;
 `;
 
 const SelectBox = styled.select`
@@ -169,15 +182,43 @@ const SelectBox = styled.select`
   font-size: 14px;
   border: 1px solid #ccc;
   border-radius: 4px;
-  
 `;
 
 const CardGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 32px;
-  width: 100%;
-  max-width: 1540px;
+  max-width: 1600px;
   margin: 0 auto;
+  justify-content: center;
 `;
 
+const Pagination = styled.div`
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin: 40px 0 60px;
+`;
+
+const PageBtn = styled.button`
+  background-color: ${(props) =>
+    props.active ? '#F6FAFF' : 'transparent'};
+  color: ${(props) => (props.active ? '#1D4ED8' : '#000')};
+  border: none;
+  font-size: 16px;
+  font-weight: ${(props) => (props.active ? '600' : '400')};
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+`;
+
+const NextBtn = styled.button`
+  background: none;
+  border: none;
+  color: #000;
+  cursor: pointer; 
+`;
