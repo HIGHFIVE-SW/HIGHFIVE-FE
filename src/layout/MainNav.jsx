@@ -3,11 +3,21 @@ import styled from 'styled-components';
 import logoTrend from '../assets/images/ic_ImageTextLogo.png';
 import MypageIcon from '../assets/images/ic_Mypage.png';
 import VectorIcon from '../assets/images/ic_Search.png';
+import Search from '../components/search/Search';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 export default function MainNav() {
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
+<<<<<<< HEAD
+
+  const toggleSearch = () => {
+    setShowSearch((prev) => !prev);
+  };
+=======
+>>>>>>> develop
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef();
 
@@ -70,8 +80,16 @@ export default function MainNav() {
       <RightIcons>
         <Divider />
         <img src={MypageIcon} alt="User Icon" />
-        <img src={VectorIcon} alt="Search Icon" />
+        <img src={VectorIcon} alt="Search Icon" onClick={toggleSearch} />
       </RightIcons>
+
+      {showSearch && (
+        <Search
+          query={searchQuery}
+          onChange={setSearchQuery}
+          onClose={() => setShowSearch(false)}
+        />
+      )}
     </NavWrapper>
   );
 }
@@ -87,6 +105,10 @@ const NavWrapper = styled.nav`
   background-color: white;
   box-sizing: border-box;
   height: 64px;
+<<<<<<< HEAD
+ border-bottom: none; 
+=======
+>>>>>>> develop
 `;
 
 const Logo = styled.div`
