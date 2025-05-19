@@ -1,12 +1,9 @@
- import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import MainNav from '../layout/MainNav';
 import Footer from '../layout/Footer';
-import { useLocation, useNavigate } from 'react-router-dom';
 import IssueCard from '../components/IssueCard'; 
 import CategoryFilter from '../components/common/CategoryFilter';
-import usePagination from '../hooks/usePagination';
-import Pagination from '../components/common/Pagination';
 
 import issueCardSample from '../assets/images/main/ic_IssueCardSample.png';
 import issueCardNo from '../assets/images/main/ic_NoImage.png';
@@ -14,7 +11,7 @@ import issueCardNo from '../assets/images/main/ic_NoImage.png';
 const dummyData = [
   ...Array.from({ length: 4 }, (_, i) => ({
     id: i + 1,
-    title: '글로벌 ‘관세 전쟁’ 공포 … 국내 증시 ‘털썩’ ',
+    title: '경제 이슈 ' + (i + 1),
     tag: '#경제',
     image: issueCardNo,
   })),
@@ -38,19 +35,12 @@ const dummyData = [
   })),
 ];
 
+
 export default function GlobalIssuePage() {
   const [activeCategory, setActiveCategory] = useState('전체');
+  const [currentPage, setCurrentPage] = useState(1);
   const [bookmarkedIds, setBookmarkedIds] = useState([]);
   const itemsPerPage = 12;
-
-  const location = useLocation();
-  const query = new URLSearchParams(location.search).get('query');
-
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (query) setActiveCategory(query);
-  }, [query]);
 
   const toggleBookmark = (id) => {
     setBookmarkedIds(prev =>
@@ -63,12 +53,16 @@ export default function GlobalIssuePage() {
       ? dummyData
       : dummyData.filter(item => item.tag.includes(activeCategory));
 
-  const {
-    currentPage,
-    totalPages,
-    currentData: paginatedData,
-    goToPage
-  } = usePagination(filteredData, itemsPerPage);
+  const paginatedData =
+    activeCategory === '전체'
+      ? filteredData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+      : filteredData;
+
+  const totalPages = Math.ceil(
+    activeCategory === '전체'
+      ? filteredData.length / itemsPerPage
+      : 1
+  );
 
   return (
     <Wrapper>
@@ -83,9 +77,9 @@ export default function GlobalIssuePage() {
         selectedCategory={activeCategory}
         onSelectCategory={(cat) => {
           setActiveCategory(cat);
-          goToPage(1); // 선택 시 1페이지로 초기화
+          setCurrentPage(1);
         }}
-      />
+/>
 
       <IssueGrid>
         {paginatedData.map(item => (
@@ -96,14 +90,28 @@ export default function GlobalIssuePage() {
             tag={item.tag}
             image={item.image}
             bookmarked={bookmarkedIds.includes(item.id)}
-            onToggle={() => toggleBookmark(item.id)}
-            onClick={() => navigate(`/global-issue/${item.id}`)} 
+            onToggle={toggleBookmark}
           />
         ))}
       </IssueGrid>
 
       {activeCategory === '전체' && (
-        <Pagination currentPage={currentPage} totalPages={totalPages} goToPage={goToPage} />
+        <Pagination>
+          {Array.from({ length: totalPages }).map((_, i) => (
+            <PageNumber
+              key={i + 1}
+              active={currentPage === i + 1}
+              onClick={() => setCurrentPage(i + 1)}
+            >
+              {i + 1}
+            </PageNumber>
+          ))}
+          {currentPage < totalPages && (
+            <NextButton onClick={() => setCurrentPage(prev => prev + 1)}>
+              NEXT &gt;
+            </NextButton>
+          )}
+        </Pagination>
       )}
 
       <Footer />
@@ -144,4 +152,34 @@ const IssueGrid = styled.div`
   justify-content: center;
   max-width: 1600px;
   margin: 0 auto;
+`;
+
+const Pagination = styled.div`
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 60px;
+`;
+
+const PageNumber = styled.button`
+  background-color: ${props => (props.active ? 'rgba(29, 78, 216, 0.05)' : 'transparent')};
+  color: ${props => (props.active ? '#1D4ED8' : '#000')};
+  border: none;
+  font-size: 16px;
+  font-weight: ${props => (props.active ? '600' : '400')};
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+`;
+
+const NextButton = styled.button`
+  background: none;
+  border: none;
+  color: #000000;
+  font-weight: bold;
+  cursor: pointer;
 `;

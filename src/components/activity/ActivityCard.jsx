@@ -3,7 +3,15 @@ import styled from 'styled-components';
 
 
 export default function ActivityCard({ title, tags, image, date, bookmarked, onToggle }) {
-     
+    const insertLineBreak = (text) => {
+      const keywords = ['공모전', '봉사활동', '서포터즈', '인턴십'];
+      let result = text;
+      keywords.forEach((word) => {
+        result = result.replace(word, `\n${word}`);
+      });
+      return result;
+    };
+  
     return (
       <Card>
         <ImageWrapper>
@@ -16,14 +24,19 @@ export default function ActivityCard({ title, tags, image, date, bookmarked, onT
             onClick={onToggle}
           />
         </ImageWrapper>
-        <p className="issue-title">{title}</p>
+        <p className="issue-title">
+          {insertLineBreak(title).split('\n').map((line, idx) => (
+            <span key={idx}>
+              {line}
+              <br />
+            </span>
+          ))}
+        </p>
         <Tags>
-          {Array.isArray(tags)
-            ? tags.map((t, idx) => <span key={idx}>{t}</span>)
-            : typeof tags === 'string'
-            ? tags.split(' ').map((t, idx) => <span key={idx}>{t}</span>)
-            : null}
-        </Tags>
+        {tags.split(' ').map((t, idx) => (
+          <span key={idx}>{t}</span>
+        ))}
+      </Tags>
         <DateText>{date}</DateText>
       </Card>
     );
@@ -31,8 +44,8 @@ export default function ActivityCard({ title, tags, image, date, bookmarked, onT
   
 
 const Card = styled.div`
-  width: 330px;
-  height: 430px;
+  width: 405px;
+  height: 514px;
   border: 3px solid #235BA9;
   background-color: #fff;
   text-align: left;
@@ -41,12 +54,11 @@ const Card = styled.div`
   flex-direction: column;
   justify-content: flex-start;
   overflow: visible;
-  padding: 0 20px;
 
   .issue-title {
-    font-size: 23px;
+    font-size: 33px;
     font-weight: bold;
-    margin-top: 50px;
+    margin-top: 30px;
     margin-bottom: 10px;
     font-family: NotoSansCustom;
   }
@@ -54,7 +66,7 @@ const Card = styled.div`
 
 const ImageWrapper = styled.div`
   width: 100%;
-  height: 230px;
+  height: 288px;
   position: relative;
   display: flex;
   justify-content: center;
@@ -64,35 +76,35 @@ const ImageWrapper = styled.div`
 `;
 
 const IssueImage = styled.img`
-  width: 325px;
-  height: 230px;
+  width: 399px;
+  height: 288px;
   object-fit: cover;
   display: block;
 `;
 
 const BookmarkIcon = styled.img`
   position: absolute;
-  bottom: -50px;
-  right: 5px;
-  width: 60px;
-  height: 60px;
+  bottom: -32px;
+  right: 15px;
+  width: 40px;
+  height: 40px;
   cursor: pointer;
   z-index: 10;
 `;
 
 const Tags = styled.p`
-  font-size: 18px;
+  font-size: 20px;
   margin: 0 0 4px 0;
   white-space: pre-line;
 
   span {
     color: #235BA9;
-    margin-right: 10px;
+    margin-right: 4px;
   }
 `;
 
 const DateText = styled.p`
-  font-size: 15px;
+  font-size: 18px;
   color: #808080;
   margin: 0;
 `;
