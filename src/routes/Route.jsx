@@ -10,6 +10,7 @@ import MoreGlobalPage from '../pages/MoreGlobalPage';
 import MoreActivityPage from '../pages/MoreActivityPage';
 import ReviewBoardPage from '../pages/board/ReviewBoardPage';
 import MainPage from '../pages/Mainpage';
+import GlobalIssueDetailPage from '../pages/GlobalIssueDetailPage'; 
 
 export default function AppRoutes() {
   return (
@@ -23,6 +24,7 @@ export default function AppRoutes() {
       <Route path="/search" element={<SearchResultPage />} />
       <Route path="/more/global" element={<MoreGlobalPage />} />
       <Route path="/more/activity" element={<MoreActivityPage />} />
+      <Route path="/global-issue/:id" element={<GlobalIssueDetailPage />} />
       <Route path="/board/review" element={<ReviewBoardPage />} />
     </Routes>
   );

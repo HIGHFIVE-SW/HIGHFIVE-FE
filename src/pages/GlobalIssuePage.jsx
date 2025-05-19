@@ -2,7 +2,7 @@
 import styled from 'styled-components';
 import MainNav from '../layout/MainNav';
 import Footer from '../layout/Footer';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import IssueCard from '../components/IssueCard'; 
 import CategoryFilter from '../components/common/CategoryFilter';
 import usePagination from '../hooks/usePagination';
@@ -38,7 +38,6 @@ const dummyData = [
   })),
 ];
 
-
 export default function GlobalIssuePage() {
   const [activeCategory, setActiveCategory] = useState('전체');
   const [bookmarkedIds, setBookmarkedIds] = useState([]);
@@ -46,6 +45,8 @@ export default function GlobalIssuePage() {
 
   const location = useLocation();
   const query = new URLSearchParams(location.search).get('query');
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (query) setActiveCategory(query);
@@ -96,6 +97,7 @@ export default function GlobalIssuePage() {
             image={item.image}
             bookmarked={bookmarkedIds.includes(item.id)}
             onToggle={() => toggleBookmark(item.id)}
+            onClick={() => navigate(`/global-issue/${item.id}`)} 
           />
         ))}
       </IssueGrid>

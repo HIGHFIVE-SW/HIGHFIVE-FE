@@ -1,15 +1,18 @@
 import React from 'react';
 import styled from 'styled-components';
 
-export default function IssueCard({ title, tag, image, bookmarked, onToggle }) { 
+export default function IssueCard({ title, tag, image, bookmarked, onToggle, onClick }) { 
     return (
-    <Card>
+      <Card onClick={onClick}>
       <ImageWrapper>
         <IssueImage src={image} alt="이슈 이미지" />
         <BookmarkIcon
           src={bookmarked ? require('../assets/images/main/BookmarkFilledButton.png') : require('../assets/images/main/BookmarkButton.png')}
           alt="북마크"
-          onClick={onToggle}
+          onClick={(e) => {
+            e.stopPropagation(); 
+            onToggle();
+          }}
         />
       </ImageWrapper>
       <p className="issue-title">{title}</p>
