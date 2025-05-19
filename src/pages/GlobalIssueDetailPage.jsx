@@ -64,7 +64,6 @@ export default function GlobalIssueDetailPage() {
         </SummarySection>
 
         <RecommendWrapper>
-        <Divider />
           <RecommendCardsHeader>
             <RecommendTitle>추천 활동</RecommendTitle>
             <MoreLink href="#">더보기 &gt;</MoreLink>
@@ -93,6 +92,7 @@ export default function GlobalIssueDetailPage() {
 const PageWrapper = styled.div`
   display: flex;
   flex-direction: column;
+  background-color: #f5f5f5;
 `;
 
 const ContentWrapper = styled.div`
@@ -124,7 +124,6 @@ const Divider = styled.hr`
   border: none;
   border-top: 1px solid #ddd;
   margin-bottom: 30px;
-  widTh: 100%;
 `;
 
 const MainImage = styled.img`
@@ -163,7 +162,7 @@ const OriginalLink = styled.a`
 `;
 
 const RecommendWrapper = styled.div`
-  padding: 40px 0 40px 0;
+  padding: 40px 60px 40px 60px;
 `;
 
 const RecommendCardsHeader = styled.div`
@@ -200,7 +199,7 @@ const RecommendCards = styled.div`
   gap: 5px;
   width: 100%;
   max-width: 1540px;
-  margin-left: -80px;
+  margin-left: -145px;
 `;
 
 const CardWrapper = styled.div`
