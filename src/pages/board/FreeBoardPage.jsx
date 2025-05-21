@@ -8,6 +8,7 @@ import Pagination from "../../components/common/Pagination";
 import CustomDropdown from "../../components/common/CustomDropdown";
 import writeIcon from "../../assets/images/board/ic_Write.png";
 import PostList from "../../components/board/freeboard/FreePostList";
+import { useNavigate } from "react-router-dom";
 
 const dummyPosts = [
   {
@@ -92,7 +93,7 @@ const dummyPosts = [
 
 export default function FreeBoardPage() {
   const [sortOrder, setSortOrder] = useState("최신순");
-
+  const navigate = useNavigate();
   // 정렬 로직
   const sortedPosts = [...dummyPosts].sort((a, b) => {
     if (sortOrder === "최신순") {
@@ -131,8 +132,8 @@ export default function FreeBoardPage() {
                 onSelect={setSortOrder}
             />
             </SortBox>
-            <WriteButton>
-            <WriteIcon src={writeIcon} alt="글쓰기" /> 글쓰기
+            <WriteButton onClick={() => navigate("/board/write")}>
+                <WriteIcon src={writeIcon} alt="글쓰기" /> 글쓰기
             </WriteButton>
         </SortWriteWrapper>
 

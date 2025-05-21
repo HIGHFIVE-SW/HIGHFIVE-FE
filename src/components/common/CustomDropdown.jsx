@@ -2,8 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import styled from "styled-components";
 import ArrowDownIcon from "../../assets/images/common/ic_ArrowDown.png";
 
-
-export default function CustomDropdown({ options, selected, onSelect }) {
+export default function CustomDropdown({ options, selected, onSelect, placeholder = "선택해주세요" }) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef();
   const [maxWidth, setMaxWidth] = useState(180);
@@ -19,21 +18,26 @@ export default function CustomDropdown({ options, selected, onSelect }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // 가장 긴 항목에 맞게 너비 설정
+  // 가장 긴 항목 기준 너비 계산
   useEffect(() => {
     const canvas = document.createElement("canvas");
     const context = canvas.getContext("2d");
     context.font = "14px sans-serif";
 
-    const textWidths = options.map((text) => context.measureText(text).width);
+    const textWidths = [...options, placeholder].map((text) =>
+      context.measureText(text).width
+    );
     const maxTextWidth = Math.max(...textWidths);
     setMaxWidth(maxTextWidth + 56);
-  }, [options]);
+  }, [options, placeholder]);
+
 
   return (
     <Wrapper ref={dropdownRef} style={{ width: `${maxWidth}px` }}>
       <Selected onClick={() => setIsOpen(!isOpen)}>
-        <span>{selected}</span>
+        <span style={{ color: selected ? "#000" : "#aaa" }}>
+          {selected || placeholder}
+        </span>
         <Arrow src={ArrowDownIcon} isOpen={isOpen} alt="arrow" />
       </Selected>
       {isOpen && (
@@ -55,6 +59,7 @@ export default function CustomDropdown({ options, selected, onSelect }) {
   );
 }
 
+// ================== styled-components ==================
 
 const Wrapper = styled.div`
   position: relative;
@@ -99,7 +104,8 @@ const Item = styled.li`
   font-size: 14px;
   cursor: pointer;
   &:hover {
-    background-color: #F6FAFF;
+    background-color: #f6faff;
     border-radius: 8px;
   }
 `;
+
