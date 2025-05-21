@@ -1,25 +1,420 @@
-import React from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
+import Footer from "../../layout/Footer";
 import BoardNav from "../../layout/board/BoardNav";
+import useLike from "../../hooks/useLike";
+import PROFILE_IMG from "../../assets/images/profile/ic_Avater.png";
+import SAMPLE_AWARD_IMG from "../../assets/images/board/SampleReviewImg.png";
+
+// 더미 데이터 예시
+const post = {
+  boardType: "후기 게시판",
+  title: "국제수면산업박람회 아이디어 공모전 후기!",
+  tags: ["#환경", "#공모전"],
+  author: "JUDY",
+  date: "2025.03.25",
+  content: `국제수면산업 박람회에 참가해서 영예의 대상을 수상했어요!
+새롭고 흥미로운 아이디어를 나눌 수 있어서 정말 즐거운 경험이었습니다.
+
+좋은 사람들과 함께한 뜻깊은 시간이었고, 서로의 아이디어를 존중하며 소통할 수 있었던 현장이었어요.
+다양한 분야의 전문가들과 인사이트를 주고받으며, 수면산업의 무한한 가능성을 다시 느낄 수 있었고요.
+
+이번 수상을 통해 저희의 아이디어가 의미 있는 방향으로 나아가고 있다는 확신도 얻게 되었어요.
+
+앞으로도 더 많은 사람들의 삶에 긍정적인 영향을 줄 수 있도록, 꾸준히 연구하고 도전해 나가겠습니다!
+
+다시 한 번, 함께해주신 모든 분들께 감사드려요.✨`,
+  image: SAMPLE_AWARD_IMG,
+  likeCount: 3,
+  comments: [
+    { id: 1, author: "JUDY", content: "역시 새벽형 주디답네요 👍", date: "2025.04.21" },
+    { id: 2, author: "JUDY", content: "감사합니다!", date: "2025.04.21" },
+    { id: 3, author: "나", content: "내가 쓴 댓글!", date: "2025.04.22" },
+  ],
+};
 
 export default function BoardDetailPage() {
-    return (
-        <>
-            <BoardNav />
-            <Container>
-                <Header>
-                    <Board>
-                        후기 게시판
-                    </Board>
-                    <Title>
-                        국제수면산업박람회 아이디어 공모전 후기!
-                    </Title>
-                    <Content>
+  const [comment, setComment] = useState("");
+  const [comments, setComments] = useState(post.comments);
+  const { liked, count: likeCount, toggleLike } = useLike(post.likeCount);
+  const [showComments, setShowComments] = useState(true);
 
+  const handleCommentSubmit = (e) => {
+    e.preventDefault();
+    if (!comment.trim()) return;
+    setComments([
+      ...comments,
+      { id: Date.now(), author: "나", content: comment, date: "2025.04.21" },
+    ]);
+    setComment("");
+  };
 
-                    </Content>
-                </Header>
+  const handleDeleteComment = (id) => {
+    setComments(comments.filter((c) => c.id !== id));
+  };
 
-        </>
-    );
+  const handleEditComment = (id) => {
+    const target = comments.find((c) => c.id === id);
+    if (target) {
+      setComment(target.content);
+      setComments(comments.filter((c) => c.id !== id));
+    }
+  };
+
+  return (
+    <>
+      <BoardNav />
+      <Wrapper>
+        <BoardType>{post.boardType}</BoardType>
+        <Title>{post.title}</Title>
+        <TagList>
+          {post.tags.map((tag) => (
+            <Tag key={tag}>{tag}</Tag>
+          ))}
+        </TagList>
+        <InfoRow>
+          <AuthorBox>
+            <ProfileImg src={PROFILE_IMG} alt="프로필" />
+            <Author>{post.author}</Author>
+          </AuthorBox>
+          <Date>{post.date}</Date>
+        </InfoRow>
+        <Divider />
+        <ImageBox>
+          <img src={post.image} alt="수상 사진" />
+        </ImageBox>
+        <Content>{post.content}</Content>
+        <Divider />
+        <ButtonRow>
+          <LikeBtn onClick={toggleLike} $liked={liked}>
+            <LikeIcon
+              viewBox="0 0 24 24"
+              fill={liked ? "#e74c3c" : "none"}
+              stroke="#e74c3c"
+              strokeWidth="2"
+            >
+              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41 0.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+            </LikeIcon>
+            <LikeText>추천</LikeText>
+            <LikeCount>{likeCount}</LikeCount>
+          </LikeBtn>
+          <CommentBtn onClick={() => setShowComments((prev) => !prev)}>
+            <CommentIcon viewBox="0 0 24 24" fill="none" stroke="#222" strokeWidth="2">
+              <rect x="3" y="5" width="18" height="14" rx="2" />
+              <path d="M7 9h10M7 13h6" />
+            </CommentIcon>
+            <span style={{ color: "#222", fontWeight: 500 }}>댓글</span>
+            <ArrowIcon>{showComments ? "▲" : "▼"}</ArrowIcon>
+          </CommentBtn>
+        </ButtonRow>
+        {showComments && (
+          <CommentSection>
+            <CommentTitle>댓글</CommentTitle>
+            <CommentList>
+              {comments.map((c) => (
+                <CommentItem key={c.id}>
+                  <CommentLeft>
+                    <CommentAuthorBox>
+                      <CommentProfileImg src={PROFILE_IMG} alt="프로필" />
+                      <CommentAuthor>{c.author}</CommentAuthor>
+                    </CommentAuthorBox>
+                    <CommentText>{c.content}</CommentText>
+                  </CommentLeft>
+                  <CommentRight>{c.author === "나" && (
+                      <CommentActions>
+                        <ActionBtn onClick={() => handleEditComment(c.id)}>수정</ActionBtn>
+                        <ActionBtn onClick={() => handleDeleteComment(c.id)}>삭제</ActionBtn>
+                      </CommentActions>
+                    )}
+
+                    <CommentDate>{c.date}</CommentDate>
+                  </CommentRight>
+                </CommentItem>
+              ))}
+            </CommentList>
+            <CommentForm onSubmit={handleCommentSubmit}>
+              <CommentInput
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                placeholder="댓글을 입력하세요."
+              />
+              <CommentButton type="submit">등록</CommentButton>
+            </CommentForm>
+          </CommentSection>
+        )}
+      </Wrapper>
+      <Footer />
+    </>
+  );
 }
+
+// 스타일 컴포넌트
+const Wrapper = styled.div`
+  max-width: 768px;
+  margin: 0 auto;
+  padding: 32px 16px;
+  background: #fff;
+`;
+
+const BoardType = styled.div`
+  font-size: 15px;
+  color: #999999;
+  font-weight: 680;
+  margin-bottom: 8px;
+`;
+
+const Title = styled.h1`
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 8px;
+`;
+
+const TagList = styled.div`
+  margin-bottom: 8px;
+`;
+
+const Tag = styled.span`
+  color: #235ba9;
+  font-size: 14px;
+  margin-right: 8px;
+`;
+
+const InfoRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+`;
+
+const AuthorBox = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+const ProfileImg = styled.img`
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 0.1px solid #C4C4C4;
+`;
+
+const Author = styled.span`
+  font-size: 15px;
+  color: #000;
+  font-weight: 600;
+`;
+
+const Date = styled.span`
+  font-size: 13px;
+  color: #aaa;
+`;
+
+const ButtonRow = styled.div`
+  display: flex;
+  gap: 10px;
+  margin: 16px 0 0 0;
+`;
+
+const LikeBtn = styled.button`
+  display: flex;
+  align-items: center;
+  border: 1px solid #e0e0e0;
+  background: #fff;
+  border-radius: 7px;
+  padding: 4px 12px;
+  gap: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: border 0.2s;
+  min-width: 70px;
+  height: 36px;
+  &:hover {
+    border: 1.5px solid #e74c3c;
+  }
+`;
+
+const LikeIcon = styled.svg`
+  width: 17px;
+  height: 17px;
+`;
+
+const LikeText = styled.span`
+  color: #e74c3c;
+  font-weight: 500;
+  font-size: 13px;
+`;
+
+const LikeCount = styled.span`
+  color: #222;
+  font-size: 13px;
+  margin-left: 2px;
+`;
+
+const CommentBtn = styled.button`
+  display: flex;
+  align-items: center;
+  border: 1px solid #e0e0e0;
+  background: #fff;
+  border-radius: 7px;
+  padding: 4px 12px;
+  gap: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: border 0.2s;
+  min-width: 70px;
+  height: 36px;
+  &:hover {
+    border: 1.5px solid #222;
+  }
+`;
+
+const CommentIcon = styled.svg`
+  width: 17px;
+  height: 17px;
+`;
+
+const CommentText = styled.span`
+  font-size: 15px;
+  color: #222;
+  display: block;
+  margin-bottom: 2px;
+  margin-left: 33px;
+`;
+
+const ArrowIcon = styled.span`
+  font-size: 13px;
+  margin-left: 2px;
+`;
+
+const ImageBox = styled.div`
+  width: 100%;
+  margin: 24px 0;
+  text-align: center;
+  img {
+    max-width: 100%;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+`;
+
+const Content = styled.div`
+  font-size: 17px;
+  line-height: 1.8;
+  color: #222;
+  margin-bottom: 32px;
+  white-space: pre-line;
+`;
+
+const Divider = styled.hr`
+  border: none;
+  border-top: 1.5px solid #d9d9d9;
+  margin: 24px 0;
+`;
+
+const CommentSection = styled.div`
+  margin-top: 24px;
+`;
+
+const CommentTitle = styled.h3`
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 12px;
+`;
+
+const CommentList = styled.ul`
+  list-style: none;
+  padding: 0;
+  margin-bottom: 16px;
+`;
+
+const CommentItem = styled.li`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f0f0f0;
+`;
+
+const CommentLeft = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+const CommentAuthorBox = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 2px;
+`;
+
+const CommentProfileImg = styled.img`
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 0.1px solid #C4C4C4;
+`;
+
+const CommentAuthor = styled.span`
+  font-weight: 600;
+  color: #000;
+  font-size: 14px;
+`;
+
+const CommentDate = styled.span`
+  font-size: 12px;
+  color: #aaa;
+  min-width: 70px;
+  text-align: right;
+`;
+
+const CommentRight = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  min-width: 80px;
+  gap: 4px;
+`;
+
+const CommentActions = styled.div`
+  display: flex;
+  gap: 4px;
+  margin-top: 2px;
+`;
+
+const ActionBtn = styled.button`
+  background: none;
+  border: none;
+  color: #235ba9;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 0 4px;
+  &:hover {
+    text-decoration: underline;
+  }
+`;
+
+const CommentForm = styled.form`
+  display: flex;
+  gap: 8px;
+`;
+
+const CommentInput = styled.input`
+  flex: 1;
+  padding: 10px;
+  border: 1.5px solid #235ba9;
+  border-radius: 6px;
+  font-size: 15px;
+`;
+
+const CommentButton = styled.button`
+  background: #235ba9;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0 18px;
+  font-size: 15px;
+  cursor: pointer;
+`;

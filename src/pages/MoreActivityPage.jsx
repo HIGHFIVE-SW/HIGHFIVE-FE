@@ -4,7 +4,7 @@ import { useLocation } from 'react-router-dom';
 import MainNav from '../layout/MainNav';
 import Footer from '../layout/Footer';
 import ActivityCard from '../components/activity/ActivityCard';
-import Pagination from '../components/Pagination';
+import Pagination from '../components/common/Pagination';
 import usePagination from '../hooks/usePagination';
 import activityImage from '../assets/images/activity/ic_ActivityImage.png';
 
@@ -30,6 +30,7 @@ export default function MoreActivityPage() {
     : dummyGlobalIssues;
 
   const itemsPerPage = 12;
+  
   const {
     currentPage,
     totalPages,
@@ -68,7 +69,7 @@ export default function MoreActivityPage() {
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}
-            onPageChange={goToPage}
+            goToPage={goToPage}
           />
         )}
       </Content>

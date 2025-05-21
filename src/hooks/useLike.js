@@ -3,6 +3,7 @@ import { useState } from "react";
 export default function useLike(initialCount = 0) {
   const [liked, setLiked] = useState(false);
   const [count, setCount] = useState(initialCount);
+  const [showComments, setShowComments] = useState(true);
 
   const toggleLike = () => {
     setLiked((prevLiked) => {
@@ -11,5 +12,5 @@ export default function useLike(initialCount = 0) {
     });
   };
 
-  return { liked, count, toggleLike };
+  return { liked, count, toggleLike, showComments, setShowComments };
 }

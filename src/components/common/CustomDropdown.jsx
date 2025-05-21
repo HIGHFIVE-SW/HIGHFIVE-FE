@@ -2,12 +2,22 @@ import React, { useState, useRef, useEffect } from "react";
 import styled from "styled-components";
 import ArrowDownIcon from "../../assets/images/common/ic_ArrowDown.png";
 
-export default function CustomDropdown({ options, selected, onSelect, placeholder = "선택해주세요" }) {
+export default function CustomDropdown({
+  options,
+  selected,
+  onSelect,
+  placeholder = "선택해주세요",
+  borderColor = "#ccc",
+  hoverColor = "#f6faff",
+  backgroundColor = "white",
+  textColor = "#000",
+  placeholderColor = "#aaa",
+  height = "20px",
+}) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef();
   const [maxWidth, setMaxWidth] = useState(180);
 
-  // 외부 클릭 시 닫기
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -18,7 +28,6 @@ export default function CustomDropdown({ options, selected, onSelect, placeholde
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // 가장 긴 항목 기준 너비 계산
   useEffect(() => {
     const canvas = document.createElement("canvas");
     const context = canvas.getContext("2d");
@@ -31,17 +40,25 @@ export default function CustomDropdown({ options, selected, onSelect, placeholde
     setMaxWidth(maxTextWidth + 56);
   }, [options, placeholder]);
 
-
   return (
     <Wrapper ref={dropdownRef} style={{ width: `${maxWidth}px` }}>
-      <Selected onClick={() => setIsOpen(!isOpen)}>
-        <span style={{ color: selected ? "#000" : "#aaa" }}>
+      <Selected
+        onClick={() => setIsOpen(!isOpen)}
+        $borderColor={borderColor}
+        $backgroundColor={backgroundColor}
+        $height={height}
+      >
+        <span
+          style={{
+            color: selected ? textColor : placeholderColor,
+          }}
+        >
           {selected || placeholder}
         </span>
         <Arrow src={ArrowDownIcon} isOpen={isOpen} alt="arrow" />
       </Selected>
       {isOpen && (
-        <Menu>
+        <Menu $borderColor={borderColor} $backgroundColor={backgroundColor}>
           {options.map((option) => (
             <Item
               key={option}
@@ -49,6 +66,7 @@ export default function CustomDropdown({ options, selected, onSelect, placeholde
                 onSelect(option);
                 setIsOpen(false);
               }}
+              $hoverColor={hoverColor}
             >
               {option}
             </Item>
@@ -66,15 +84,21 @@ const Wrapper = styled.div`
 `;
 
 const Selected = styled.div`
+height: ${({ $height }) => $height};
   padding: 10px 16px;
-  background-color: white;
-  border: 1px solid #ccc;
+  background-color: ${({ $backgroundColor }) => $backgroundColor};
+  border: 1px solid ${({ $borderColor }) => $borderColor};
   border-radius: 8px;
   cursor: pointer;
   font-size: 14px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  transition: border-color 0.2s ease;
+
+  &:hover {
+    border-color: ${({ $borderColor }) => $borderColor};
+  }
 `;
 
 const Arrow = styled.img`
@@ -91,8 +115,8 @@ const Menu = styled.ul`
   left: 0;
   right: 0;
   margin-top: 4px;
-  background: white;
-  border: 1px solid #ccc;
+  background: ${({ $backgroundColor }) => $backgroundColor};
+  border: 1px solid ${({ $borderColor }) => $borderColor};
   border-radius: 8px;
   z-index: 999;
   list-style: none;
@@ -103,9 +127,9 @@ const Item = styled.li`
   padding: 10px 16px;
   font-size: 14px;
   cursor: pointer;
+
   &:hover {
-    background-color: #f6faff;
+    background-color: ${({ $hoverColor }) => $hoverColor};
     border-radius: 8px;
   }
 `;
-

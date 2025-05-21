@@ -197,7 +197,6 @@ const SearchInput = styled.input`
   font-size: 16px;
   border: none;
   outline: none;
-  height: 100%;
 `;
 
 const SearchIconImg = styled.img`
