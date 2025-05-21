@@ -15,26 +15,26 @@ const dummyData = [
   ...Array.from({ length: 4 }, (_, i) => ({
     id: i + 1,
     title: '글로벌 ‘관세 전쟁’ 공포 … 국내 증시 ‘털썩’ ',
-    tag: '#경제',
-    image: issueCardNo,
+    category: '#경제',
+    thumbnailUrl: issueCardNo,
   })),
   ...Array.from({ length: 4 }, (_, i) => ({
     id: i + 5,
     title: '환경 이슈 ' + (i + 1),
-    tag: '#환경',
-    image: issueCardSample,
+    category: '#환경',
+    thumbnailUrl: issueCardSample,
   })),
   ...Array.from({ length: 4 }, (_, i) => ({
     id: i + 9,
     title: '사람과 사회 이슈 ' + (i + 1),
-    tag: '#사람과 사회',
-    image: issueCardSample,
+    category: '#사람과 사회',
+    thumbnailUrl: issueCardSample,
   })),
   ...Array.from({ length: 4 }, (_, i) => ({
     id: i + 13,
     title: '기술 이슈 ' + (i + 1),
-    tag: '#기술',
-    image: issueCardSample,
+    category: '#기술',
+    thumbnailUrl: issueCardSample,
   })),
 ];
 
@@ -61,7 +61,7 @@ export default function GlobalIssuePage() {
   const filteredData =
     activeCategory === '전체'
       ? dummyData
-      : dummyData.filter(item => item.tag.includes(activeCategory));
+      : dummyData.filter(item => item.category.includes(activeCategory));
 
   const {
     currentPage,
@@ -93,11 +93,11 @@ export default function GlobalIssuePage() {
             key={item.id}
             id={item.id}
             title={item.title}
-            tag={item.tag}
-            image={item.image}
+            tag={item.category}
+            image={item.thumbnailUrl}
             bookmarked={bookmarkedIds.includes(item.id)}
             onToggle={() => toggleBookmark(item.id)}
-            onClick={() => navigate(`/global-issue/${item.id}`, { state: { label: item.tag, title: item.title } })} 
+            onClick={() => navigate(`/global-issue/${item.id}`, { state: { label: item.category, title: item.title } })} 
           />
         ))}
       </IssueGrid>

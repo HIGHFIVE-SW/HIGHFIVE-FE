@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
-import logoTrend from '../assets/images/ic_ImageTextLogo.png';
-import MypageIcon from '../assets/images/ic_Mypage.png';
-import VectorIcon from '../assets/images/ic_Search.png';
+import logoTrend from '../assets/images/nav/ic_ImageTextLogo.png';
+import MypageIcon from '../assets/images/nav/ic_Mypage.png';
+import VectorIcon from '../assets/images/nav/ic_Search.png';
 import Search from '../components/search/Search';
 import { useNavigate, useLocation } from 'react-router-dom';
 
@@ -81,7 +81,11 @@ export default function MainNav() {
 
       <RightIcons>
         <Divider />
-        <img src={MypageIcon} alt="User Icon" />
+        <img
+          src={MypageIcon}
+          alt="User Icon"
+          onClick={() => navigate('/mypage')}
+        />
         <img src={VectorIcon} alt="Search Icon" onClick={toggleSearch} />
       </RightIcons>
 

@@ -14,6 +14,9 @@ import MainPage from '../pages/MainPage';
 import GlobalIssueDetailPage from '../pages/GlobalIssueDetailPage'; 
 import FreeBoardPage from '../pages/board/FreeBoardPage';
 import MoreDetailPage from '../pages/MoreDetailPage';
+import RankingPage from '../pages/RankingPage';
+import LevelGuide from '../components/level/LevelGuide';
+import Mypage from '../pages/MyPage';
 
 export default function AppRoutes() {
   return (
@@ -23,7 +26,8 @@ export default function AppRoutes() {
       <Route path="/main" element={<MainPage />} />
       <Route path="/global-issue" element={<GlobalIssuePage />} />
       <Route path="/activity" element={<ActivityPage />} />
-
+      <Route path="/ranking" element={<RankingPage />} />
+      <Route path="/mypage" element={<Mypage />} />
 
       <Route path="/search" element={<SearchResultPage />} />
       <Route path="/more/global" element={<MoreGlobalPage />} />
@@ -34,6 +38,7 @@ export default function AppRoutes() {
 
       <Route path="/board/review" element={<ReviewBoardPage />} />
       <Route path="/board/free" element={<FreeBoardPage />} />
+      <Route path="/level-guide" element={<LevelGuide />} />
 
     </Routes>
   );
