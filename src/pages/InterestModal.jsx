@@ -65,8 +65,8 @@ export default function InterestModal({ onClose }) {
   return (
     <>
       <GlobalFontStyle />
-      <ModalOverlay>
-        <ModalBox>
+      <ModalOverlay onClick={onClose}>
+        <ModalBox onClick={(e) => e.stopPropagation()}>
           <ContentWrapper>
             <HeaderWrapper>
               <Title>관심 분야를 선택해주세요.</Title>

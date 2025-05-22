@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import styled from "styled-components";
 import helpIcon from "../../assets/images/common/ic_Help.png";
 import writeIcon from "../../assets/images/board/ic_Write.png";
@@ -14,7 +14,7 @@ import Pagination from "../../components/common/Pagination";
 import CustomDropdown from "../../components/common/CustomDropdown";
 import { useNavigate } from "react-router-dom";
 
-const reviews = [
+export const reviews = [
   {
     id: 1,
     category: "환경",
@@ -126,6 +126,20 @@ export default function ReviewBoardPage() {
   const [sortOrder, setSortOrder] = useState("최신순");
   const [isGuideOpen, setIsGuideOpen] = useState(false);
   const navigate = useNavigate();
+  const guideRef = useRef();
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (guideRef.current && !guideRef.current.contains(event.target)) {
+        setIsGuideOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const filteredReviews =
     selectedCategory === "전체"
@@ -149,7 +163,7 @@ export default function ReviewBoardPage() {
         <HelpWrapper>
           <HelpIcon src={helpIcon} alt="도움말" onClick={() => setIsGuideOpen(!isGuideOpen)} />
           {isGuideOpen && (
-            <Popover>
+            <Popover ref={guideRef}>
               <ReviewBoardGuide onClose={() => setIsGuideOpen(false)} />
             </Popover>
           )}
@@ -183,7 +197,11 @@ export default function ReviewBoardPage() {
 
           <CardGrid>
             {currentData.map((review) => (
-              <ReviewCard key={review.id} {...review} />
+              <ReviewCard 
+                key={review.id} 
+                id={review.id}
+                {...review} 
+              />
             ))}
           </CardGrid>
         </RightContent>

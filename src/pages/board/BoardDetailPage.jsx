@@ -1,17 +1,18 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
 import Footer from "../../layout/Footer";
 import BoardNav from "../../layout/board/BoardNav";
 import useLike from "../../hooks/useLike";
 import PROFILE_IMG from "../../assets/images/profile/ic_Avater.png";
 import SAMPLE_AWARD_IMG from "../../assets/images/board/SampleReviewImg.png";
+import ArrowDownIcon from "../../assets/images/common/ic_ArrowDown.png";
 
 // 더미 데이터 예시
 const post = {
   boardType: "후기 게시판",
   title: "국제수면산업박람회 아이디어 공모전 후기!",
   tags: ["#환경", "#공모전"],
-  author: "JUDY",
+  author: "나",
   date: "2025.03.25",
   content: `국제수면산업 박람회에 참가해서 영예의 대상을 수상했어요!
 새롭고 흥미로운 아이디어를 나눌 수 있어서 정말 즐거운 경험이었습니다.
@@ -38,6 +39,21 @@ export default function BoardDetailPage() {
   const [comments, setComments] = useState(post.comments);
   const { liked, count: likeCount, toggleLike } = useLike(post.likeCount);
   const [showComments, setShowComments] = useState(true);
+  const [showPostMenu, setShowPostMenu] = useState(false);
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setShowPostMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const handleCommentSubmit = (e) => {
     e.preventDefault();
@@ -66,7 +82,25 @@ export default function BoardDetailPage() {
       <BoardNav />
       <Wrapper>
         <BoardType>{post.boardType}</BoardType>
-        <Title>{post.title}</Title>
+        <TitleRow>
+          <Title>{post.title}</Title>
+          {post.author === "나" && (
+            <PostMenuWrapper ref={menuRef}>
+              <MenuButton onClick={() => setShowPostMenu((prev) => !prev)}>
+                <MenuDot />
+                <MenuDot />
+                <MenuDot />
+              </MenuButton>
+              {showPostMenu && (
+                <DropdownMenu>
+                  <DropdownItem onClick={() => { setShowPostMenu(false); /* 수정 함수 */ }}>수정</DropdownItem>
+                  <DropdownDivider />
+                  <DropdownItem onClick={() => { setShowPostMenu(false); /* 삭제 함수 */ }}>삭제</DropdownItem>
+                </DropdownMenu>
+              )}
+            </PostMenuWrapper>
+          )}
+        </TitleRow>
         <TagList>
           {post.tags.map((tag) => (
             <Tag key={tag}>{tag}</Tag>
@@ -77,7 +111,7 @@ export default function BoardDetailPage() {
             <ProfileImg src={PROFILE_IMG} alt="프로필" />
             <Author>{post.author}</Author>
           </AuthorBox>
-          <Date>{post.date}</Date>
+          <DateText>{post.date}</DateText>
         </InfoRow>
         <Divider />
         <ImageBox>
@@ -104,7 +138,7 @@ export default function BoardDetailPage() {
               <path d="M7 9h10M7 13h6" />
             </CommentIcon>
             <span style={{ color: "#222", fontWeight: 500 }}>댓글</span>
-            <ArrowIcon>{showComments ? "▲" : "▼"}</ArrowIcon>
+            <ArrowIcon src={ArrowDownIcon} alt="화살표" $open={showComments} />
           </CommentBtn>
         </ButtonRow>
         {showComments && (
@@ -166,11 +200,11 @@ const BoardType = styled.div`
 const Title = styled.h1`
   font-size: 28px;
   font-weight: bold;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 `;
 
 const TagList = styled.div`
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 `;
 
 const Tag = styled.span`
@@ -206,9 +240,9 @@ const Author = styled.span`
   font-weight: 600;
 `;
 
-const Date = styled.span`
+const DateText = styled.span`
   font-size: 13px;
-  color: #aaa;
+  color: #000;
 `;
 
 const ButtonRow = styled.div`
@@ -283,9 +317,11 @@ const CommentText = styled.span`
   margin-left: 33px;
 `;
 
-const ArrowIcon = styled.span`
-  font-size: 13px;
-  margin-left: 2px;
+const ArrowIcon = styled.img`
+  width: 12px;
+  margin-left: 4px;
+  transform: ${({ $open }) => ($open ? "rotate(180deg)" : "rotate(0deg)")};
+  transition: transform 0.3s ease;
 `;
 
 const ImageBox = styled.div`
@@ -417,4 +453,68 @@ const CommentButton = styled.button`
   padding: 0 18px;
   font-size: 15px;
   cursor: pointer;
+`;
+
+const TitleRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+`;
+
+const PostMenuWrapper = styled.div`
+  position: relative;
+`;
+
+const MenuButton = styled.button`
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+`;
+
+const MenuDot = styled.span`
+  display: block;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: #222;
+  margin: 2px 0;
+`;
+
+const DropdownMenu = styled.div`
+  position: absolute;
+  top: 32px;
+  right: 0;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  min-width: 65px;
+  padding: 0;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+`;
+
+const DropdownItem = styled.button`
+  background: none;
+  border: none;
+  width: 100%;
+  padding: 12px 0;
+  font-size: 14px;
+  color: #222;
+  text-align: center;
+  cursor: pointer;
+  font-family: inherit;
+  &:hover {
+    background: #f6f6f6;
+  }
+`;
+
+const DropdownDivider = styled.div`
+  width: 100%;
+  height: 1px;
+  background: #d9d9d9;
+  margin: 0;
 `;

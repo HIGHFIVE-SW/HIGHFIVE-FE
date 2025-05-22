@@ -26,6 +26,7 @@ export default function PostWritePage() {
   const [awardPreview, setAwardPreview] = useState(null);
   const [errors, setErrors] = useState({});
   const [showImageAlert, setShowImageAlert] = useState(false);
+  const [showPostMenu, setShowPostMenu] = useState(false);
 
   const isReviewBoard = selectedBoard === "후기 게시판";
 
@@ -111,7 +112,24 @@ export default function PostWritePage() {
 
       <Container>
         <Header>
-          <Title>글쓰기</Title>
+          <TitleRow>
+            <Title>{title}</Title>
+            {selectedBoard === "나" && (
+              <PostMenuWrapper>
+                <MenuButton onClick={() => setShowPostMenu((prev) => !prev)}>
+                  <MenuDot />
+                  <MenuDot />
+                  <MenuDot />
+                </MenuButton>
+                {showPostMenu && (
+                  <DropdownMenu>
+                    <DropdownItem onClick={() => { setShowPostMenu(false); /* 수정 함수 */ }}>수정</DropdownItem>
+                    <DropdownItem onClick={() => { setShowPostMenu(false); /* 삭제 함수 */ }}>삭제</DropdownItem>
+                  </DropdownMenu>
+                )}
+              </PostMenuWrapper>
+            )}
+          </TitleRow>
           <SubmitButton onClick={handleSubmit}>등록</SubmitButton>
         </Header>
 
@@ -256,6 +274,13 @@ const Header = styled.div`
   align-items: center;
 `;
 
+const TitleRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+`;
+
 const Title = styled.h2`
   font-weight: bold;
   font-size: 35px;
@@ -358,4 +383,52 @@ const Divider = styled.hr`
   border-top: 1.5px solid #d9d9d9;
   margin: 16px 0;
   width: 100%;
+`;
+
+const PostMenuWrapper = styled.div`
+  position: relative;
+`;
+
+const MenuButton = styled.button`
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+`;
+
+const MenuDot = styled.span`
+  width: 4px;
+  height: 4px;
+  background: #222;
+  border-radius: 50%;
+  display: block;
+`;
+
+const DropdownMenu = styled.div`
+  position: absolute;
+  top: 28px;
+  right: 0;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  min-width: 70px;
+  z-index: 10;
+  overflow: hidden;
+`;
+
+const DropdownItem = styled.button`
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 10px 0;
+  color: #222;
+  font-size: 15px;
+  cursor: pointer;
+  text-align: left;
+  &:hover {
+    background: #f6f6f6;
+  }
 `;

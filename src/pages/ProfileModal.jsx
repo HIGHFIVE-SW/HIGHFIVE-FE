@@ -37,8 +37,8 @@ export default function ProfileModal({ onClose }) {
   return (
     <>
       <GlobalFontStyle />
-      <ModalOverlay>
-        <ModalBox>
+      <ModalOverlay onClick={onClose}>
+        <ModalBox onClick={(e) => e.stopPropagation()}>
           <h2>프로필을 설정해주세요.</h2>
 
           <ProfileImageWrapper>

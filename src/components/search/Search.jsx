@@ -15,8 +15,8 @@ export default function Search({ query, onChange, onClose }) {
   };
 
   return (
-    <Wrapper>
-      <SearchBox>
+    <Wrapper onClick={onClose}>
+      <SearchBox onClick={(e) => e.stopPropagation()}>
         <form onSubmit={handleSubmit}>
           <InputWrapper>
             <Input
@@ -38,14 +38,19 @@ export default function Search({ query, onChange, onClose }) {
 }
 
 const Wrapper = styled.div`
-  position: absolute;
-  top: 64px;
-  right: 32px;
-  z-index:2000;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: transparent;
+  z-index: 2000;
 `;
 
 const SearchBox = styled.div`
-  position: relative;
+  position: absolute;
+  top: 64px;
+  right: 32px;
   background-color: #ffffff;
   border-radius: 30px;
   box-shadow: 0px 4px 4px #00000040;

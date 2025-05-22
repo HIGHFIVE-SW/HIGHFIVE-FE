@@ -2,6 +2,7 @@ import React from "react";
 import styled from "styled-components";
 import useLike from "../../../hooks/useLike";
 import LikeButton from "../LikeButton";
+import { useNavigate } from "react-router-dom";
 
 const getCategoryStyle = (category) => {
   switch (category) {
@@ -13,12 +14,17 @@ const getCategoryStyle = (category) => {
   }
 };
 
-const ReviewCard = ({ category, image, title, content, date, writer, likeCount }) => {
+const ReviewCard = ({ id, category, image, title, content, date, writer, likeCount }) => {
   const { textColor } = getCategoryStyle(category);
-    const { liked, count, toggleLike } = useLike(likeCount, false);
+  const { liked, count, toggleLike } = useLike(likeCount, false);
+  const navigate = useNavigate();
+
+  const handleCardClick = () => {
+    navigate(`/board/detail/${id}`);
+  };
 
   return (
-    <Card>
+    <Card onClick={handleCardClick}>
       <HoverOverlay>
         <TopRow>
           <HoverContentWrapper>
@@ -27,7 +33,7 @@ const ReviewCard = ({ category, image, title, content, date, writer, likeCount }
             <HoverMore>더보기 &gt;</HoverMore>
             )}
           </HoverContentWrapper>
-          <HoverLike>
+          <HoverLike onClick={(e) => e.stopPropagation()}>
             <LikeButton liked={liked} count={count} onClick={toggleLike} /> 
           </HoverLike>
         </TopRow>

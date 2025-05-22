@@ -15,6 +15,7 @@ import GlobalIssueDetailPage from '../pages/GlobalIssueDetailPage';
 import FreeBoardPage from '../pages/board/FreeBoardPage';
 import MoreDetailPage from '../pages/MoreDetailPage';
 import PostWritePage from '../pages/board/PostWritePage';
+import BoardDetailPage from '../pages/board/BoardDetailPage';
 
 export default function AppRoutes() {
   return (
@@ -30,9 +31,9 @@ export default function AppRoutes() {
       <Route path="/more-detail" element={<MoreDetailPage />} />
       <Route path="/global-issue/:id" element={<GlobalIssueDetailPage />} />
       <Route path="/board/review" element={<ReviewBoardPage />} />
-      <Route path="/board/review" element={<ReviewBoardPage />} />
       <Route path="/board/free" element={<FreeBoardPage />} />
       <Route path="/board/write" element={<PostWritePage />} />
+      <Route path="/board/detail/:id" element={<BoardDetailPage />} />
     </Routes>
   );
 }
