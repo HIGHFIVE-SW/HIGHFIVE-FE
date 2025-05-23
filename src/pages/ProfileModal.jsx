@@ -22,11 +22,21 @@ export default function ProfileModal({ onClose }) {
   const [showInterestModal, setShowInterestModal] = useState(false);
   const [nickname, setNickname] = useState('');
   const [isFocused, setIsFocused] = useState(false);
+  const [profileImg, setProfileImg] = useState(avatar);
   const fileInputRef = useRef();
 
-  const handleCameraClick = () => 
-    fileInputRef.current?.click();
-  
+  const handleCameraClick = () => fileInputRef.current?.click();
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfileImg(reader.result); // base64 저장
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleNext = () => {
     if (nickname.trim()) {
@@ -42,9 +52,14 @@ export default function ProfileModal({ onClose }) {
           <h2>프로필을 설정해주세요.</h2>
 
           <ProfileImageWrapper>
-            <img src={avatar} alt="avatar" />
+            <img src={profileImg} alt="avatar" />
             <CameraIcon onClick={handleCameraClick} />
-            <HiddenFileInput type="file" ref={fileInputRef} accept="image/*" />
+            <HiddenFileInput
+              type="file"
+              ref={fileInputRef}
+              accept="image/*"
+              onChange={handleFileChange}
+            />
           </ProfileImageWrapper>
 
           <NicknameInput
@@ -63,7 +78,13 @@ export default function ProfileModal({ onClose }) {
         </ModalBox>
       </ModalOverlay>
 
-      {showInterestModal && <InterestModal onClose={onClose} />}
+      {showInterestModal && (
+        <InterestModal
+          onClose={onClose}
+          nickname={nickname}
+          profileUrl={profileImg}
+        />
+      )}
     </>
   );
 }

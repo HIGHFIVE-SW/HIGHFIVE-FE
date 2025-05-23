@@ -1,59 +1,48 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import ActivityTypeChart from '../components/mypage/ActivityTypeChart';
-import ActivityTrendChart from '../components/mypage/ActivityTrendChart';
-import MyPostList from '../components/mypage/MyPostList';
-import BookmarkList from '../components/mypage/BookmarkList';
+import React, { useState, useEffect, useRef } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import MainNav from '../layout/MainNav';
 import Footer from '../layout/Footer';
+import ActivityTypeChart from '../components/mypage/ActivityTypeChart';
+import ActivityTrendChart from '../components/mypage/ActivityTrendChart';
+import MyPostList from '../components/mypage/MyPostList';
 
-import defaultProfileImg from '../assets/images/level/ic_Judy.png';
+import defaultProfileImg from '../assets/images/nav/DefaultProfile.png';
 import rankImg from '../assets/images/level/ic_Master.png';
-import editIcon from '../assets/images/profile/ic_ProfilePenscil.png'; 
 
-const MyPage = () => {
-  const [activeTab, setActiveTab] = useState('statistics');
-  const tabsRef = useRef([]);
-  const [barLeft, setBarLeft] = useState(0);
+const UserPage = () => {
+  const { state } = useLocation();
   const navigate = useNavigate();
-  const location = useLocation();
+  const user = state || {};
+  const [activeTab, setActiveTab] = useState('statistics');
+  const tabsRef = useRef({});
+  const [barLeft, setBarLeft] = useState(0);
+  const currentUser = localStorage.getItem('nickname');
 
-  const [profile, setProfile] = useState({
-    nickname: localStorage.getItem('nickname') || 'JUDY',
-    keyword: localStorage.getItem('keyword') || '환경',
-    profileUrl: localStorage.getItem('profileUrl') || defaultProfileImg,
+  const profile = {
+    nickname: user.nickname || '알 수 없음',
+    profileUrl: user.nickname === '추지은' ? user.profileUrl : defaultProfileImg,
     rankImage: rankImg,
     level: 'Lv3 글로벌 마스터',
     progress: 80,
-    point: 1608,
-    rank: 1,
-  });
+    point: user.exp || 1608,
+    rank: user.id || 1,
+    keyword: user.keyword || '경제',
+  };
 
   useEffect(() => {
-    if (location.state) {
-      setProfile((prev) => ({
-        ...prev,
-        nickname: location.state.nickname || prev.nickname,
-        keyword: location.state.keyword || prev.keyword,
-        profileUrl: location.state.profileUrl || prev.profileUrl,
-      }));
+    if (tabsRef.current[activeTab]) {
+      setBarLeft(
+        tabsRef.current[activeTab].offsetLeft +
+        (tabsRef.current[activeTab].offsetWidth - 60) / 2
+      );
     }
-  }, [location.state]);
+  }, [activeTab]);
 
-  useEffect(() => {
-    const el = tabsRef.current[activeTab];
-    if (el) {
-      setBarLeft(el.offsetLeft + el.offsetWidth / 2 - 50);
-    }
-  }, [activeTab]);  
-
-  const dummyTypeStats = [
-    { activityType: 'CONTEST', count: 4 },
-    { activityType: 'VOLUNTEER', count: 2 },
-    { activityType: 'INTERNSHIP', count: 1 },
-    { activityType: 'SUPPORTERS', count: 0 },
-  ];
+  if (profile.nickname === currentUser) {
+    navigate('/mypage');
+    return null;
+  }
 
   return (
     <PageContainer>
@@ -62,21 +51,19 @@ const MyPage = () => {
         <PageWrapper>
           <LeftPanel>
             <ProfileWrapper>
-              <ProfileImage src={profile.profileUrl} alt="프로필 이미지" />
-              <EditIconButton onClick={() => navigate('/profile/edit')}>
-                <EditIcon src={editIcon} alt="편집 아이콘" />
-              </EditIconButton>
+              <ProfileImage src={profile.profileUrl} alt="프로필" />
             </ProfileWrapper>
+            <TitleText>'{profile.nickname}'님의 페이지</TitleText>
             <Nickname>{profile.nickname}</Nickname>
             <KeywordTag>#{profile.keyword}</KeywordTag>
             <Card>
               <CardTitle>나의 등급</CardTitle>
-              <LevelImage src={profile.rankImage} alt="등급 이미지" />
+              <LevelImage src={profile.rankImage} alt="등급" />
               <LevelText>{profile.level}</LevelText>
               <ProgressWrapper>
                 <ProgressBar style={{ width: `${profile.progress}%` }} />
               </ProgressWrapper>
-              <ProgressLabel>Lv4 유니버스 리더</ProgressLabel>
+              <ProgressLabel>Lv4 준비</ProgressLabel>
             </Card>
             <Card>
               <CardTitle>랭킹</CardTitle>
@@ -99,33 +86,24 @@ const MyPage = () => {
           <RightPanel>
             <TabsWrapper>
               <Tabs>
-                <Tab ref={(el) => (tabsRef.current['statistics'] = el)} active={activeTab === 'statistics'} onClick={() => setActiveTab('statistics')}>
-                  활동 통계
-                </Tab>
-                <Tab ref={(el) => (tabsRef.current['bookmark'] = el)} active={activeTab === 'bookmark'} onClick={() => setActiveTab('bookmark')}>
-                  북마크
-                </Tab>
-                <Tab ref={(el) => (tabsRef.current['posts'] = el)} active={activeTab === 'posts'} onClick={() => setActiveTab('posts')}>
-                  작성한 글
-                </Tab>
+                <Tab ref={el => (tabsRef.current['statistics'] = el)} active={activeTab === 'statistics'} onClick={() => setActiveTab('statistics')}>활동 통계</Tab>
+                <Tab ref={el => (tabsRef.current['posts'] = el)} active={activeTab === 'posts'} onClick={() => setActiveTab('posts')}>작성한 글</Tab>
               </Tabs>
               <Underline />
               <ActiveBar style={{ left: `${barLeft}px` }} />
             </TabsWrapper>
 
             {activeTab === 'statistics' && (
-              <GraphSection>
+              <StatisticsPanel>
                 <ActivityTrendChart />
-                <ActivityTypeChart data={dummyTypeStats} />
-              </GraphSection>
-            )}
-
-            {activeTab === 'bookmark' && (
-              <BookmarkList/>
+                <ActivityTypeChart />
+              </StatisticsPanel>
             )}
 
             {activeTab === 'posts' && (
-              <MyPostList />
+              <PostPanel>
+                <MyPostList />
+              </PostPanel>
             )}
           </RightPanel>
         </PageWrapper>
@@ -135,17 +113,7 @@ const MyPage = () => {
   );
 };
 
-export default MyPage;
-
-const ActiveBar = styled.div`
-  position: absolute;
-  bottom: -1px;
-  height: 3px;
-  width: 100px;
-  background-color: #235BA9;
-  border-radius: 999px;
-  transition: left 0.3s ease;
-`;
+export default UserPage;
 
 const PageContainer = styled.div`
   display: flex;
@@ -165,19 +133,35 @@ const PageWrapper = styled.div`
 
 const LeftPanel = styled.div`
   width: 300px;
-  background: #F6FAFF;
+  background: #f6faff;
   padding: 32px;
   display: flex;
   flex-direction: column;
   align-items: center;
 `;
 
+const ProfileWrapper = styled.div`
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background-color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+`;
+
 const ProfileImage = styled.img`
   width: 100%;
   height: 100%;
-  border-radius: 50%;
   object-fit: cover;
-  margin-bottom: 0;  
+  border-radius: 50%;
+`;
+
+const TitleText = styled.div`
+  font-weight: bold;
+  font-size: 20px;
+  margin-bottom: 8px;
 `;
 
 const Nickname = styled.h3`
@@ -188,44 +172,11 @@ const Nickname = styled.h3`
 const KeywordTag = styled.div`
   padding: 4px 12px;
   background-color: #ffffff;
-  color: #235BA9;
+  color: #235ba9;
   border-radius: 12px;
   font-size: 14px;
   font-weight: 500;
   margin-bottom: 24px;
-`;
-
-const ProfileWrapper = styled.div`
-  position: relative;
-  width: 120px;
-  height: 120px;
-  margin-bottom: 16px;
-  border-radius: 50%;
-  background-color: white;  
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
-
-const EditIconButton = styled.button`
-  position: absolute;
-  top: -5px;
-  right: -5px;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background-color: white;
-  border: none;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-`;
-
-const EditIcon = styled.img`
-  width: 16px;
-  height: 16px;
 `;
 
 const Card = styled.div`
@@ -236,7 +187,6 @@ const Card = styled.div`
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   margin-bottom: 20px;
   text-align: center;
-  margin-top: 50px;
 `;
 
 const CardTitle = styled.h4`
@@ -254,7 +204,7 @@ const LevelImage = styled.img`
 const LevelText = styled.div`
   font-size: 15px;
   font-weight: 600;
-  margin-bottom: 12px;
+  margin-bottom: 15px;
 `;
 
 const ProgressWrapper = styled.div`
@@ -263,12 +213,12 @@ const ProgressWrapper = styled.div`
   background-color: #eee;
   border-radius: 6px;
   overflow: hidden;
-  margin-bottom: 6px;
+  margin-bottom: 10px;
 `;
 
 const ProgressBar = styled.div`
   height: 100%;
-  background-color: #235BA9;
+  background-color: #235ba9;
 `;
 
 const ProgressLabel = styled.div`
@@ -281,6 +231,7 @@ const RankRow = styled.div`
   justify-content: center;
   align-items: center;
   gap: 24px;
+  margin-top: 20px;
 `;
 
 const RankItem = styled.div`
@@ -306,13 +257,28 @@ const Divider = styled.div`
 
 const RightPanel = styled.div`
   flex: 1;
-  padding: 32px 48px;
+  width: 125%;
+  margin-right: -10%;
+`;
+
+const StatisticsPanel = styled.div`
+  width: 100%;
+  padding-right: 0px;
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+`;
+
+const PostPanel = styled.div`
+  width: 110%;
+  margin-left: 3%;
 `;
 
 const TabsWrapper = styled.div`
   position: relative;
   margin-bottom: 30px;
   margin-left: 170px;
+  margin-top: 20px;
 `;
 
 const Tabs = styled.div`
@@ -323,25 +289,28 @@ const Tab = styled.div`
   font-weight: 600;
   font-size: 22px;
   padding-bottom: 10px;
-  margin-left: 120px;
+  margin-left: 140px;
   cursor: pointer;
   color: ${({ active }) => (active ? '#235ba9' : '#999')};
-  position: relative; 
-  z-index: 1; 
+  position: relative;
+  z-index: 1;
 `;
 
 const Underline = styled.div`
   position: absolute;
   bottom: 0;
-  width: 500px;
+  width: 280px;
   height: 1px;
   background-color: #ccc;
   margin-left: 20%;
 `;
 
-const GraphSection = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 48px;
+const ActiveBar = styled.div`
+  position: absolute;
+  bottom: -1px;
+  height: 3px;
+  width: 100px;
+  background-color: #235BA9;
+  border-radius: 999px;
+  transition: left 0.3s ease;
 `;
-
