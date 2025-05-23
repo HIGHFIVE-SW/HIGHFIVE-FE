@@ -117,7 +117,7 @@ export default function GlobalIssueDetailPage() {
         <RecommendCardsHeader>
           <RecommendTitle>추천 활동</RecommendTitle>
           <MoreLink onClick={() => navigate(`/more-detail?query=${encodeURIComponent(label)}`)}>
-            더보기 &gt;
+        더보기 &gt;
         </MoreLink>
 
         </RecommendCardsHeader>

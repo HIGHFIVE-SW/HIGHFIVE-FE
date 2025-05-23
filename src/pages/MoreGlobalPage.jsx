@@ -6,7 +6,7 @@ import { useLocation } from 'react-router-dom';
 import MainNav from '../layout/MainNav';
 import Footer from '../layout/Footer';
 import IssueCard from '../components/IssueCard';
-import Pagination from '../components/Pagination';
+import Pagination from '../components/common/Pagination';
 import globalImage from '../assets/images/main/ic_IssueCardSample.png';
 
 const dummyGlobalIssues = Array.from({ length: 40 }, (_, idx) => ({

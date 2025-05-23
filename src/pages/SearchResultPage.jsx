@@ -7,7 +7,7 @@ import ActivityCard from '../components/activity/ActivityCard';
 
 import globalImage from '../assets/images/main/ic_IssueCardSample.png';
 import activityImage from '../assets/images/activity/ic_ActivityImage.png';
-import SearchIcon from '../assets/images/ic_Search.png';
+import SearchIcon from '../assets/images/nav/ic_Search.png';
 
 import { useLocation,useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
