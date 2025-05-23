@@ -14,6 +14,9 @@ import MainPage from '../pages/MainPage';
 import GlobalIssueDetailPage from '../pages/GlobalIssueDetailPage'; 
 import FreeBoardPage from '../pages/board/FreeBoardPage';
 import MoreDetailPage from '../pages/MoreDetailPage';
+import RankingPage from '../pages/RankingPage';
+import LevelGuide from '../components/level/LevelGuide';
+import Mypage from '../pages/MyPage';
 import PostWritePage from '../pages/board/PostWritePage';
 import BoardDetailPage from '../pages/board/BoardDetailPage';
 
@@ -25,6 +28,9 @@ export default function AppRoutes() {
       <Route path="/main" element={<MainPage />} />
       <Route path="/global-issue" element={<GlobalIssuePage />} />
       <Route path="/activity" element={<ActivityPage />} />
+      <Route path="/ranking" element={<RankingPage />} />
+      <Route path="/mypage" element={<Mypage />} />
+
       <Route path="/search" element={<SearchResultPage />} />
       <Route path="/more/global" element={<MoreGlobalPage />} />
       <Route path="/more/activity" element={<MoreActivityPage />} />
@@ -32,6 +38,7 @@ export default function AppRoutes() {
       <Route path="/global-issue/:id" element={<GlobalIssueDetailPage />} />
       <Route path="/board/review" element={<ReviewBoardPage />} />
       <Route path="/board/free" element={<FreeBoardPage />} />
+      <Route path="/level-guide" element={<LevelGuide />} />
       <Route path="/board/write" element={<PostWritePage />} />
       <Route path="/board/detail/:id" element={<BoardDetailPage />} />
     </Routes>

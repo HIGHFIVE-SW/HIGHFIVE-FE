@@ -6,6 +6,7 @@ import ActivityCard from '../components/activity/ActivityCard';
 import usePagination from '../hooks/usePagination';
 import Pagination from '../components/common/Pagination';
 import activityImage1 from '../assets/images/activity/ic_ActivityImage.png';
+import CustomDropdown from '../components/common/CustomDropdown';
 
 const dummyActivities = [
   { id: 1, title: '제 22회 한국 경제 논문 공모전', tags: ['#환경', '#공모전'], date: '2025.04.15~2025.04.20', image: activityImage1 },
@@ -23,6 +24,9 @@ const dummyActivities = [
   { id: 13, title: '사람과 사회 봉사활동', tags: ['#사람과사회', '#봉사활동'], date: '2025.04.15~2025.04.20', image: activityImage1 },
   { id: 14, title: '환경 세미나 참가', tags: ['#환경', '#공모전'], date: '2025.04.15~2025.04.20', image: activityImage1 },
 ];
+
+const fieldOptions = ["전체", "경제", "환경", "사람과사회", "기술"];
+const typeOptions = ["전체", "공모전", "봉사활동", "인턴십", "서포터즈"];
 
 export default function ActivityPage() {
   const [bookmarked, setBookmarked] = useState([]);
@@ -54,28 +58,24 @@ export default function ActivityPage() {
       </HeaderSection>
 
       <ContentSection>
-        <FilterSection>
-          <FilterBlock>
-            <FilterLabel>관심 분야</FilterLabel>
-            <SelectBox onChange={(e) => setFieldFilter(e.target.value)} value={fieldFilter}>
-              <option>전체</option>
-              <option>경제</option>
-              <option>환경</option>
-              <option>사람과사회</option>
-              <option>기술</option>
-            </SelectBox>
-          </FilterBlock>
-          <FilterBlock>
-            <FilterLabel>활동 유형</FilterLabel>
-            <SelectBox onChange={(e) => setTypeFilter(e.target.value)} value={typeFilter}>
-              <option>전체</option>
-              <option>공모전</option>
-              <option>봉사활동</option>
-              <option>인턴십</option>
-              <option>서포터즈</option>
-            </SelectBox>
-          </FilterBlock>
-        </FilterSection>
+      <FilterSection>
+        <FilterBlock>
+          <FilterLabel>관심 분야</FilterLabel>
+          <CustomDropdown
+            options={fieldOptions}
+            selected={fieldFilter}
+            onSelect={(option) => setFieldFilter(option)}
+          />
+        </FilterBlock>
+        <FilterBlock>
+          <FilterLabel>활동 유형</FilterLabel>
+          <CustomDropdown
+            options={typeOptions}
+            selected={typeFilter}
+            onSelect={(option) => setTypeFilter(option)}
+          />
+        </FilterBlock>
+      </FilterSection>
 
         <CardGrid>
             {currentData.map((activity) => (
@@ -160,16 +160,6 @@ const FilterLabel = styled.label`
   font-weight: 500;
   margin-bottom: 6px;
   padding-left: 30px;
-`;
-
-const SelectBox = styled.select`
-  width: 128px;
-  height: 36px;
-  padding: 4px 8px;
-  font-size: 14px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  
 `;
 
 const CardGrid = styled.div`

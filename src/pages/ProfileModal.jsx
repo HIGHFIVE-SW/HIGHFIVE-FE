@@ -24,9 +24,9 @@ export default function ProfileModal({ onClose }) {
   const [isFocused, setIsFocused] = useState(false);
   const fileInputRef = useRef();
 
-  const handleCameraClick = () => {
+  const handleCameraClick = () => 
     fileInputRef.current?.click();
-  };
+  
 
   const handleNext = () => {
     if (nickname.trim()) {

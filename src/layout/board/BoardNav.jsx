@@ -4,7 +4,7 @@ import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import backIcon from "../../assets/images/nav/ic_Back.png";
 import searchIcon from "../../assets/images/nav/ic_Search.png";
-import trendistLogo from "../../assets/images/nav/ImageTextLogo.png";
+import trendistLogo from "../../assets/images/nav/ic_ImageTextLogo.png";
 import Search from "../../components/search/Search";
 
 const BoardNav = () => {
