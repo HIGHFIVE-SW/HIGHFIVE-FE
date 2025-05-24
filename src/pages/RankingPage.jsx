@@ -16,8 +16,8 @@ import Footer from '../layout/Footer';
 const rankingData = [
   { id: 1, nickname: 'JUDY', exp: 1608, profileUrl: judyProfile },
   { id: 2, nickname: '이서정', exp: 1500, profileUrl: null },
-  { id: 3, nickname: 'BB', exp: 1400, profileUrl: null },
-  { id: 4, nickname: 'CC', exp: 1305, profileUrl: null },
+  { id: 3, nickname: '추지은', exp: 1400, profileUrl: masterIcon},
+  { id: 4, nickname: '추은송', exp: 1305, profileUrl: null },
   { id: 5, nickname: 'DD', exp: 1008, profileUrl: null },
   { id: 6, nickname: 'EE', exp: 995, profileUrl: null },
   { id: 7, nickname: 'ff', exp: 950, profileUrl: null },
@@ -70,7 +70,9 @@ export default function RankingPage() {
                   alt="user profile"
                 />
               </ProfileWrapper>
-              <UserName>{user.nickname}</UserName>
+              <UserName onClick={() => navigate('/user', { state: user })}>
+                {user.nickname}
+              </UserName>
             </RankLeft>
             <UserXP>{user.exp}XP</UserXP>
           </RankItem>
