@@ -13,7 +13,7 @@ const post = {
   title: "국제수면산업박람회 아이디어 공모전 후기!",
   tags: ["#환경", "#공모전"],
   author: "나",
-  date: "2025.03.25",
+  createAt: "2025.03.25",
   content: `국제수면산업 박람회에 참가해서 영예의 대상을 수상했어요!
 새롭고 흥미로운 아이디어를 나눌 수 있어서 정말 즐거운 경험이었습니다.
 
@@ -27,10 +27,11 @@ const post = {
 다시 한 번, 함께해주신 모든 분들께 감사드려요.✨`,
   image: SAMPLE_AWARD_IMG,
   likeCount: 3,
+  isVerified: true,
   comments: [
-    { id: 1, author: "JUDY", content: "역시 새벽형 주디답네요 👍", date: "2025.04.21" },
-    { id: 2, author: "JUDY", content: "감사합니다!", date: "2025.04.21" },
-    { id: 3, author: "나", content: "내가 쓴 댓글!", date: "2025.04.22" },
+    { id: 1, author: "JUDY", content: "역시 새벽형 주디답네요 👍", createAt: "2025.04.21" },
+    { id: 2, author: "JUDY", content: "감사합니다!", createAt: "2025.04.21" },
+    { id: 3, author: "나", content: "내가 쓴 댓글!", createAt: "2025.04.22" },
   ],
 };
 
@@ -60,7 +61,8 @@ export default function BoardDetailPage() {
     if (!comment.trim()) return;
     setComments([
       ...comments,
-      { id: Date.now(), author: "나", content: comment, date: "2025.04.21" },
+      { id: Date.now(), createAt: new Date().toISOString().slice(0, 10),
+ author: "나", content: comment, createAt: "2025.04.21" },
     ]);
     setComment("");
   };
@@ -93,9 +95,9 @@ export default function BoardDetailPage() {
               </MenuButton>
               {showPostMenu && (
                 <DropdownMenu>
-                  <DropdownItem onClick={() => { setShowPostMenu(false); /* 수정 함수 */ }}>수정</DropdownItem>
+                  <DropdownItem onClick={() => { setShowPostMenu(false); }}>수정</DropdownItem>
                   <DropdownDivider />
-                  <DropdownItem onClick={() => { setShowPostMenu(false); /* 삭제 함수 */ }}>삭제</DropdownItem>
+                  <DropdownItem onClick={() => { setShowPostMenu(false); }}>삭제</DropdownItem>
                 </DropdownMenu>
               )}
             </PostMenuWrapper>
@@ -111,8 +113,13 @@ export default function BoardDetailPage() {
             <ProfileImg src={PROFILE_IMG} alt="프로필" />
             <Author>{post.author}</Author>
           </AuthorBox>
-          <DateText>{post.date}</DateText>
+          <CreateAtText>{post.createAt}</CreateAtText>
         </InfoRow>
+        {post.isVerified && (
+            <ConfirmationText>
+              *이 글은 1차 검증이 완료된 글입니다.
+            </ConfirmationText>
+          )}
         <Divider />
         <ImageBox>
           <img src={post.image} alt="수상 사진" />
@@ -161,7 +168,7 @@ export default function BoardDetailPage() {
                       </CommentActions>
                     )}
 
-                    <CommentDate>{c.date}</CommentDate>
+                    <CommentCreateAt>{c.createAt}</CommentCreateAt>
                   </CommentRight>
                 </CommentItem>
               ))}
@@ -224,6 +231,8 @@ const AuthorBox = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
+  margin-bottom: 8px;
+
 `;
 
 const ProfileImg = styled.img`
@@ -240,9 +249,10 @@ const Author = styled.span`
   font-weight: 600;
 `;
 
-const DateText = styled.span`
+const CreateAtText = styled.span`
   font-size: 13px;
   color: #000;
+  align-self: flex-end;
 `;
 
 const ButtonRow = styled.div`
@@ -399,7 +409,7 @@ const CommentAuthor = styled.span`
   font-size: 14px;
 `;
 
-const CommentDate = styled.span`
+const CommentCreateAt = styled.span`
   font-size: 12px;
   color: #aaa;
   min-width: 70px;
@@ -517,4 +527,10 @@ const DropdownDivider = styled.div`
   height: 1px;
   background: #d9d9d9;
   margin: 0;
+`;
+
+const ConfirmationText = styled.div`
+  font-size: 12px;
+  color: #34A853;
+  font-weight: 500;
 `;

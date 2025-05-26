@@ -33,11 +33,11 @@ export default function LevelGuide() {
       <Grid>
         <Row className="header">
           <Cell></Cell>
-          <Cell>OneDay</Cell>
-          <Cell>OneWeek</Cell>
-          <Cell>OneMonth</Cell>
-          <Cell>WithinSixMonths</Cell>
-          <Cell>OverSixMonths</Cell>
+          <Cell>하루</Cell>
+          <Cell>일주일</Cell>
+          <Cell>한달</Cell>
+          <Cell>6개월 이내</Cell>
+          <Cell>6개월 이상</Cell>
         </Row>
         <Row>
           <Cell>CONTEST</Cell>
@@ -91,55 +91,10 @@ export default function LevelGuide() {
   );
 }
 
-const Wrapper = styled.div`
-  background: #fff;
-  border-radius: 12px;
-  padding: 40px;
-  max-width: 2000px;
-  margin: 0 auto;
-`;
-
-const Title = styled.h2`
-  font-size: 24px;
-  font-weight: 700;
-  margin-bottom: 20px;
-`;
-
-const IconRow = styled.div`
-  display: flex;
-  justify-content: center;
-  gap: 48px;  
-  margin-bottom: 40px;
-`;
-
 const LevelIconWrapper = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-`;
-
-const LevelImage = styled.img`
-  width: 72px;
-  height: 72px;
-  margin-bottom: 8px;
-`;
-
-const LevelText = styled.span`
-  font-weight: 600;
-  font-size: 14px;
-`;
-
-const Grid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  border-top: 2px solid #000;
-  border-bottom: 1px solid #ddd;
-  margin-bottom: 64px;
-`;
-
-const XPSection = styled(Grid)`
-  grid-template-columns: repeat(4, 1fr);
-  margin-top: 64px;
 `;
 
 const Row = styled.div`
@@ -151,9 +106,60 @@ const Row = styled.div`
   }
 `;
 
+const Wrapper = styled.div`
+  position: absolute;
+  right: 40px;
+  z-index: 1000;
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  width: 960px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15);
+`;
+
+
+const Title = styled.h2`
+  font-size: 20px; 
+  font-weight: 700;
+  margin-bottom: 16px;
+`;
+
+const IconRow = styled.div`
+  display: flex;
+  justify-content: center;
+  gap: 32px; 
+  margin-bottom: 32px;
+`;
+
+const LevelImage = styled.img`
+  width: 56px; 
+  height: 56px;
+  margin-bottom: 6px;
+`;
+
+const LevelText = styled.span`
+  font-weight: 600;
+  font-size: 13px; 
+`;
+
+const Grid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  border-top: 2px solid #000;
+  border-bottom: 1px solid #ddd;
+  margin-bottom: 48px; 
+`;
+
+const XPSection = styled(Grid)`
+  grid-template-columns: repeat(4, 1fr);
+  margin-top: 48px; 
+`;
+
 const Cell = styled.span`
-  padding: 16px;
+  padding: 12px; 
   border-bottom: 1px solid #ddd;
   text-align: center;
-  font-size: 14px;
+  font-size: 13px; 
 `;
