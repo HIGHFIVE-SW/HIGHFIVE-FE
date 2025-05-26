@@ -1,88 +1,83 @@
 import React, { useState } from 'react';
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  ResponsiveContainer,
+  BarChart, Bar, XAxis, YAxis, ResponsiveContainer,
+  CartesianGrid, LabelList
 } from 'recharts';
 import styled from 'styled-components';
+import CustomDropdown from '../../components/common/CustomDropdown'; 
 
-const ActivityTypeChart = () => {
-  const [selected, setSelected] = useState('분야');
+const dataByField = [
+  { name: '전체', value: 15 },
+  { name: '환경', value: 8 },
+  { name: '사람과 사회', value: 2 },
+  { name: '경제', value: 2 },
+  { name: '기술', value: 3 },
+];
 
-  const fieldData = [
-    { name: '전체', count: 15 },
-    { name: '환경', count: 8 },
-    { name: '사람과 사회', count: 2 },
-    { name: '경제', count: 2 },
-    { name: '기술', count: 3 },
-  ];
+const dataByType = [
+  { name: '전체', value: 15 },
+  { name: '봉사', value: 8 },
+  { name: '캠페인', value: 2 },
+  { name: '공모전', value: 5 },
+];
 
-  const typeData = [
-    { name: '전체', count: 15 },
-    { name: '봉사', count: 8 },
-    { name: '캠페인', count: 2 },
-    { name: '공모전', count: 5 },
-  ];
+const chartOptions = ['분야', '유형'];
 
-  const data = selected === '분야' ? fieldData : typeData;
+export default function ActivityTypeSwitcherChart() {
+  const [mode, setMode] = useState('분야');
+
+  const chartData = mode === '분야' ? dataByField : dataByType;
+  const chartTitle = mode === '분야' ? '분야별 활동 기록' : '유형별 활동 기록';
 
   return (
-    <ChartWrapper>
-      <Header>
-        <Title>분야별 활동 기록</Title>
-        <Dropdown value={selected} onChange={(e) => setSelected(e.target.value)}>
-          <option value="분야">분야</option>
-          <option value="유형">유형</option>
-        </Dropdown>
-      </Header>
+    <ChartCard>
+      <ChartHeader>
+        <ChartTitle>{chartTitle}</ChartTitle>
+        <CustomDropdown
+          options={chartOptions}
+          selected={mode}
+          onSelect={setMode}
+        />
+      </ChartHeader>
+
       <ResponsiveContainer width="100%" height={300}>
-        <BarChart data={data} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" />
-            <YAxis allowDecimals={false} />
-            <Bar
-            dataKey="count"
-            fill="#235ba9"
+        <BarChart data={chartData} margin={{ top: 10, right: 30, left: 10, bottom: 10 }}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="name" stroke="#888" />
+          <YAxis stroke="#888" allowDecimals={false} />
+          <Bar
+            dataKey="value"
+            fill="#235BA9"
             radius={[10, 10, 0, 0]}
-            label={{ position: 'top', fill: '#000', fontWeight: 700 }}
-            />
+            barSize={40}
+          >
+            <LabelList dataKey="value" position="top" fill="#000" fontWeight={600} />
+          </Bar>
         </BarChart>
-    </ResponsiveContainer>
-
-    </ChartWrapper>
+      </ResponsiveContainer>
+    </ChartCard>
   );
-};
+}
 
-export default ActivityTypeChart;
-
-const ChartWrapper = styled.div`
-  width: 100%;
+const ChartCard = styled.div`
+  width: 900px;
+  height: 400px;
+  margin: 0 auto;
   background: #fff;
-  padding: 24px;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border-radius: 20px;
+  padding: 28px 32px;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05);
 `;
 
-const Header = styled.div`
+const ChartHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 24px;
 `;
 
-const Title = styled.h4`
-  font-size: 16px;
-  font-weight: 600;
-`;
-
-const Dropdown = styled.select`
-  padding: 6px 12px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  font-size: 14px;
-  background: #fff;
-  color: #333;
+const ChartTitle = styled.h4`
+  font-size: 20px;
+  font-weight: 700;
+  color: #222;
 `;

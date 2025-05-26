@@ -48,14 +48,22 @@ const interests = [
   },
 ];
 
-export default function InterestModal({ onClose }) {
+export default function InterestModal({ onClose, nickname, profileUrl }) {
   const [selected, setSelected] = useState(null);
-  const navigate = useNavigate(); // 라우터 네비게이터 훅
+  const navigate = useNavigate();
 
   const handleSelect = (id) => setSelected(id);
 
   const handleComplete = () => {
     if (selected) {
+      const selectedLabel = interests.find(i => i.id === selected)?.label || '';
+
+      // ✅ 저장
+      localStorage.setItem('nickname', nickname);
+      localStorage.setItem('profileUrl', profileUrl);
+      localStorage.setItem('keyword', selectedLabel);
+
+      // ✅ 메인으로 이동
       navigate('/main');
     } else {
       alert('관심 분야를 선택해주세요.');

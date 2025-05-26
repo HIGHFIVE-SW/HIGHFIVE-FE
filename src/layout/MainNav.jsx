@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import logoTrend from '../assets/images/nav/ic_ImageTextLogo.png';
 import MypageIcon from '../assets/images/nav/ic_Mypage.png';
 import VectorIcon from '../assets/images/nav/ic_Search.png';
+import MypageIconActive from '../assets/images/nav/ic_MypageActive.png';
 import Search from '../components/search/Search';
 import { useNavigate, useLocation } from 'react-router-dom';
 
@@ -82,7 +83,7 @@ export default function MainNav() {
       <RightIcons>
         <Divider />
         <img
-          src={MypageIcon}
+          src={location.pathname === '/mypage' ? MypageIconActive : MypageIcon}
           alt="User Icon"
           onClick={() => navigate('/mypage')}
         />
