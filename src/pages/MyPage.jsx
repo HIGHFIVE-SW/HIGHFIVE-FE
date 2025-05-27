@@ -1,4 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
+// src/pages/MyPage.jsx
+
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import ActivityTypeChart from '../components/mypage/ActivityTypeChart';
 import ActivityTrendChart from '../components/mypage/ActivityTrendChart';
@@ -10,12 +12,10 @@ import Footer from '../layout/Footer';
 
 import defaultProfileImg from '../assets/images/level/ic_Judy.png';
 import rankImg from '../assets/images/level/ic_Master.png';
-import editIcon from '../assets/images/profile/ic_ProfilePenscil.png'; 
+import editIcon from '../assets/images/profile/ic_ProfilePenscil.png';
 
-const MyPage = () => {
+export default function MyPage() {
   const [activeTab, setActiveTab] = useState('statistics');
-  const tabsRef = useRef([]);
-  const [barLeft, setBarLeft] = useState(0);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -32,7 +32,7 @@ const MyPage = () => {
 
   useEffect(() => {
     if (location.state) {
-      setProfile((prev) => ({
+      setProfile(prev => ({
         ...prev,
         nickname: location.state.nickname || prev.nickname,
         keyword: location.state.keyword || prev.keyword,
@@ -40,13 +40,6 @@ const MyPage = () => {
       }));
     }
   }, [location.state]);
-
-  useEffect(() => {
-    const el = tabsRef.current[activeTab];
-    if (el) {
-      setBarLeft(el.offsetLeft + el.offsetWidth / 2 - 50);
-    }
-  }, [activeTab]);  
 
   const dummyTypeStats = [
     { activityType: 'CONTEST', count: 4 },
@@ -61,6 +54,7 @@ const MyPage = () => {
       <ContentWrapper>
         <PageWrapper>
           <LeftPanel>
+            <TitleText>마이페이지</TitleText>
             <ProfileWrapper>
               <ProfileImage src={profile.profileUrl} alt="프로필 이미지" />
               <EditIconButton onClick={() => navigate('/profile/edit')}>
@@ -77,6 +71,7 @@ const MyPage = () => {
                 <ProgressBar style={{ width: `${profile.progress}%` }} />
               </ProgressWrapper>
               <ProgressLabel>Lv4 유니버스 리더</ProgressLabel>
+
             </Card>
             <Card>
               <CardTitle>랭킹</CardTitle>
@@ -96,21 +91,31 @@ const MyPage = () => {
             </Card>
           </LeftPanel>
 
+
+
+          {/* Right Panel */}
           <RightPanel>
             <TabsWrapper>
               <Tabs>
-                <Tab ref={(el) => (tabsRef.current['statistics'] = el)} active={activeTab === 'statistics'} onClick={() => setActiveTab('statistics')}>
+                <Tab
+                  active={activeTab === 'statistics'}
+                  onClick={() => setActiveTab('statistics')}
+                >
                   활동 통계
                 </Tab>
-                <Tab ref={(el) => (tabsRef.current['bookmark'] = el)} active={activeTab === 'bookmark'} onClick={() => setActiveTab('bookmark')}>
+                <Tab
+                  active={activeTab === 'bookmark'}
+                  onClick={() => setActiveTab('bookmark')}
+                >
                   북마크
                 </Tab>
-                <Tab ref={(el) => (tabsRef.current['posts'] = el)} active={activeTab === 'posts'} onClick={() => setActiveTab('posts')}>
+                <Tab
+                  active={activeTab === 'posts'}
+                  onClick={() => setActiveTab('posts')}
+                >
                   작성한 글
                 </Tab>
               </Tabs>
-              <Underline />
-              <ActiveBar style={{ left: `${barLeft}px` }} />
             </TabsWrapper>
 
             {activeTab === 'statistics' && (
@@ -119,33 +124,17 @@ const MyPage = () => {
                 <ActivityTypeChart data={dummyTypeStats} />
               </GraphSection>
             )}
-
-            {activeTab === 'bookmark' && (
-              <BookmarkList/>
-            )}
-
-            {activeTab === 'posts' && (
-              <MyPostList />
-            )}
+            {activeTab === 'bookmark' && <BookmarkList />}
+            {activeTab === 'posts' && <MyPostList />}
           </RightPanel>
         </PageWrapper>
       </ContentWrapper>
       <Footer />
     </PageContainer>
   );
-};
+}
 
-export default MyPage;
-
-const ActiveBar = styled.div`
-  position: absolute;
-  bottom: -1px;
-  height: 3px;
-  width: 100px;
-  background-color: #235BA9;
-  border-radius: 999px;
-  transition: left 0.3s ease;
-`;
+/* Styled Components */
 
 const PageContainer = styled.div`
   display: flex;
@@ -165,33 +154,18 @@ const PageWrapper = styled.div`
 
 const LeftPanel = styled.div`
   width: 300px;
-  background: #F6FAFF;
+  background: #f6faff;
   padding: 32px;
   display: flex;
   flex-direction: column;
   align-items: center;
 `;
 
-const ProfileImage = styled.img`
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  object-fit: cover;
-  margin-bottom: 0;  
-`;
-
-const Nickname = styled.h3`
-  font-size: 20px;
+const TitleText = styled.div`
+  font-weight: bold;
+  font-size: 22px;
   margin-bottom: 8px;
-`;
-
-const KeywordTag = styled.div`
-  padding: 4px 12px;
-  background-color: #ffffff;
-  color: #235BA9;
-  border-radius: 12px;
-  font-size: 14px;
-  font-weight: 500;
+  color: #000;
   margin-bottom: 24px;
 `;
 
@@ -201,10 +175,17 @@ const ProfileWrapper = styled.div`
   height: 120px;
   margin-bottom: 16px;
   border-radius: 50%;
-  background-color: white;  
+  background-color: white;
   display: flex;
   align-items: center;
   justify-content: center;
+`;
+
+const ProfileImage = styled.img`
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
 `;
 
 const EditIconButton = styled.button`
@@ -216,10 +197,10 @@ const EditIconButton = styled.button`
   border-radius: 50%;
   background-color: white;
   border: none;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   cursor: pointer;
 `;
 
@@ -228,15 +209,30 @@ const EditIcon = styled.img`
   height: 16px;
 `;
 
+const Nickname = styled.h3`
+  font-size: 20px;
+  margin-bottom: 8px;
+`;
+
+const KeywordTag = styled.div`
+  padding: 4px 12px;
+  background-color: white;
+  color: #235ba9;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 24px;
+`;
+
 const Card = styled.div`
-  background: #fff;
+  background: white;
   border-radius: 16px;
   padding: 20px;
   width: 100%;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   margin-bottom: 20px;
   text-align: center;
-  margin-top: 50px;
+  
 `;
 
 const CardTitle = styled.h4`
@@ -268,12 +264,13 @@ const ProgressWrapper = styled.div`
 
 const ProgressBar = styled.div`
   height: 100%;
-  background-color: #235BA9;
+  background-color: #235ba9;
 `;
 
 const ProgressLabel = styled.div`
   font-size: 12px;
   color: #666;
+  margin-bottom: 22px;
 `;
 
 const RankRow = styled.div`
@@ -285,6 +282,7 @@ const RankRow = styled.div`
 
 const RankItem = styled.div`
   text-align: center;
+  margin-bottom: 22px;
 `;
 
 const Label = styled.div`
@@ -310,34 +308,42 @@ const RightPanel = styled.div`
 `;
 
 const TabsWrapper = styled.div`
-  position: relative;
+  display: flex;
+  justify-content: center;
   margin-bottom: 30px;
-  margin-left: 170px;
 `;
 
 const Tabs = styled.div`
   display: flex;
+  gap: 24px;
+  border-bottom: 1px solid #ddd;
+  width: fit-content;             
+  margin: 0 auto;
 `;
 
 const Tab = styled.div`
+  position: relative;
+  padding: 12px 0;
+  font-size: 18px;
   font-weight: 600;
-  font-size: 22px;
-  padding-bottom: 10px;
-  margin-left: 120px;
-  cursor: pointer;
   color: ${({ active }) => (active ? '#235ba9' : '#999')};
-  position: relative; 
-  z-index: 1; 
+  cursor: pointer;
+  transition: color 0.2s;
+
+  &:after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: ${({ active }) => (active ? '100%' : '0')};
+    height: 3px;
+    background-color: #235ba9;
+    border-radius: 2px;
+    transition: width 0.3s;
+  }
 `;
 
-const Underline = styled.div`
-  position: absolute;
-  bottom: 0;
-  width: 500px;
-  height: 1px;
-  background-color: #ccc;
-  margin-left: 20%;
-`;
+
 
 const GraphSection = styled.div`
   display: flex;

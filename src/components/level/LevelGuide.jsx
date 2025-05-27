@@ -82,9 +82,9 @@ export default function LevelGuide() {
         </Row>
         <Row>
           <Cell>default</Cell>
-          <Cell>200</Cell>
-          <Cell>1500</Cell>
-          <Cell>3000</Cell>
+          <Cell>500</Cell>
+          <Cell>2000</Cell>
+          <Cell>4000</Cell>
         </Row>
       </XPSection>
     </Wrapper>

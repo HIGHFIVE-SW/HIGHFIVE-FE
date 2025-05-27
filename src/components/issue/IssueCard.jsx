@@ -7,7 +7,7 @@ export default function IssueCard({ title, tag, image, bookmarked, onToggle, onC
       <ImageWrapper>
         <IssueImage src={image} alt="이슈 이미지" />
         <BookmarkIcon
-          src={bookmarked ? require('../assets/images/main/BookmarkFilledButton.png') : require('../assets/images/main/BookmarkButton.png')}
+          src={bookmarked ? require('../../assets/images/common/BookmarkFilledButton.png') : require('../../assets/images/common/BookmarkButton.png')}
           alt="북마크"
           onClick={(e) => {
             e.stopPropagation(); 
@@ -36,9 +36,10 @@ const Card = styled.div`
   .issue-title {
     font-size: 24px;
     font-weight: bold;
-    margin-top: 50px;
+    margin-top: 40px;
     font-family: NotoSansCustom;
     padding: 0 20px;
+    word-break: keep-all;
 
   height: 68px; 
   overflow: hidden;
@@ -49,9 +50,8 @@ const Card = styled.div`
   }
 
   .issue-tag {
-    font-size: 20px;
+    font-size: 18px;
     color: #555;
-    margin-top: -10px;
     font-family: NotoSansCustom;
   }
 `;
@@ -76,10 +76,10 @@ const IssueImage = styled.img`
 
 const BookmarkIcon = styled.img`
   position: absolute;
-  bottom: -50px;
+  bottom: -45.5px;
   right: 8px;
-  width: 60px;
-  height: 60px;
+  width: 55px;
+  height: 55px;
   cursor: pointer;
   z-index: 10;
 `;

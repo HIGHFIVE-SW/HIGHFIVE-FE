@@ -37,6 +37,7 @@ const BoardNav = () => {
             setIsSearchOpen(false);
             setQuery('');
           }}
+          searchType="board"  // 이 부분 추가!
         />
       )}
     </>

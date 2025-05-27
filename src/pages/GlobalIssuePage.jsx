@@ -3,12 +3,12 @@ import styled from 'styled-components';
 import MainNav from '../layout/MainNav';
 import Footer from '../layout/Footer';
 import { useLocation, useNavigate } from 'react-router-dom';
-import IssueCard from '../components/IssueCard'; 
+import IssueCard from '../components/issue/IssueCard'; 
 import CategoryFilter from '../components/common/CategoryFilter';
 import usePagination from '../hooks/usePagination';
 import Pagination from '../components/common/Pagination';
 
-import issueCardSample from '../assets/images/main/ic_IssueCardSample.png';
+import issueCardSample from '../assets/images/issue/ic_IssueCardSample.png';
 import issueCardNo from '../assets/images/main/ic_NoImage.png';
 
 const dummyData = [

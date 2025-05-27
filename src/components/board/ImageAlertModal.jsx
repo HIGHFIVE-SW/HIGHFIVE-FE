@@ -2,6 +2,7 @@ import React from "react";
 import styled from "styled-components";
 import warningIcon from "../../assets/images/board/ic_warning.png";
 
+
 export default function ImageAlertModal({ onClose }) {
   return (
     <AlertOverlay>

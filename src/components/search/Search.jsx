@@ -3,13 +3,18 @@ import styled from 'styled-components';
 import CloseIcon from '../../assets/images/search/ic_close.png';
 import { useNavigate } from 'react-router-dom';
 
-export default function Search({ query, onChange, onClose }) {
+export default function Search({ query, onChange, onClose, searchType }) {
   const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (query.trim()) {
-      navigate(`/search?query=${encodeURIComponent(query)}`);
+      // searchType에 따라 다른 경로로 이동
+      if (searchType === 'board') {
+        navigate(`/board/search?query=${encodeURIComponent(query)}`);
+      } else {
+        navigate(`/search?query=${encodeURIComponent(query)}`);
+      }
       onClose(); 
     }
   };

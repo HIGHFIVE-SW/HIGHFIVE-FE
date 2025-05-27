@@ -5,7 +5,6 @@ import styled from 'styled-components';
 export default function ReviewBoardGuide({ onClose }) {
   return (
     <PopoverContainer onClick={(e) => e.stopPropagation()}>
-      <CloseButton onClick={onClose}>✕</CloseButton>
       <GuideTitle>후기 게시판 가이드</GuideTitle>
       <GuideDescription>
         <GuideMainDescription>
@@ -57,16 +56,6 @@ const PopoverContainer = styled.div`
   width: 500px;
   box-shadow: 0px 4px 12px rgba(0,0,0,0.15);
   text-align: left;
-`;
-
-const CloseButton = styled.button`
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  background: none;
-  border: none;
-  font-size: 18px;
-  cursor: pointer;
 `;
 
 const GuideTitle = styled.h2`

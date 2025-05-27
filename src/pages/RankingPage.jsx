@@ -1,4 +1,6 @@
+// src/pages/RankingPage.jsx
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';  // ← 추가
 import styled from 'styled-components';
 
 import beginnerIcon from '../assets/images/level/ic_Beginner.png';
@@ -6,8 +8,8 @@ import proIcon from '../assets/images/level/ic_Pro.png';
 import masterIcon from '../assets/images/level/ic_Master.png';
 import leaderIcon from '../assets/images/level/ic_Leader.png';
 import judyProfile from '../assets/images/level/ic_Judy.png';
-import defaultProfile from '../assets/images/nav/DefaultProfile.png';
-import helpIcon from '../assets/images/level/ic_Help.png';
+import defaultProfile from '../assets/images/profile/DefaultProfile.png';
+import helpIcon from "../assets/images/common/ic_Help.png";
 import LevelGuide from '../components/level/LevelGuide';
 import MainNav from '../layout/MainNav';
 import Footer from '../layout/Footer';
@@ -15,7 +17,7 @@ import Footer from '../layout/Footer';
 const rankingData = [
   { id: 1, nickname: 'JUDY', exp: 1608, profileUrl: judyProfile },
   { id: 2, nickname: '이서정', exp: 1500, profileUrl: null },
-  { id: 3, nickname: '추지은', exp: 1400, profileUrl: masterIcon},
+  { id: 3, nickname: '추지은', exp: 1400, profileUrl: masterIcon },
   { id: 4, nickname: '추은송', exp: 1305, profileUrl: null },
   { id: 5, nickname: 'DD', exp: 1008, profileUrl: null },
   { id: 6, nickname: 'EE', exp: 995, profileUrl: null },
@@ -31,6 +33,7 @@ const getRankIcon = (exp) => {
 };
 
 export default function RankingPage() {
+  const navigate = useNavigate();  // ← 추가
   const topRanker = rankingData[0];
   const [showGuide, setShowGuide] = useState(false);
 
@@ -40,7 +43,11 @@ export default function RankingPage() {
 
       <HeaderSection>
         <HelpWrapper>
-          <HelpIcon src={helpIcon} alt="도움말" onClick={() => setShowGuide(prev => !prev)} />
+          <HelpIcon
+            src={helpIcon}
+            alt="도움말"
+            onClick={() => setShowGuide(prev => !prev)}
+          />
           {showGuide && (
             <Popover>
               <LevelGuide />
@@ -49,13 +56,18 @@ export default function RankingPage() {
         </HelpWrapper>
 
         <Title>랭킹 게시판</Title>
-        <Subtitle>활동을 쌓아가며 랭킹을 올리고, 다음 등급으로 넘어가자!</Subtitle>
+        <Subtitle>
+          활동을 쌓아가며 랭킹을 올리고, 다음 등급으로 넘어가자!
+        </Subtitle>
       </HeaderSection>
 
       <TitleProfile>프로 탐험가들의 랭킹전</TitleProfile>
 
       <TopRankWrapper>
-        <TopRankIcon src={getRankIcon(topRanker.exp)} alt="Top rank icon" />
+        <TopRankIcon
+          src={getRankIcon(topRanker.exp)}
+          alt="Top rank icon"
+        />
         <TopRankName>{topRanker.nickname}</TopRankName>
         <TopRankXP>{topRanker.exp}XP</TopRankXP>
       </TopRankWrapper>
@@ -169,7 +181,8 @@ const ProfileWrapper = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  border: ${({ isTopRank }) => (isTopRank ? '2px solid #235BA9' : 'none')};
+  border: ${({ isTopRank }) =>
+    isTopRank ? '2px solid #235BA9' : 'none'};
 `;
 
 const RankIcon = styled.img`
@@ -183,6 +196,7 @@ const UserName = styled.span`
   font-size: 16px;
   font-weight: 500;
   margin-left: 23px;
+  cursor: pointer;
 `;
 
 const UserXP = styled.span`
@@ -195,7 +209,7 @@ const TopRankWrapper = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 40px;
 `;
 
 const TopRankIcon = styled.img`
@@ -216,6 +230,7 @@ const TopRankXP = styled.span`
 `;
 
 const TitleProfile = styled.h2`
+  margin-top: 40px;
   margin-bottom: 24px;
   font-size: 24px;
   text-align: center;

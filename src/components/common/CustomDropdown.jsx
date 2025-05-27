@@ -77,8 +77,6 @@ export default function CustomDropdown({
   );
 }
 
-// ================== styled-components ==================
-
 const Wrapper = styled.div`
   position: relative;
 `;

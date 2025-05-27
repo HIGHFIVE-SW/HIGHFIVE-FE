@@ -5,9 +5,9 @@ import styled from 'styled-components';
 import { useLocation } from 'react-router-dom';
 import MainNav from '../layout/MainNav';
 import Footer from '../layout/Footer';
-import IssueCard from '../components/IssueCard';
+import IssueCard from '../components/issue/IssueCard';
 import Pagination from '../components/common/Pagination';
-import globalImage from '../assets/images/main/ic_IssueCardSample.png';
+import globalImage from '../assets/images/issue/ic_IssueCardSample.png';
 import usePagination from '../hooks/usePagination';
 
 const dummyGlobalIssues = Array.from({ length: 40 }, (_, idx) => ({
@@ -67,7 +67,7 @@ export default function MoreGlobalPage() {
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}
-            onPageChange={goToPage}
+            goToPage={goToPage}
           />
         )}
       </Content>

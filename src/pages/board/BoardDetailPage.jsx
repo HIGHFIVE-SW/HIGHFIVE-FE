@@ -1,9 +1,11 @@
+// src/pages/BoardDetailPage.jsx
+
 import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
 import Footer from "../../layout/Footer";
 import BoardNav from "../../layout/board/BoardNav";
 import useLike from "../../hooks/useLike";
-import PROFILE_IMG from "../../assets/images/profile/ic_Avater.png";
+import PROFILE_IMG from "../../assets/images/profile/DefaultProfile.png";
 import SAMPLE_AWARD_IMG from "../../assets/images/board/SampleReviewImg.png";
 import ArrowDownIcon from "../../assets/images/common/ic_ArrowDown.png";
 
@@ -49,10 +51,9 @@ export default function BoardDetailPage() {
         setShowPostMenu(false);
       }
     };
-
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
@@ -61,8 +62,12 @@ export default function BoardDetailPage() {
     if (!comment.trim()) return;
     setComments([
       ...comments,
-      { id: Date.now(), createAt: new Date().toISOString().slice(0, 10),
- author: "나", content: comment, createAt: "2025.04.21" },
+      {
+        id: Date.now(),
+        author: "나",
+        content: comment,
+        createAt: "2025.04.21",
+      },
     ]);
     setComment("");
   };
@@ -83,9 +88,8 @@ export default function BoardDetailPage() {
     <>
       <BoardNav />
       <Wrapper>
-        <BoardType>{post.boardType}</BoardType>
-        <TitleRow>
-          <Title>{post.title}</Title>
+        <BoardTypeRow>
+          <BoardType>{post.boardType}</BoardType>
           {post.author === "나" && (
             <PostMenuWrapper ref={menuRef}>
               <MenuButton onClick={() => setShowPostMenu((prev) => !prev)}>
@@ -95,19 +99,29 @@ export default function BoardDetailPage() {
               </MenuButton>
               {showPostMenu && (
                 <DropdownMenu>
-                  <DropdownItem onClick={() => { setShowPostMenu(false); }}>수정</DropdownItem>
+                  <DropdownItem onClick={() => setShowPostMenu(false)}>
+                    수정
+                  </DropdownItem>
                   <DropdownDivider />
-                  <DropdownItem onClick={() => { setShowPostMenu(false); }}>삭제</DropdownItem>
+                  <DropdownItem onClick={() => setShowPostMenu(false)}>
+                    삭제
+                  </DropdownItem>
                 </DropdownMenu>
               )}
             </PostMenuWrapper>
           )}
+        </BoardTypeRow>
+
+        <TitleRow>
+          <Title>{post.title}</Title>
         </TitleRow>
+
         <TagList>
           {post.tags.map((tag) => (
             <Tag key={tag}>{tag}</Tag>
           ))}
         </TagList>
+
         <InfoRow>
           <AuthorBox>
             <ProfileImg src={PROFILE_IMG} alt="프로필" />
@@ -115,17 +129,23 @@ export default function BoardDetailPage() {
           </AuthorBox>
           <CreateAtText>{post.createAt}</CreateAtText>
         </InfoRow>
+
         {post.isVerified && (
-            <ConfirmationText>
-              *이 글은 1차 검증이 완료된 글입니다.
-            </ConfirmationText>
-          )}
+          <ConfirmationText>
+            *이 글은 1차 검증이 완료된 글입니다.
+          </ConfirmationText>
+        )}
+
         <Divider />
+
         <ImageBox>
           <img src={post.image} alt="수상 사진" />
         </ImageBox>
+
         <Content>{post.content}</Content>
+
         <Divider />
+
         <ButtonRow>
           <LikeBtn onClick={toggleLike} $liked={liked}>
             <LikeIcon
@@ -134,20 +154,26 @@ export default function BoardDetailPage() {
               stroke="#e74c3c"
               strokeWidth="2"
             >
-              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41 0.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41 0.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
             </LikeIcon>
             <LikeText>추천</LikeText>
             <LikeCount>{likeCount}</LikeCount>
           </LikeBtn>
           <CommentBtn onClick={() => setShowComments((prev) => !prev)}>
-            <CommentIcon viewBox="0 0 24 24" fill="none" stroke="#222" strokeWidth="2">
+            <CommentIcon
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#222"
+              strokeWidth="2"
+            >
               <rect x="3" y="5" width="18" height="14" rx="2" />
               <path d="M7 9h10M7 13h6" />
             </CommentIcon>
-            <span style={{ color: "#222", fontWeight: 500 }}>댓글</span>
+            <LikeText>댓글</LikeText>
             <ArrowIcon src={ArrowDownIcon} alt="화살표" $open={showComments} />
           </CommentBtn>
         </ButtonRow>
+
         {showComments && (
           <CommentSection>
             <CommentTitle>댓글</CommentTitle>
@@ -161,13 +187,18 @@ export default function BoardDetailPage() {
                     </CommentAuthorBox>
                     <CommentText>{c.content}</CommentText>
                   </CommentLeft>
-                  <CommentRight>{c.author === "나" && (
+                  <CommentRight>
+                    {c.author === "나" && (
                       <CommentActions>
-                        <ActionBtn onClick={() => handleEditComment(c.id)}>수정</ActionBtn>
-                        <ActionBtn onClick={() => handleDeleteComment(c.id)}>삭제</ActionBtn>
+                        <ActionBtn onClick={() => handleEditComment(c.id)}>
+                          수정
+                        </ActionBtn>
+                        <ActionDivider />
+                        <ActionBtn onClick={() => handleDeleteComment(c.id)}>
+                          삭제
+                        </ActionBtn>
                       </CommentActions>
                     )}
-
                     <CommentCreateAt>{c.createAt}</CommentCreateAt>
                   </CommentRight>
                 </CommentItem>
@@ -189,7 +220,6 @@ export default function BoardDetailPage() {
   );
 }
 
-// 스타일 컴포넌트
 const Wrapper = styled.div`
   max-width: 768px;
   margin: 0 auto;
@@ -197,17 +227,83 @@ const Wrapper = styled.div`
   background: #fff;
 `;
 
+const BoardTypeRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+`;
+
 const BoardType = styled.div`
   font-size: 15px;
   color: #999999;
   font-weight: 680;
-  margin-bottom: 8px;
+`;
+
+const TitleRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
 `;
 
 const Title = styled.h1`
   font-size: 28px;
   font-weight: bold;
-  margin-bottom: 12px;
+`;
+
+const PostMenuWrapper = styled.div`
+  position: relative;
+`;
+
+const MenuButton = styled.button`
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+`;
+
+const MenuDot = styled.span`
+  display: block;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: #222;
+  margin: 2px 0;
+`;
+
+const DropdownMenu = styled.div`
+  position: absolute;
+  top: 32px;
+  right: 0;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  min-width: 65px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+`;
+
+const DropdownItem = styled.button`
+  background: none;
+  border: none;
+  width: 100%;
+  padding: 12px 0;
+  font-size: 14px;
+  color: #222;
+  text-align: center;
+  cursor: pointer;
+  font-family: inherit;
+  &:hover {
+    background: #f6f6f6;
+  }
+`;
+
+const DropdownDivider = styled.div`
+  width: 100%;
+  height: 1px;
+  background: #d9d9d9;
 `;
 
 const TagList = styled.div`
@@ -231,8 +327,6 @@ const AuthorBox = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 8px;
-
 `;
 
 const ProfileImg = styled.img`
@@ -240,7 +334,7 @@ const ProfileImg = styled.img`
   height: 32px;
   border-radius: 50%;
   object-fit: cover;
-  border: 0.1px solid #C4C4C4;
+  border: 0.1px solid #c4c4c4;
 `;
 
 const Author = styled.span`
@@ -252,13 +346,42 @@ const Author = styled.span`
 const CreateAtText = styled.span`
   font-size: 13px;
   color: #000;
-  align-self: flex-end;
+`;
+
+const ConfirmationText = styled.div`
+  font-size: 12px;
+  color: #34a853;
+  font-weight: 500;
+  margin-bottom: 12px;
+`;
+
+const Divider = styled.hr`
+  border: none;
+  border-top: 1.5px solid #d9d9d9;
+  margin: 24px 0;
+`;
+
+const ImageBox = styled.div`
+  width: 100%;
+  margin: 24px 0;
+  text-align: center;
+  img {
+    max-width: 100%;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  }
+`;
+
+const Content = styled.div`
+  font-size: 17px;
+  line-height: 1.8;
+  color: #222;
+  white-space: pre-line;
 `;
 
 const ButtonRow = styled.div`
   display: flex;
   gap: 10px;
-  margin: 16px 0 0 0;
+  margin-bottom: 16px;
 `;
 
 const LikeBtn = styled.button`
@@ -271,9 +394,9 @@ const LikeBtn = styled.button`
   gap: 4px;
   cursor: pointer;
   font-size: 13px;
-  transition: border 0.2s;
   min-width: 70px;
   height: 36px;
+  transition: border 0.2s;
   &:hover {
     border: 1.5px solid #e74c3c;
   }
@@ -285,7 +408,7 @@ const LikeIcon = styled.svg`
 `;
 
 const LikeText = styled.span`
-  color: #e74c3c;
+  color: #000;
   font-weight: 500;
   font-size: 13px;
 `;
@@ -306,9 +429,9 @@ const CommentBtn = styled.button`
   gap: 4px;
   cursor: pointer;
   font-size: 13px;
-  transition: border 0.2s;
   min-width: 70px;
   height: 36px;
+  transition: border 0.2s;
   &:hover {
     border: 1.5px solid #222;
   }
@@ -319,43 +442,11 @@ const CommentIcon = styled.svg`
   height: 17px;
 `;
 
-const CommentText = styled.span`
-  font-size: 15px;
-  color: #222;
-  display: block;
-  margin-bottom: 2px;
-  margin-left: 33px;
-`;
-
 const ArrowIcon = styled.img`
   width: 12px;
   margin-left: 4px;
   transform: ${({ $open }) => ($open ? "rotate(180deg)" : "rotate(0deg)")};
   transition: transform 0.3s ease;
-`;
-
-const ImageBox = styled.div`
-  width: 100%;
-  margin: 24px 0;
-  text-align: center;
-  img {
-    max-width: 100%;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  }
-`;
-
-const Content = styled.div`
-  font-size: 17px;
-  line-height: 1.8;
-  color: #222;
-  margin-bottom: 32px;
-  white-space: pre-line;
-`;
-
-const Divider = styled.hr`
-  border: none;
-  border-top: 1.5px solid #d9d9d9;
-  margin: 24px 0;
 `;
 
 const CommentSection = styled.div`
@@ -400,7 +491,7 @@ const CommentProfileImg = styled.img`
   height: 24px;
   border-radius: 50%;
   object-fit: cover;
-  border: 0.1px solid #C4C4C4;
+  border: 0.1px solid #c4c4c4;
 `;
 
 const CommentAuthor = styled.span`
@@ -409,36 +500,49 @@ const CommentAuthor = styled.span`
   font-size: 14px;
 `;
 
-const CommentCreateAt = styled.span`
-  font-size: 12px;
-  color: #aaa;
-  min-width: 70px;
-  text-align: right;
+const CommentText = styled.span`
+  font-size: 15px;
+  color: #222;
+  margin-left: 32px;
 `;
 
 const CommentRight = styled.div`
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  min-width: 80px;
   gap: 4px;
+`;
+
+const CommentCreateAt = styled.span`
+  font-size: 12px;
+  color: #aaa;
 `;
 
 const CommentActions = styled.div`
   display: flex;
-  gap: 4px;
-  margin-top: 2px;
+  background: #fff;
+  border-radius: 6px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  margin-right: -8px;
+  margin-bottom: 3px;
+`;
+
+const ActionDivider = styled.div`
+  width: 1px;
+  background: #e0e0e0;
+  margin: 4px 0;
 `;
 
 const ActionBtn = styled.button`
   background: none;
   border: none;
-  color: #235ba9;
+  padding: 4px 8px;
   font-size: 12px;
+  color: #235ba9;
   cursor: pointer;
-  padding: 0 4px;
+  flex: 1;
   &:hover {
-    text-decoration: underline;
+    background: #f6f6f6;
   }
 `;
 
@@ -463,74 +567,4 @@ const CommentButton = styled.button`
   padding: 0 18px;
   font-size: 15px;
   cursor: pointer;
-`;
-
-const TitleRow = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-`;
-
-const PostMenuWrapper = styled.div`
-  position: relative;
-`;
-
-const MenuButton = styled.button`
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-`;
-
-const MenuDot = styled.span`
-  display: block;
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background-color: #222;
-  margin: 2px 0;
-`;
-
-const DropdownMenu = styled.div`
-  position: absolute;
-  top: 32px;
-  right: 0;
-  background: #fff;
-  border-radius: 10px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
-  min-width: 65px;
-  padding: 0;
-  z-index: 1000;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-`;
-
-const DropdownItem = styled.button`
-  background: none;
-  border: none;
-  width: 100%;
-  padding: 12px 0;
-  font-size: 14px;
-  color: #222;
-  text-align: center;
-  cursor: pointer;
-  font-family: inherit;
-  &:hover {
-    background: #f6f6f6;
-  }
-`;
-
-const DropdownDivider = styled.div`
-  width: 100%;
-  height: 1px;
-  background: #d9d9d9;
-  margin: 0;
-`;
-
-const ConfirmationText = styled.div`
-  font-size: 12px;
-  color: #34A853;
-  font-weight: 500;
 `;

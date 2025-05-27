@@ -8,8 +8,8 @@ import Search from '../components/search/Search';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 export default function MainNav() {
-  const [showSearch, setShowSearch] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [query, setQuery] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
   const isGlobalIssueActive =
@@ -17,7 +17,7 @@ export default function MainNav() {
     location.pathname.startsWith('/more-detail');
 
   const toggleSearch = () => {
-    setShowSearch((prev) => !prev);
+    setIsSearchOpen((prev) => !prev);
   };
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -40,12 +40,12 @@ export default function MainNav() {
       </Logo>
 
       <NavMenu>
-      <NavItem
-        className={isGlobalIssueActive ? 'active' : ''}
-        onClick={() => navigate('/global-issue')}
-      >
-        글로벌 이슈
-      </NavItem>
+        <NavItem
+          className={isGlobalIssueActive ? 'active' : ''}
+          onClick={() => navigate('/global-issue')}
+        >
+          글로벌 이슈
+        </NavItem>
 
         <NavItem
           className={location.pathname === '/activity' ? 'active' : ''}
@@ -90,17 +90,20 @@ export default function MainNav() {
         <img src={VectorIcon} alt="Search Icon" onClick={toggleSearch} />
       </RightIcons>
 
-      {showSearch && (
+      {isSearchOpen && (
         <Search
-          query={searchQuery}
-          onChange={setSearchQuery}
-          onClose={() => setShowSearch(false)}
+          query={query}
+          onChange={setQuery}
+          onClose={() => {
+            setIsSearchOpen(false);
+            setQuery('');
+          }}
+          searchType="general"
         />
       )}
     </NavWrapper>
   );
 }
-
 
 const NavWrapper = styled.nav`
   width: 100%;
@@ -111,7 +114,7 @@ const NavWrapper = styled.nav`
   background-color: white;
   box-sizing: border-box;
   height: 64px;
- border-bottom: none; 
+  border-bottom: none; 
 `;
 
 const Logo = styled.div`
