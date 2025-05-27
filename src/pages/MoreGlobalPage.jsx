@@ -1,13 +1,14 @@
 // src/pages/MoreGlobalPage.jsx
 
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useLocation } from 'react-router-dom';
 import MainNav from '../layout/MainNav';
 import Footer from '../layout/Footer';
-import IssueCard from '../components/IssueCard';
+import IssueCard from '../components/issue/IssueCard';
 import Pagination from '../components/common/Pagination';
-import globalImage from '../assets/images/main/ic_IssueCardSample.png';
+import globalImage from '../assets/images/issue/ic_IssueCardSample.png';
+import usePagination from '../hooks/usePagination';
 
 const dummyGlobalIssues = Array.from({ length: 40 }, (_, idx) => ({
   id: idx + 1,
@@ -20,24 +21,23 @@ export default function MoreGlobalPage() {
   const location = useLocation();
   const query = new URLSearchParams(location.search).get('query')?.toLowerCase() || '';
 
-const finalIssues = query
-  ? dummyGlobalIssues.filter(
-      (item) =>
-        item.title.toLowerCase().includes(query) ||
-        item.tag.toLowerCase().includes(query)
-    )
-  : dummyGlobalIssues;
+  const finalIssues = query
+    ? dummyGlobalIssues.filter(
+        (item) =>
+          item.title.toLowerCase().includes(query) ||
+          item.tag.toLowerCase().includes(query)
+      )
+    : dummyGlobalIssues;
 
   const [bookmarkedIds, setBookmarkedIds] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
 
-  const paginatedIssues = useMemo(() => {
-    const start = (currentPage - 1) * itemsPerPage;
-    return finalIssues.slice(start, start + itemsPerPage);
-  }, [currentPage, finalIssues]);
-
-  const totalPages = Math.ceil(finalIssues.length / itemsPerPage);
+  const {
+    currentPage,
+    totalPages,
+    currentData: paginatedIssues,
+    goToPage,
+  } = usePagination(finalIssues, itemsPerPage);
 
   const toggleBookmark = (id) => {
     setBookmarkedIds((prev) =>
@@ -52,25 +52,24 @@ const finalIssues = query
         <Title>‘{query}’의 검색 결과</Title>
         <Subtitle>글로벌 이슈</Subtitle>
         <CardGrid>
-  {(finalIssues.length === 1 ? finalIssues : paginatedIssues).map((item) => (
-    <IssueCard
-      key={item.id}
-      title={item.title}
-      tag={item.tag}
-      image={item.image}
-      bookmarked={bookmarkedIds.includes(item.id)}
-      onToggle={() => toggleBookmark(item.id)}
-    />
-  ))}
+          {(finalIssues.length === 1 ? finalIssues : paginatedIssues).map((item) => (
+            <IssueCard
+              key={item.id}
+              title={item.title}
+              tag={item.tag}
+              image={item.image}
+              bookmarked={bookmarkedIds.includes(item.id)}
+              onToggle={() => toggleBookmark(item.id)}
+            />
+          ))}
         </CardGrid>
-    {finalIssues.length > 1 && (
-  <Pagination
-    currentPage={currentPage}
-    totalPages={totalPages}
-    onPageChange={setCurrentPage}
-  />
-)}
-
+        {finalIssues.length > itemsPerPage && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            goToPage={goToPage}
+          />
+        )}
       </Content>
       <Footer />
     </Wrapper>

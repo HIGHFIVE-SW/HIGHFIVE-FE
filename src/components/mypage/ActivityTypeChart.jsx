@@ -16,9 +16,10 @@ const dataByField = [
 
 const dataByType = [
   { name: '전체', value: 15 },
-  { name: '봉사', value: 8 },
-  { name: '캠페인', value: 2 },
-  { name: '공모전', value: 5 },
+  { name: '공모전', value: 8 },
+  { name: '봉사활동', value: 2 },
+  { name: '서포터즈', value: 5 },
+  { name: '인턴십', value: 5 },
 ];
 
 const chartOptions = ['분야', '유형'];
@@ -42,7 +43,7 @@ export default function ActivityTypeSwitcherChart() {
 
       <ResponsiveContainer width="100%" height={300}>
         <BarChart data={chartData} margin={{ top: 10, right: 30, left: 10, bottom: 10 }}>
-          <CartesianGrid strokeDasharray="3 3" />
+          <CartesianGrid strokeDasharray="3 3" vertical={false}/>
           <XAxis dataKey="name" stroke="#888" />
           <YAxis stroke="#888" allowDecimals={false} />
           <Bar
@@ -67,6 +68,7 @@ const ChartCard = styled.div`
   border-radius: 20px;
   padding: 28px 32px;
   box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05);
+  margin-bottom: 40px;
 `;
 
 const ChartHeader = styled.div`

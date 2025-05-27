@@ -3,20 +3,25 @@ import styled from 'styled-components';
 import CloseIcon from '../../assets/images/search/ic_close.png';
 import { useNavigate } from 'react-router-dom';
 
-export default function Search({ query, onChange, onClose }) {
+export default function Search({ query, onChange, onClose, searchType }) {
   const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (query.trim()) {
-      navigate(`/search?query=${encodeURIComponent(query)}`);
+      // searchType에 따라 다른 경로로 이동
+      if (searchType === 'board') {
+        navigate(`/board/search?query=${encodeURIComponent(query)}`);
+      } else {
+        navigate(`/search?query=${encodeURIComponent(query)}`);
+      }
       onClose(); 
     }
   };
 
   return (
-    <Wrapper>
-      <SearchBox>
+    <Wrapper onClick={onClose}>
+      <SearchBox onClick={(e) => e.stopPropagation()}>
         <form onSubmit={handleSubmit}>
           <InputWrapper>
             <Input
@@ -38,14 +43,19 @@ export default function Search({ query, onChange, onClose }) {
 }
 
 const Wrapper = styled.div`
-  position: absolute;
-  top: 64px;
-  right: 32px;
-  z-index:2000;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: transparent;
+  z-index: 2000;
 `;
 
 const SearchBox = styled.div`
-  position: relative;
+  position: absolute;
+  top: 64px;
+  right: 32px;
   background-color: #ffffff;
   border-radius: 30px;
   box-shadow: 0px 4px 4px #00000040;

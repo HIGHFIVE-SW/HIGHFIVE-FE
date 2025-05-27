@@ -19,6 +19,11 @@ import LevelGuide from '../components/level/LevelGuide';
 import Mypage from '../pages/MyPage';
 import ProfileEditPage from '../pages/ProfileEditPage';
 import UserPage from '../pages/UserPage';
+import PostWritePage from '../pages/board/PostWritePage';
+import BoardDetailPage from '../pages/board/BoardDetailPage';
+import BoardSearchResultPage from '../pages/board/BoardSearchResultPage';
+import MoreReviewPage from '../pages/board/MoreReviewPage';
+import MoreFreePage from '../pages/board/MoreFreePage';
 
 export default function AppRoutes() {
   return (
@@ -38,14 +43,17 @@ export default function AppRoutes() {
       <Route path="/more-detail" element={<MoreDetailPage />} />
       <Route path="/global-issue/:id" element={<GlobalIssueDetailPage />} />
       <Route path="/board/review" element={<ReviewBoardPage />} />
-
-      <Route path="/board/review" element={<ReviewBoardPage />} />
       <Route path="/board/free" element={<FreeBoardPage />} />
       <Route path="/level-guide" element={<LevelGuide />} />
 
       <Route path="/global-issue-detail" element={<GlobalIssueDetailPage />} />
       <Route path="/more-detail" element={<MoreActivityPage />} />
       <Route path="/user" element={<UserPage />} />
+      <Route path="/board/write" element={<PostWritePage />} />
+      <Route path="/board/detail/:id" element={<BoardDetailPage />} />
+      <Route path="/board/search" element={<BoardSearchResultPage />} />
+      <Route path="/more/review" element={<MoreReviewPage />} />
+      <Route path="/more/free" element={<MoreFreePage />} />
     </Routes>
   );
 }

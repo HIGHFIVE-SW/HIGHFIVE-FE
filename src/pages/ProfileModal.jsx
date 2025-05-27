@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import styled from 'styled-components';
-import avatar from '../assets/images/profile/ic_Avater.png';
+import avatar from '../assets/images/profile/DefaultProfile.png';
 import cameraIcon from '../assets/images/profile/ic_ProfileCamera.png';
 import InterestModal from './InterestModal';
 import NotoSansKR from '../assets/fonts/NotoSansKR-VariableFont_wght.ttf';
@@ -47,8 +47,8 @@ export default function ProfileModal({ onClose }) {
   return (
     <>
       <GlobalFontStyle />
-      <ModalOverlay>
-        <ModalBox>
+      <ModalOverlay onClick={onClose}>
+        <ModalBox onClick={(e) => e.stopPropagation()}>
           <h2>프로필을 설정해주세요.</h2>
 
           <ProfileImageWrapper>

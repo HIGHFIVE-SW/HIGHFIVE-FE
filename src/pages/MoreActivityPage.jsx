@@ -30,6 +30,7 @@ export default function MoreActivityPage() {
     : dummyGlobalIssues;
 
   const itemsPerPage = 12;
+  
   const {
     currentPage,
     totalPages,
@@ -68,7 +69,7 @@ export default function MoreActivityPage() {
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}
-            onPageChange={goToPage}
+            goToPage={goToPage}
           />
         )}
       </Content>

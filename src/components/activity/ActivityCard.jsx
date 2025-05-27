@@ -9,12 +9,12 @@ export default function ActivityCard({ title, tags, image, date, bookmarked, onT
     <CardLink to={destination}>
       <Card>
         <ImageWrapper>
-          <IssueImage src={image} alt="이슈 이미지" />
+          <IssueImage src={image} alt="활동 이미지" />
           {isClosed && <ClosedBadge>마감</ClosedBadge>}
           <BookmarkIcon
             src={bookmarked
-              ? require('../../assets/images/main/BookmarkFilledButton.png')
-              : require('../../assets/images/main/BookmarkButton.png')}
+              ? require('../../assets/images/common/BookmarkFilledButton.png')
+              : require('../../assets/images/common/BookmarkButton.png')}
             alt="북마크"
             onClick={(e) => {
               e.preventDefault(); // 링크 이동 방지
@@ -22,7 +22,7 @@ export default function ActivityCard({ title, tags, image, date, bookmarked, onT
             }}
           />
         </ImageWrapper>
-        <p className="issue-title">{title}</p>
+        <p className="activity-title">{title}</p>
         <Tags>
           {Array.isArray(tags)
             ? tags.map((t, idx) => <span key={idx}>{t}</span>)
@@ -58,34 +58,32 @@ const CardLink = styled(Link)`
   }
 `;
 
-const Card = styled.div`
-  width: 330px;
-  height: 430px;
-  border: 3px solid #235BA9;
-  background-color: #fff;
-  text-align: left;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  overflow: visible;
-  padding: 0 20px;
-  cursor: pointer;
+ const Card = styled.div`
+   width: 330px;
+   height: 430px;
+   border: 3px solid #235BA9;
+   background-color: #fff;
+   text-align: left;
+   box-sizing: border-box;
+   display: flex;               /* flex 컨테이너 유지 */
+   flex-direction: column;      /* 세로 정렬 */
+   overflow: visible;
+   padding: 0 20px;
+   cursor: pointer;
 
-  .issue-title {
+  .activity-title {
     font-size: 23px;
     font-weight: bold;
-    margin-top: 50px;
+    margin-top: 40px;
     margin-bottom: 10px;
     font-family: NotoSansCustom;
-
-  height: 60px; 
-  overflow: hidden; 
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 2; /* 최대 2줄 */
-  -webkit-box-orient: vertical;
-  }
+    word-break: keep-all;
+    overflow: hidden; 
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    }
 `;
 
 const ImageWrapper = styled.div`
@@ -108,30 +106,30 @@ const IssueImage = styled.img`
 
 const BookmarkIcon = styled.img`
   position: absolute;
-  bottom: -50px;
-  right: 5px;
-  width: 60px;
-  height: 60px;
+  bottom: -45.5px;
+  right: 1px;
+  width: 55px;
+  height: 55px;
   cursor: pointer;
   z-index: 10;
 `;
 
 const Tags = styled.p`
-  font-size: 18px;
-  margin: 0 0 4px 0;
-  white-space: pre-line;
+   font-size: 18px;
+   margin: 0;
+   margin-top: auto;            /* 이 한 줄로 아래로 밀어줍니다 */
+ 
+   span {
+     color: #235BA9;
+     margin-right: 10px;
+   }
+ `;
 
-  span {
-    color: #235BA9;
-    margin-right: 10px;
-  }
-`;
-
-const DateText = styled.p`
-  font-size: 15px;
-  color: #808080;
-  margin: 0;
-`;
+ const DateText = styled.p`
+   font-size: 15px;
+   color: #808080;
++  margin-top: 8px;             /* 태그와 날짜 사이 간격 */
+ `;
 
 const ClosedBadge = styled.div`
   position: absolute;

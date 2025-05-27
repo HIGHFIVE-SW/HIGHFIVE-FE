@@ -142,14 +142,14 @@ const FilterSection = styled.div`
   display: flex;
   gap: 40px;
   justify-content: flex-start;
-  padding: 0 0 60px 0;
+  padding: 0 0 30px 0;
   flex-wrap: wrap;
   margin-left: 5px;
 `;
 
 const FilterBlock = styled.div`
-  width: 128px;
-  height: 72px;
+  width: 120px;
+  height: 70px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -159,7 +159,6 @@ const FilterLabel = styled.label`
   font-size: 14px;
   font-weight: 500;
   margin-bottom: 6px;
-  padding-left: 30px;
 `;
 
 const CardGrid = styled.div`

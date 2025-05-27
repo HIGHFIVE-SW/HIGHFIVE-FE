@@ -37,7 +37,7 @@ const ActivityTrendChart = () => {
 
       <ResponsiveContainer width="100%" height={300}>
         <LineChart data={trendData} margin={{ top: 10, right: 30, left: 20, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" />
+          <CartesianGrid strokeDasharray="3 3" vertical={false}/>
           <XAxis dataKey="month" stroke="#888" />
           <YAxis hide />
           <Tooltip contentStyle={{ borderRadius: '10px', backgroundColor: '#f6faff', border: '1px solid #ccc' }} />

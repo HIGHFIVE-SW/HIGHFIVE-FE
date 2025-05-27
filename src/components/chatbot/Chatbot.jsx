@@ -7,7 +7,7 @@ import card1 from '../../assets/images/main/Card1Button.png';
 import card2 from '../../assets/images/main/Card2Button.png';
 import card3 from '../../assets/images/main/Card3Button.png';
 import daily from '../../assets/images/main/DailyButton.png';
-import activityImage from '../../assets/images/main/ic_IssueCardSample.png';
+import activityImage from '../../assets/images/issue/ic_IssueCardSample.png';
 
 export default function Chatbot() {
   const [showChatbot, setShowChatbot] = useState(false);
@@ -95,7 +95,7 @@ export default function Chatbot() {
 
           <ChatContentArea ref={messageEndRef}>
             <ChatBubble type="bot">
-              안녕하세요, Trendy 입니다. <p>무엇을 도와드릴까요?</p>
+              안녕하세요, Trendy 입니다. {'\n'} 무엇을 도와드릴까요?
             </ChatBubble>
 
             <ScrollCardWrapper>
@@ -152,8 +152,8 @@ const ChatbotButton = styled.button`
   position: fixed;
   bottom: 32px;
   right: 32px;
-  width: 120px;
-  height: 120px;
+  width: 100px;
+  height: 100px;
   background-color: #F9FBFF;
   border-radius: 50%;
   box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.3);
@@ -166,13 +166,13 @@ const ChatbotButton = styled.button`
   align-items: center;
 
   img.chatbot-icon {
-    width: 100px;
-    height: 100px;
+    width: 90px;
+    height: 90px;
   }
 
   img.close-icon {
-    width: 70px;
-    height: 70px;
+    width: 60px;
+    height: 60px;
   }
 `;
 
@@ -180,15 +180,14 @@ const ChatbotPanel = styled.div`
   position: fixed;
   bottom: 160px;
   right: 32px;
-  width: 420px;
-  height: 82vh;
+  width: 400px;
+  height: 75vh;
   background: #235BA9;
   box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
   z-index: 10000;
   display: flex;
   flex-direction: column;
-  border-top-left-radius: 16px;
-  border-top-right-radius: 16px;
+  border-radius: 18px;
 `;
 
 const ChatHeader = styled.div`
@@ -198,6 +197,7 @@ const ChatHeader = styled.div`
   background-color: #F6FAFF;
   padding: 5px;
   gap: 10px;
+  border-radius: 16px 16px 0 0;
 
   img {
     width: 36px;
@@ -249,18 +249,22 @@ const SendButton = styled.button`
 `;
 
 const ChatBubble = styled.div`
-  align-self: ${({ type }) => (type === 'bot' ? 'flex-start' : 'flex-end')};
-  background-color: ${({ type }) => (type === 'bot' ? '#FFFFFF' : '#D9EAFF')};
-  padding: 10px 18px;
-  border-radius: 20px;
-  margin: 6px 0;
-  font-size: 16px;
-  font-weight: 500;
-  color: #000;
-  width: 80%;
-  box-shadow: ${({ type }) =>
-    type === 'user' ? '0px 4px 10px rgba(0, 0, 0, 0.1)' : 'none'};
-  border: ${({ type }) => (type === 'user' ? '2px solid #D9EAFF' : 'none')};
+    align-self: ${({ type }) => (type === 'bot' ? 'flex-start' : 'flex-end')};
+    background-color: ${({ type }) => (type === 'bot' ? '#FFFFFF' : '#D9EAFF')};
+    padding: 10px 18px;
+    border-radius: 20px;
+    margin: 6px 0;
+    font-size: 14px;
+    font-weight: 500;
+    color: #000;
+    display: inline-block;         /* 텍스트 크기에 맞는 블록 */
+    width: fit-content;            /* 내용에 맞춰 폭 조절 */
+    max-width: 80%;                /* 너무 길면 최대 80% 까지만 */
+    box-shadow: ${({ type }) =>
+      type === 'user' ? '0px 4px 10px rgba(0, 0, 0, 0.1)' : 'none'};
+    border: ${({ type }) => (type === 'user' ? '2px solid #D9EAFF' : 'none')};
+    word-break: keep-all;
+  white-space: pre-wrap;
 
   img {
     margin-top: 10px;
@@ -300,8 +304,8 @@ const ScrollCardRow = styled.div`
 `;
 
 const CardItem = styled.div`
-  width: 170px;
-  height: 180px;
+  width: 150px;
+  height: 160px;
   background: #f5f5f5;
   border-radius: 12px;
   text-align: center;
@@ -317,15 +321,15 @@ const CardItem = styled.div`
 `;
 
 const CardTitle = styled.div`
-  font-size: 13px;
+  font-size: 12px;
   font-weight: bold;
 `;
 
 const CardDesc = styled.div`
-  font-size: 11px;
+  font-size: 10px;
   color: #666;
   margin-top: 4px;
-`;
+  `;
 
 const ActivityBlock = styled.div`
   margin-top: 20px;

@@ -2,32 +2,28 @@ import React from "react";
 import styled from "styled-components";
 import useLike from "../../../hooks/useLike";
 import LikeButton from "../LikeButton";
+import CategoryTag from "../../common/CategoryTag";
+import { useNavigate } from "react-router-dom";
 
-const getCategoryStyle = (category) => {
-  switch (category) {
-    case "환경": return { textColor: "#34A853" };
-    case "사람과 사회": return { textColor: "#6B3FEF" };
-    case "경제": return { textColor: "#E9AD00" };
-    case "기술": return { textColor: "#1C4987" };
-    default: return { textColor: "#333" };
-  }
-};
+const ReviewCard = ({ id, category, image, title, content, date, writer, likeCount }) => {
+  const { liked, count, toggleLike } = useLike(likeCount, false);
+  const navigate = useNavigate();
 
-const ReviewCard = ({ category, image, title, content, date, writer, likeCount }) => {
-  const { textColor } = getCategoryStyle(category);
-    const { liked, count, toggleLike } = useLike(likeCount, false);
+  const handleCardClick = () => {
+    navigate(`/board/detail/${id}`);
+  };
 
   return (
-    <Card>
+    <Card onClick={handleCardClick}>
       <HoverOverlay>
         <TopRow>
           <HoverContentWrapper>
             <HoverContent>{content}</HoverContent>
-            {content.split(' ').length > 20 && (  // ✨ 예: 단어 40개 이상이면 더보기 표시
+            {content.split(' ').length > 20 && (
             <HoverMore>더보기 &gt;</HoverMore>
             )}
           </HoverContentWrapper>
-          <HoverLike>
+          <HoverLike onClick={(e) => e.stopPropagation()}>
             <LikeButton liked={liked} count={count} onClick={toggleLike} /> 
           </HoverLike>
         </TopRow>
@@ -39,7 +35,7 @@ const ReviewCard = ({ category, image, title, content, date, writer, likeCount }
 
       <ImageContainer>
         <StyledImage src={image} alt={title} />
-        <CategoryTag textColor={textColor}>{category}</CategoryTag>
+        <CategoryTag category={category} />
         <OverlayTitle>{title}</OverlayTitle>
       </ImageContainer>
     </Card>
@@ -48,8 +44,7 @@ const ReviewCard = ({ category, image, title, content, date, writer, likeCount }
 
 export default ReviewCard;
 
-
-
+// 기존 스타일들 (CategoryTag 관련 스타일 제거)
 const Card = styled.div`
   width: 353px;
   height: 453px;
@@ -82,24 +77,6 @@ const StyledImage = styled.img`
   border-radius: 20px;
 `;
 
-const CategoryTag = styled.div`
-  position: absolute;
-  top: 0;
-  left: 0;
-  background-color: #F6FAFF;
-  color: ${({ textColor }) => textColor};
-  border: 1.5px solid ${({ textColor }) => textColor};
-  box-sizing: border-box;
-  padding: 10px 20px;
-  font-size: 20px;
-  border-radius: 20px;
-  font-family: "Noto Sans KR";
-  font-weight: 400;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-`;
-
 const OverlayTitle = styled.div`
   position: absolute;
   bottom: 12px;
@@ -126,9 +103,8 @@ const HoverOverlay = styled.div.attrs({ className: "hover-overlay" })`
   background-color: rgba(0, 0, 0, 0.7);
   opacity: 0;
   transition: opacity 0.3s ease;
-  pointer-events: auto;;
+  pointer-events: auto;
   border-radius: 20px;
-
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -141,7 +117,6 @@ const TopRow = styled.div`
   align-items: flex-start;
   gap: 16px;
 `;
-
 
 const HoverLike = styled.div`
   align-self: flex-start;
@@ -183,7 +158,6 @@ const HoverContent = styled.div`
   margin-bottom: 12px;
 `;
 
-
 const HoverBottom = styled.div`
   display: flex;
   justify-content: space-between;
@@ -191,12 +165,12 @@ const HoverBottom = styled.div`
   margin-top: 12px;
 `;
 
-
 const HoverDate = styled.div`
   font-size: 18px;
   margin-bottom: 12px;
   margin-left: 12px;
 `;
+
 const HoverWriter = styled.div`
   font-size: 18px;
   margin-bottom: 12px;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import MainNav from '../layout/MainNav';
@@ -7,7 +7,7 @@ import ActivityTypeChart from '../components/mypage/ActivityTypeChart';
 import ActivityTrendChart from '../components/mypage/ActivityTrendChart';
 import MyPostList from '../components/mypage/MyPostList';
 
-import defaultProfileImg from '../assets/images/nav/DefaultProfile.png';
+import defaultProfileImg from '../assets/images/profile/DefaultProfile.png';
 import rankImg from '../assets/images/level/ic_Master.png';
 
 const UserPage = () => {
@@ -15,8 +15,6 @@ const UserPage = () => {
   const navigate = useNavigate();
   const user = state || {};
   const [activeTab, setActiveTab] = useState('statistics');
-  const tabsRef = useRef({});
-  const [barLeft, setBarLeft] = useState(0);
   const currentUser = localStorage.getItem('nickname');
 
   const profile = {
@@ -30,14 +28,12 @@ const UserPage = () => {
     keyword: user.keyword || '경제',
   };
 
-  useEffect(() => {
-    if (tabsRef.current[activeTab]) {
-      setBarLeft(
-        tabsRef.current[activeTab].offsetLeft +
-        (tabsRef.current[activeTab].offsetWidth - 60) / 2
-      );
-    }
-  }, [activeTab]);
+  const dummyTypeStats = [
+    { activityType: 'CONTEST', count: 4 },
+    { activityType: 'VOLUNTEER', count: 2 },
+    { activityType: 'INTERNSHIP', count: 1 },
+    { activityType: 'SUPPORTERS', count: 0 },
+  ];
 
   if (profile.nickname === currentUser) {
     navigate('/mypage');
@@ -50,12 +46,13 @@ const UserPage = () => {
       <ContentWrapper>
         <PageWrapper>
           <LeftPanel>
+            <TitleText>'{profile.nickname}'님의 페이지</TitleText>
             <ProfileWrapper>
               <ProfileImage src={profile.profileUrl} alt="프로필" />
             </ProfileWrapper>
-            <TitleText>'{profile.nickname}'님의 페이지</TitleText>
             <Nickname>{profile.nickname}</Nickname>
             <KeywordTag>#{profile.keyword}</KeywordTag>
+            
             <Card>
               <CardTitle>나의 등급</CardTitle>
               <LevelImage src={profile.rankImage} alt="등급" />
@@ -63,8 +60,9 @@ const UserPage = () => {
               <ProgressWrapper>
                 <ProgressBar style={{ width: `${profile.progress}%` }} />
               </ProgressWrapper>
-              <ProgressLabel>Lv4 준비</ProgressLabel>
+              <ProgressLabel>Lv4 유니버스 리더</ProgressLabel>
             </Card>
+            
             <Card>
               <CardTitle>랭킹</CardTitle>
               <LevelImage src={profile.rankImage} alt="등급 이미지" />
@@ -86,25 +84,28 @@ const UserPage = () => {
           <RightPanel>
             <TabsWrapper>
               <Tabs>
-                <Tab ref={el => (tabsRef.current['statistics'] = el)} active={activeTab === 'statistics'} onClick={() => setActiveTab('statistics')}>활동 통계</Tab>
-                <Tab ref={el => (tabsRef.current['posts'] = el)} active={activeTab === 'posts'} onClick={() => setActiveTab('posts')}>작성한 글</Tab>
+                <Tab
+                  active={activeTab === 'statistics'}
+                  onClick={() => setActiveTab('statistics')}
+                >
+                  활동 통계
+                </Tab>
+                <Tab
+                  active={activeTab === 'posts'}
+                  onClick={() => setActiveTab('posts')}
+                >
+                  작성한 글
+                </Tab>
               </Tabs>
-              <Underline />
-              <ActiveBar style={{ left: `${barLeft}px` }} />
             </TabsWrapper>
 
             {activeTab === 'statistics' && (
-              <StatisticsPanel>
+              <GraphSection>
                 <ActivityTrendChart />
-                <ActivityTypeChart />
-              </StatisticsPanel>
+                <ActivityTypeChart data={dummyTypeStats} />
+              </GraphSection>
             )}
-
-            {activeTab === 'posts' && (
-              <PostPanel>
-                <MyPostList />
-              </PostPanel>
-            )}
+            {activeTab === 'posts' && <MyPostList />}
           </RightPanel>
         </PageWrapper>
       </ContentWrapper>
@@ -114,6 +115,8 @@ const UserPage = () => {
 };
 
 export default UserPage;
+
+/* Styled Components - MyPage와 동일한 스타일 적용 */
 
 const PageContainer = styled.div`
   display: flex;
@@ -143,25 +146,27 @@ const LeftPanel = styled.div`
 const ProfileWrapper = styled.div`
   width: 120px;
   height: 120px;
+  margin-bottom: 16px;
   border-radius: 50%;
   background-color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 16px;
 `;
 
 const ProfileImage = styled.img`
   width: 100%;
   height: 100%;
-  object-fit: cover;
   border-radius: 50%;
+  object-fit: cover;
 `;
 
 const TitleText = styled.div`
   font-weight: bold;
-  font-size: 20px;
+  font-size: 22px;
   margin-bottom: 8px;
+  color: #000;
+  margin-bottom: 24px;
 `;
 
 const Nickname = styled.h3`
@@ -171,7 +176,7 @@ const Nickname = styled.h3`
 
 const KeywordTag = styled.div`
   padding: 4px 12px;
-  background-color: #ffffff;
+  background-color: white;
   color: #235ba9;
   border-radius: 12px;
   font-size: 14px;
@@ -180,7 +185,7 @@ const KeywordTag = styled.div`
 `;
 
 const Card = styled.div`
-  background: #fff;
+  background: white;
   border-radius: 16px;
   padding: 20px;
   width: 100%;
@@ -204,7 +209,7 @@ const LevelImage = styled.img`
 const LevelText = styled.div`
   font-size: 15px;
   font-weight: 600;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
 `;
 
 const ProgressWrapper = styled.div`
@@ -213,7 +218,7 @@ const ProgressWrapper = styled.div`
   background-color: #eee;
   border-radius: 6px;
   overflow: hidden;
-  margin-bottom: 10px;
+  margin-bottom: 6px;
 `;
 
 const ProgressBar = styled.div`
@@ -224,6 +229,7 @@ const ProgressBar = styled.div`
 const ProgressLabel = styled.div`
   font-size: 12px;
   color: #666;
+  margin-bottom: 22px;
 `;
 
 const RankRow = styled.div`
@@ -231,11 +237,11 @@ const RankRow = styled.div`
   justify-content: center;
   align-items: center;
   gap: 24px;
-  margin-top: 20px;
 `;
 
 const RankItem = styled.div`
   text-align: center;
+  margin-bottom: 22px;
 `;
 
 const Label = styled.div`
@@ -257,60 +263,51 @@ const Divider = styled.div`
 
 const RightPanel = styled.div`
   flex: 1;
-  width: 125%;
-  margin-right: -10%;
-`;
-
-const StatisticsPanel = styled.div`
-  width: 100%;
-  padding-right: 0px;
+  padding: 32px 48px;
   display: flex;
   flex-direction: column;
-  gap: 48px;
-`;
-
-const PostPanel = styled.div`
-  width: 110%;
-  margin-left: 3%;
+  align-items: center;
+  justify-content: flex-start;
 `;
 
 const TabsWrapper = styled.div`
-  position: relative;
+  display: flex;
+  justify-content: center;
   margin-bottom: 30px;
-  margin-left: 170px;
-  margin-top: 20px;
 `;
 
 const Tabs = styled.div`
   display: flex;
+  gap: 24px;
+  border-bottom: 1px solid #ddd;
+  width: fit-content;
+  margin: 0 auto;
 `;
 
 const Tab = styled.div`
-  font-weight: 600;
-  font-size: 22px;
-  padding-bottom: 10px;
-  margin-left: 140px;
-  cursor: pointer;
-  color: ${({ active }) => (active ? '#235ba9' : '#999')};
   position: relative;
-  z-index: 1;
+  padding: 12px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: ${({ active }) => (active ? '#235ba9' : '#999')};
+  cursor: pointer;
+  transition: color 0.2s;
+
+  &:after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: ${({ active }) => (active ? '100%' : '0')};
+    height: 3px;
+    background-color: #235ba9;
+    border-radius: 2px;
+    transition: width 0.3s;
+  }
 `;
 
-const Underline = styled.div`
-  position: absolute;
-  bottom: 0;
-  width: 280px;
-  height: 1px;
-  background-color: #ccc;
-  margin-left: 20%;
-`;
-
-const ActiveBar = styled.div`
-  position: absolute;
-  bottom: -1px;
-  height: 3px;
-  width: 100px;
-  background-color: #235BA9;
-  border-radius: 999px;
-  transition: left 0.3s ease;
+const GraphSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
 `;

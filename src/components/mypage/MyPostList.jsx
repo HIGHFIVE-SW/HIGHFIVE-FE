@@ -1,3 +1,5 @@
+// src/components/mypage/MyPostsList.jsx
+
 import React, { useEffect } from 'react';
 import styled from 'styled-components';
 import usePagination from '../../hooks/usePagination';
@@ -22,9 +24,8 @@ const MyPostsList = () => {
 
   useEffect(() => {
     goToPage(1); // 1페이지로 초기화
-  }, []);
+  }, [goToPage]);
 
-  
   return (
     <Wrapper>
       {(paginatedPosts ?? []).length === 0 ? (
@@ -44,7 +45,11 @@ const MyPostsList = () => {
               {paginatedPosts.map((post, idx) => (
                 <tr key={post.id}>
                   <td>{(currentPage - 1) * itemsPerPage + idx + 1}</td>
-                  <td><BoardTag>{post.board}</BoardTag></td>
+                  <td>
+                    <BoardTag board={post.board}>
+                      {post.board}
+                    </BoardTag>
+                  </td>
                   <td>{post.title}</td>
                   <td>{post.date}</td>
                 </tr>
@@ -66,6 +71,8 @@ const MyPostsList = () => {
 
 export default MyPostsList;
 
+
+
 const Wrapper = styled.div`
   background: #fff;
   padding: 24px;
@@ -75,18 +82,20 @@ const Wrapper = styled.div`
 `;
 
 const Table = styled.table`
-  width: 140%;
+  width: 900px;
+  max-width: 100%;
+  margin: 0 auto;
   border-collapse: collapse;
-  margin-right: -40%;
   border-top: 2px solid #235ba9;
   border-bottom: 2px solid #235ba9;
 
   th {
     background-color: #f5f9ff;
-    color: #235ba9;
-    font-weight: 700;
+    color: #000;
+    font-weight: 500;
     font-size: 15px;
     padding: 14px 0;
+    height: 30px;
   }
 
   td {
@@ -94,13 +103,15 @@ const Table = styled.table`
     font-size: 14px;
     color: #333;
     border-top: 1px solid #d9e5f6;
+    height: 30px;
   }
 
   tr:nth-child(even) {
     background-color: #f7faff;
   }
 
-  td, th {
+  td,
+  th {
     text-align: center;
   }
 `;
@@ -109,7 +120,8 @@ const BoardTag = styled.div`
   display: inline-block;
   padding: 4px 12px;
   border-radius: 999px;
-  background-color: #235ba9;
+  background-color: ${({ board }) =>
+    board === '자유 게시판' ? '#1C4987' : '#235ba9'};
   color: #fff;
   font-size: 13px;
   font-weight: 500;
@@ -125,5 +137,7 @@ const EmptyMessage = styled.div`
 const PaginationWrapper = styled.div`
   margin-top: 24px;
   display: flex;
-  margin-right: 16%;
+  justify-content: center;
+  width: 100%;
+  max-width: 1000px;
 `;

@@ -4,10 +4,10 @@ import { useLocation,useNavigate } from 'react-router-dom';
 import MainNav from '../layout/MainNav';
 import Footer from '../layout/Footer';
 import ActivityCard from '../components/activity/ActivityCard';
-import sampleImage from '../assets/images/main/ic_IssueCardSample.png';
-import linkIcon from '../assets/images/ic_Link.png';
-import BookmarkButtonIcon from '../assets/images/main/BookmarkButton.png';
-import BookmarkFilledIcon from '../assets/images/main/BookmarkFilledButton.png';
+import sampleImage from '../assets/images/issue/ic_IssueCardSample.png';
+import linkIcon from '../assets/images/issue/ic_Link.png';
+import BookmarkButtonIcon from '../assets/images/common/BookmarkButton.png';
+import BookmarkFilledIcon from '../assets/images/common/BookmarkFilledButton.png';
 
 const dummyActivities = [
   {

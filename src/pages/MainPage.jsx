@@ -3,11 +3,11 @@ import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import MainNav from '../layout/MainNav';
 import Footer from '../layout/Footer';
-import IssueCard from '../components/IssueCard';
+import IssueCard from '../components/issue/IssueCard';
 import Chatbot from '../components/chatbot/Chatbot';
 
 import globalIssueImage from '../assets/images/main/ic_GlobalIssue.png';
-import issueSampleImage from '../assets/images/main/ic_IssueCardSample.png';
+import issueSampleImage from '../assets/images/issue/ic_IssueCardSample.png';
 import envCard from '../assets/images/main/EnvironmentButton.png';
 import peopleCard from '../assets/images/main/PeopleButton.png';
 import economyCard from '../assets/images/main/EconomyButton.png';
@@ -18,9 +18,9 @@ export default function MainPage() {
   const navigate = useNavigate();
 
   const dummyIssues = [
-    { title: '글로벌 “관세 전쟁” 공포  \n  … 국내 증시 ‘타격’', tag: '#정치' },
-    { title: '글로벌 “관세 전쟁” 공포  \n  … 국내 증시 ‘타격’', tag: '#경제' },
-    { title: '글로벌 “관세 전쟁” 공포  \n  … 국내 증시 ‘타격’', tag: '#사회' },
+    { title: '글로벌 “관세 전쟁” 공포 … 국내 증시 ‘타격’', tag: '#정치' },
+    { title: '글로벌 “관세 전쟁” 공포 … 국내 증시 ‘타격’', tag: '#경제' },
+    { title: '글로벌 “관세 전쟁” 공포 … 국내 증시 ‘타격’', tag: '#사회' },
   ];
 
   const categories = [
@@ -154,12 +154,12 @@ const Wrapper = styled.section`
 `;
 
 const Title = styled.h2`
-  font-size: 50px;
+  font-size: 40px;
   font-weight: bold;
 `;
 
 const Subtitle = styled.p`
-  font-size: 40px;
+  font-size: 30px;
   color: #666;
   margin: 10px 0 32px;
 `;
@@ -175,17 +175,17 @@ const Category = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  font-size: 30px;
+  font-size: 25px;
   cursor: pointer;
   transition: transform 0.3s;
 
-  &:hover {
-    transform: scale(1.05);
+  img:hover {
+    transform: scale(1.10);
   }
 
   img {
-    width: 305px;
-    height: 344px;
+    width: 230px;
+    height: 230px;
     margin-bottom: 8px;
   }
 `;

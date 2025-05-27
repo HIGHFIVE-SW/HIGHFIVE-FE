@@ -20,47 +20,65 @@ export default function InterestSelect({ selected, onSelect }) {
   return (
     <Grid>
       {interestItems.map((item) => (
-        <Card
+        <InterestCard
           key={item.id}
           selected={selected === item.id}
           onClick={() => onSelect(item.id)}
         >
-          <img
-            src={selected === item.id ? item.activeImage : item.image}
-            alt={item.label}
-            style={{ width: 70, height: 111 }}
-          />
-          <Label selected={selected === item.id}>{item.label}</Label>
-        </Card>
+          <CardInner>
+            <CardImage
+              src={selected === item.id ? item.activeImage : item.image}
+              alt={item.label}
+            />
+            <LabelText selected={selected === item.id}>{item.label}</LabelText>
+          </CardInner>
+        </InterestCard>
       ))}
     </Grid>
   );
 }
 
 const Grid = styled.div`
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(4, 208px);
+  gap: 40px;
   justify-content: center;
-  gap: 32px;
-  margin-top: 32px;
-  flex-wrap: wrap;
+  align-items: center;
+  margin-top: 40px;
 `;
 
-const Card = styled.div`
+const InterestCard = styled.div`
+  background-color: ${({ selected }) => (selected ? '#F1F6FF' : '#EAEAEA')};
+  border-radius: 16px;
+  cursor: pointer;
+  transition: transform 0.2s;
+  outline: ${({ selected }) => (selected ? '3px solid #235BA9' : 'none')};
   width: 208px;
   height: 169px;
-  background: ${({ selected }) => (selected ? '#F1F6FF' : '#EAEAEA')};
-  border-radius: 16px;
-  outline: ${({ selected }) => (selected ? '3px solid #235BA9' : 'none')};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    transform: scale(1.02);
+  }
+`;
+
+const CardInner = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  cursor: pointer;
 `;
 
-const Label = styled.span`
-  margin-top: 10px;
-  font-size: 18px;
-  font-weight: 600;
+const CardImage = styled.img`
+  width: 70px;
+  height: 111px;
+  object-fit: contain;
+`;
+
+const LabelText = styled.span`
+  margin-bottom: 10px;
+  font-weight: 460;
+  font-size: 20px;
   color: ${({ selected }) => (selected ? '#235BA9' : '#333')};
 `;

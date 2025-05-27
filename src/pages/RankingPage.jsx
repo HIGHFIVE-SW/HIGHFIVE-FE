@@ -1,22 +1,23 @@
-import React from 'react';
+// src/pages/RankingPage.jsx
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';  // ← 추가
 import styled from 'styled-components';
-import { useNavigate } from 'react-router-dom';
 
 import beginnerIcon from '../assets/images/level/ic_Beginner.png';
 import proIcon from '../assets/images/level/ic_Pro.png';
 import masterIcon from '../assets/images/level/ic_Master.png';
 import leaderIcon from '../assets/images/level/ic_Leader.png';
 import judyProfile from '../assets/images/level/ic_Judy.png';
-import defaultProfile from '../assets/images/nav/DefaultProfile.png';
-import helpIcon from '../assets/images/level/ic_Help.png';
-
+import defaultProfile from '../assets/images/profile/DefaultProfile.png';
+import helpIcon from "../assets/images/common/ic_Help.png";
+import LevelGuide from '../components/level/LevelGuide';
 import MainNav from '../layout/MainNav';
 import Footer from '../layout/Footer';
 
 const rankingData = [
   { id: 1, nickname: 'JUDY', exp: 1608, profileUrl: judyProfile },
   { id: 2, nickname: '이서정', exp: 1500, profileUrl: null },
-  { id: 3, nickname: '추지은', exp: 1400, profileUrl: masterIcon},
+  { id: 3, nickname: '추지은', exp: 1400, profileUrl: masterIcon },
   { id: 4, nickname: '추은송', exp: 1305, profileUrl: null },
   { id: 5, nickname: 'DD', exp: 1008, profileUrl: null },
   { id: 6, nickname: 'EE', exp: 995, profileUrl: null },
@@ -32,29 +33,41 @@ const getRankIcon = (exp) => {
 };
 
 export default function RankingPage() {
+  const navigate = useNavigate();  // ← 추가
   const topRanker = rankingData[0];
-  const navigate = useNavigate();
+  const [showGuide, setShowGuide] = useState(false);
 
   return (
     <PageWrapper>
       <MainNav />
 
-      <HeaderWrapper>
-        <HeaderTitle>랭킹</HeaderTitle>
-        <HeaderSubtitle>
-          활동을 쌓아가며 랭킹을 올리고, 다음 등급으로 넘어가자!
-        </HeaderSubtitle>
-        <HelpIcon
-          src={helpIcon}
-          alt="도움말 아이콘"
-          onClick={() => navigate('/level-guide')}
-        />
-      </HeaderWrapper>
+      <HeaderSection>
+        <HelpWrapper>
+          <HelpIcon
+            src={helpIcon}
+            alt="도움말"
+            onClick={() => setShowGuide(prev => !prev)}
+          />
+          {showGuide && (
+            <Popover>
+              <LevelGuide />
+            </Popover>
+          )}
+        </HelpWrapper>
 
-      <Title>프로 탐험가들의 랭킹전</Title>
+        <Title>랭킹 게시판</Title>
+        <Subtitle>
+          활동을 쌓아가며 랭킹을 올리고, 다음 등급으로 넘어가자!
+        </Subtitle>
+      </HeaderSection>
+
+      <TitleProfile>프로 탐험가들의 랭킹전</TitleProfile>
 
       <TopRankWrapper>
-        <TopRankIcon src={getRankIcon(topRanker.exp)} alt="Top rank icon" />
+        <TopRankIcon
+          src={getRankIcon(topRanker.exp)}
+          alt="Top rank icon"
+        />
         <TopRankName>{topRanker.nickname}</TopRankName>
         <TopRankXP>{topRanker.exp}XP</TopRankXP>
       </TopRankWrapper>
@@ -78,6 +91,7 @@ export default function RankingPage() {
           </RankItem>
         ))}
       </RankingTable>
+
       <Footer />
     </PageWrapper>
   );
@@ -89,10 +103,44 @@ const PageWrapper = styled.div`
   min-height: 100vh;
 `;
 
-const Title = styled.h2`
-  margin-bottom: 24px;
-  font-size: 24px;
+const HeaderSection = styled.div`
+  background-color: #f9fbff;
   text-align: center;
+  padding: 50px 0;
+  position: relative;
+`;
+
+const Title = styled.h1`
+  font-size: 44px;
+  color: #000000;
+  font-weight: 700;
+  margin: 0;
+`;
+
+const Subtitle = styled.p`
+  font-size: 24px;
+  color: #656565;
+  margin: 20px 0 0;
+`;
+
+const HelpWrapper = styled.div`
+  position: absolute;
+  top: 24px;
+  right: 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+`;
+
+const HelpIcon = styled.img`
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+`;
+
+const Popover = styled.div`
+  margin-top: 8px;
+  z-index: 1000;
 `;
 
 const RankingTable = styled.div`
@@ -133,7 +181,8 @@ const ProfileWrapper = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  border: ${({ isTopRank }) => (isTopRank ? '2px solid #235BA9' : 'none')};
+  border: ${({ isTopRank }) =>
+    isTopRank ? '2px solid #235BA9' : 'none'};
 `;
 
 const RankIcon = styled.img`
@@ -147,6 +196,7 @@ const UserName = styled.span`
   font-size: 16px;
   font-weight: 500;
   margin-left: 23px;
+  cursor: pointer;
 `;
 
 const UserXP = styled.span`
@@ -159,7 +209,7 @@ const TopRankWrapper = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 40px;
 `;
 
 const TopRankIcon = styled.img`
@@ -179,30 +229,9 @@ const TopRankXP = styled.span`
   color: #555;
 `;
 
-const HeaderWrapper = styled.div`
-  background-color: #f9fbff;
-  text-align: center;
-  padding: 50px 0;
-`;
-
-const HeaderTitle = styled.h1`
-  font-size: 44px;
-  font-weight: 700;
-  color: #000000;
-  margin: 0;
-`;
-
-const HeaderSubtitle = styled.p`
+const TitleProfile = styled.h2`
+  margin-top: 40px;
+  margin-bottom: 24px;
   font-size: 24px;
-  color: #656565;
-  margin: 20px 0 0;
-`;
-
-const HelpIcon = styled.img`
-  position: absolute;
-  top: 90px;
-  right: 40px;
-  width: 30px;
-  height: 30px;
-  cursor: pointer;
+  text-align: center;
 `;
