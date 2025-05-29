@@ -76,4 +76,3 @@ const ChartTitle = styled.h4`
   margin-bottom: 12px;
   color: #222;
 `;
-

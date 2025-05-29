@@ -1,13 +1,13 @@
-import {React,useState} from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
-import { useLocation,useNavigate } from 'react-router-dom';
-import MainNav from '../layout/MainNav';
-import Footer from '../layout/Footer';
-import ActivityCard from '../components/activity/ActivityCard';
-import sampleImage from '../assets/images/issue/ic_IssueCardSample.png';
-import linkIcon from '../assets/images/issue/ic_Link.png';
-import BookmarkButtonIcon from '../assets/images/common/BookmarkButton.png';
-import BookmarkFilledIcon from '../assets/images/common/BookmarkFilledButton.png';
+import { useLocation, useNavigate } from 'react-router-dom';
+import MainNav from '../../layout/MainNav';
+import Footer from '../../layout/Footer';
+import ActivityCard from '../../components/activity/ActivityCard';
+import issueCardSample from '../../assets/images/issue/ic_IssueCardSample.png';
+import linkIcon from '../../assets/images/issue/ic_Link.png';
+import bookmarkButton from '../../assets/images/common/BookmarkButton.png';
+import bookmarkFilledButton from '../../assets/images/common/BookmarkFilledButton.png';
 
 const dummyActivities = [
   {
@@ -15,7 +15,7 @@ const dummyActivities = [
     title: '제 22회 한국 경제 논문 공모전',
     tags: ['#경제', '#공모전'],
     date: '2025.04.15~2025.04.20',
-    image: require('../assets/images/activity/ic_ActivityImage.png'),
+    image: issueCardSample,
     bookmarked: false,
   },
   {
@@ -23,7 +23,7 @@ const dummyActivities = [
     title: '경제 공모전',
     tags: ['#경제', '#공모전'],
     date: '2025.04.15~2025.04.20',
-    image: require('../assets/images/activity/ic_ActivityImage.png'),
+    image: issueCardSample,
     bookmarked: false,
   },
   {
@@ -31,7 +31,7 @@ const dummyActivities = [
     title: '경제 봉사활동',
     tags: ['#경제', '#봉사활동'],
     date: '2025.04.15~2025.04.20',
-    image: require('../assets/images/activity/ic_ActivityImage.png'),
+    image: issueCardSample,
     bookmarked: false,
   },
   {
@@ -39,7 +39,7 @@ const dummyActivities = [
     title: '경제 서포터즈',
     tags: ['#경제', '#서포터즈'],
     date: '2025.04.15~2025.04.20',
-    image: require('../assets/images/activity/ic_ActivityImage.png'),
+    image: issueCardSample,
     bookmarked: false,
   },
   {
@@ -47,7 +47,7 @@ const dummyActivities = [
     title: '환경 서포터즈',
     tags: ['#환경', '#서포터즈'],
     date: '2025.04.15~2025.04.20',
-    image: require('../assets/images/activity/ic_ActivityImage.png'),
+    image: issueCardSample,
     bookmarked: false,
   },
   {
@@ -55,7 +55,7 @@ const dummyActivities = [
     title: '사람과 사회 서포터즈',
     tags: ['#사람과 사회', '#서포터즈'],
     date: '2025.04.15~2025.04.20',
-    image: require('../assets/images/activity/ic_ActivityImage.png'),
+    image: issueCardSample,
     bookmarked: false,
   },
 ];
@@ -85,14 +85,14 @@ export default function GlobalIssueDetailPage() {
             <Date>2025.04.07</Date>
         </div>
         <BookmarkIcon
-            src={bookmarked ? BookmarkFilledIcon : BookmarkButtonIcon}
+            src={bookmarked ? bookmarkFilledButton : bookmarkButton}
             alt="북마크"
             onClick={toggleBookmark}
         />
         </HeaderWrapper>
         
         <Divider />
-        <MainImage src={sampleImage} alt="이슈 이미지" />
+        <MainImage src={issueCardSample} alt="이슈 이미지" />
         <SummarySection>
           <SummaryTitle>내용 요약</SummaryTitle>
           <SummaryText>
@@ -112,12 +112,12 @@ export default function GlobalIssueDetailPage() {
         </SummarySection>
       </ContentWrapper>
 
-      <RecommendWrapper>
+       <RecommendWrapper>
         <Divider />
         <RecommendCardsHeader>
           <RecommendTitle>추천 활동</RecommendTitle>
           <MoreLink onClick={() => navigate(`/more-detail?query=${encodeURIComponent(label)}`)}>
-        더보기 &gt;
+            더보기 &gt;
         </MoreLink>
 
         </RecommendCardsHeader>

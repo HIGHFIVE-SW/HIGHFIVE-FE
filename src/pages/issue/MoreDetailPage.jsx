@@ -1,12 +1,12 @@
 import React from 'react';
 import styled from 'styled-components';
 import { useLocation } from 'react-router-dom';
-import MainNav from '../layout/MainNav';
-import Footer from '../layout/Footer';
-import ActivityCard from '../components/activity/ActivityCard';
-import Pagination from '../components/common/Pagination';
-import usePagination from '../hooks/usePagination';
-import activityImage from '../assets/images/activity/ic_ActivityImage.png';
+import MainNav from '../../layout/MainNav';
+import Footer from '../../layout/Footer';
+import ActivityCard from '../../components/activity/ActivityCard';
+import Pagination from '../../components/common/Pagination';
+import usePagination from '../../hooks/usePagination';
+import activityImage from '../../assets/images/activity/ic_ActivityImage.png';
 
 // 정규화 함수 추가
 function normalizeLabel(label) {

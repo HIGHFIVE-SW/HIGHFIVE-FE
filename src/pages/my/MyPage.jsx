@@ -2,17 +2,17 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import ActivityTypeChart from '../components/mypage/ActivityTypeChart';
-import ActivityTrendChart from '../components/mypage/ActivityTrendChart';
-import MyPostList from '../components/mypage/MyPostList';
-import BookmarkList from '../components/mypage/BookmarkList';
+import ActivityTypeChart from '../../components/my/ActivityTypeChart';
+import ActivityTrendChart from '../../components/my/ActivityTrendChart';
+import MyPostList from '../../components/my/MyPostList';
+import BookmarkList from '../../components/my/BookmarkList';
 import styled from 'styled-components';
-import MainNav from '../layout/MainNav';
-import Footer from '../layout/Footer';
+import MainNav from '../../layout/MainNav';
+import Footer from '../../layout/Footer';
 
-import defaultProfileImg from '../assets/images/level/ic_Judy.png';
-import rankImg from '../assets/images/level/ic_Master.png';
-import editIcon from '../assets/images/profile/ic_ProfilePenscil.png';
+import judyIcon from '../../assets/images/level/ic_Judy.png';
+import masterIcon from '../../assets/images/level/ic_Master.png';
+import profilePencilIcon from '../../assets/images/profile/ic_ProfilePenscil.png';
 
 export default function MyPage() {
   const [activeTab, setActiveTab] = useState('statistics');
@@ -22,8 +22,8 @@ export default function MyPage() {
   const [profile, setProfile] = useState({
     nickname: localStorage.getItem('nickname') || 'JUDY',
     keyword: localStorage.getItem('keyword') || '환경',
-    profileUrl: localStorage.getItem('profileUrl') || defaultProfileImg,
-    rankImage: rankImg,
+    profileUrl: localStorage.getItem('profileUrl') || judyIcon,
+    rankImage: masterIcon,
     level: 'Lv3 글로벌 마스터',
     progress: 80,
     point: 1608,
@@ -58,7 +58,7 @@ export default function MyPage() {
             <ProfileWrapper>
               <ProfileImage src={profile.profileUrl} alt="프로필 이미지" />
               <EditIconButton onClick={() => navigate('/profile/edit')}>
-                <EditIcon src={editIcon} alt="편집 아이콘" />
+                <EditIcon src={profilePencilIcon} alt="편집 아이콘" />
               </EditIconButton>
             </ProfileWrapper>
             <Nickname>{profile.nickname}</Nickname>

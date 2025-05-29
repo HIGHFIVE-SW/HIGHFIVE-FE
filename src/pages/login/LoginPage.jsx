@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import img1 from '../assets/images/login/onboarding/001.png';
-import img2 from '../assets/images/login/onboarding/002.png';
-import img3 from '../assets/images/login/onboarding/003.png';
-import img4 from '../assets/images/login/onboarding/004.png';
-import logo from '../assets/images/common/ImageLogo.png';
-import trendistTitle from '../assets/images/common/TextLogo.png';
-import googleLogo from '../assets/images/login/ic_Google.png';
-import RobotoFont from '../assets/fonts/Roboto-VariableFont_wdth,wght.ttf';
+import img1 from '../../assets/images/login/onboarding/001.png';
+import img2 from '../../assets/images/login/onboarding/002.png';
+import img3 from '../../assets/images/login/onboarding/003.png';
+import img4 from '../../assets/images/login/onboarding/004.png';
+import logo from '../../assets/images/common/ImageLogo.png';
+import trendistTitle from '../../assets/images/common/TextLogo.png';
+import googleLogo from '../../assets/images/login/ic_Google.png';
+import RobotoFont from '../../assets/fonts/Roboto-VariableFont_wdth,wght.ttf';
 import ProfileModal from './ProfileModal';
 
 /* font face 정의 */

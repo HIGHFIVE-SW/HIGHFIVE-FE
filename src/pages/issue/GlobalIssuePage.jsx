@@ -1,22 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import MainNav from '../layout/MainNav';
-import Footer from '../layout/Footer';
+import MainNav from '../../layout/MainNav';
+import Footer from '../../layout/Footer';
 import { useLocation, useNavigate } from 'react-router-dom';
-import IssueCard from '../components/issue/IssueCard'; 
-import CategoryFilter from '../components/common/CategoryFilter';
-import usePagination from '../hooks/usePagination';
-import Pagination from '../components/common/Pagination';
+import IssueCard from '../../components/issue/IssueCard'; 
+import CategoryFilter from '../../components/common/CategoryFilter';
+import usePagination from '../../hooks/usePagination';
+import Pagination from '../../components/common/Pagination';
 
-import issueCardSample from '../assets/images/issue/ic_IssueCardSample.png';
-import issueCardNo from '../assets/images/main/ic_NoImage.png';
+import issueCardSample from '../../assets/images/issue/ic_IssueCardSample.png';
+import noImage from '../../assets/images/main/ic_NoImage.png';
 
 const dummyData = [
   ...Array.from({ length: 4 }, (_, i) => ({
     id: i + 1,
     title: '글로벌 ‘관세 전쟁’ 공포 … 국내 증시 ‘털썩’ ',
     category: '#경제',
-    thumbnailUrl: issueCardNo,
+    thumbnailUrl: noImage,
   })),
   ...Array.from({ length: 4 }, (_, i) => ({
     id: i + 5,

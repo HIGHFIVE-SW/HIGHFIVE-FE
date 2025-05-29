@@ -3,18 +3,18 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useLocation } from 'react-router-dom';
-import MainNav from '../layout/MainNav';
-import Footer from '../layout/Footer';
-import IssueCard from '../components/issue/IssueCard';
-import Pagination from '../components/common/Pagination';
-import globalImage from '../assets/images/issue/ic_IssueCardSample.png';
-import usePagination from '../hooks/usePagination';
+import MainNav from '../../layout/MainNav';
+import Footer from '../../layout/Footer';
+import IssueCard from '../../components/issue/IssueCard';
+import Pagination from '../../components/common/Pagination';
+import issueCardSample from '../../assets/images/issue/ic_IssueCardSample.png';
+import usePagination from '../../hooks/usePagination';
 
 const dummyGlobalIssues = Array.from({ length: 40 }, (_, idx) => ({
   id: idx + 1,
   title: '제 22회 한국 경제 논문 공모전',
   tag: '#경제',
-  image: globalImage,
+  image: issueCardSample,
 }));
 
 export default function MoreGlobalPage() {

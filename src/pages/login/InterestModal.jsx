@@ -2,11 +2,15 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 
-import envCard from '../assets/images/interestmodal/ic_EnvironmentInterest.png';
-import societyCard from '../assets/images/interestmodal/ic_SocietyInterest.png';
-import economyCard from '../assets/images/interestmodal/ic_EconomyInterest.png';
-import techCard from '../assets/images/interestmodal/ic_TechInterest.png';
-import NotoSansKR from '../assets/fonts/NotoSansKR-VariableFont_wght.ttf';
+import envCard from '../../assets/images/interestmodal/ic_EnvironmentInterest.png';
+import societyCard from '../../assets/images/interestmodal/ic_SocietyInterest.png';
+import economyCard from '../../assets/images/interestmodal/ic_EconomyInterest.png';
+import techCard from '../../assets/images/interestmodal/ic_TechInterest.png';
+import envCardActive from '../../assets/images/interestmodal/ic_EnvironmentInterest_active.png';
+import societyCardActive from '../../assets/images/interestmodal/ic_SocietyInterest_active.png';
+import economyCardActive from '../../assets/images/interestmodal/ic_EconomyInterest_active.png';
+import techCardActive from '../../assets/images/interestmodal/ic_TechInterest_active.png';
+import NotoSansKR from '../../assets/fonts/NotoSansKR-VariableFont_wght.ttf';
 
 const NotoSansFont = `
   @font-face {
@@ -26,25 +30,25 @@ const interests = [
     id: 'environment',
     label: '환경',
     image: envCard,
-    activeImage: require('../assets/images/interestmodal/ic_EnvironmentInterest_active.png'),
+    activeImage: envCardActive,
   },
   {
     id: 'society',
     label: '사회',
     image: societyCard,
-    activeImage: require('../assets/images/interestmodal/ic_SocietyInterest_active.png'),
+    activeImage: societyCardActive,
   },
   {
     id: 'economy',
     label: '경제',
     image: economyCard,
-    activeImage: require('../assets/images/interestmodal/ic_EconomyInterest_active.png'),
+    activeImage: economyCardActive,
   },
   {
     id: 'tech',
     label: '기술',
     image: techCard,
-    activeImage: require('../assets/images/interestmodal/ic_TechInterest_active.png'),
+    activeImage: techCardActive,
   },
 ];
 

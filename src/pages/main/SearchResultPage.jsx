@@ -1,20 +1,20 @@
 // src/pages/SearchResultPage.jsx
 import React, { useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
-import MainNav from '../layout/MainNav';
-import Footer from '../layout/Footer';
-import IssueCard from '../components/issue/IssueCard';
-import ActivityCard from '../components/activity/ActivityCard';
-import SearchBar from '../components/search/SearchBar';
-import globalImage from '../assets/images/issue/ic_IssueCardSample.png';
-import activityImage from '../assets/images/activity/ic_ActivityImage.png';
+import MainNav from '../../layout/MainNav';
+import Footer from '../../layout/Footer';
+import IssueCard from '../../components/issue/IssueCard';
+import ActivityCard from '../../components/activity/ActivityCard';
+import SearchBar from '../../components/common/SearchBar';
+import issueCardSample from '../../assets/images/issue/ic_IssueCardSample.png';
+import activityImage from '../../assets/images/activity/ic_ActivityImage.png';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 const dummyGlobalIssues = [
-  { id: 1, title: '글로벌 관세 전쟁 공포', tag: '#경제', image: globalImage },
-  { id: 2, title: '기후 변화와 탄소 중립 경제', tag: '#환경', image: globalImage },
-  { id: 3, title: 'AI 기술의 미래와 사회 변화 경제', tag: '#기술', image: globalImage },
-  { id: 4, title: '세계 경제 포럼: 글로벌 정책 전환 경제', tag: '#정치', image: globalImage },
+  { id: 1, title: '글로벌 관세 전쟁 공포', tag: '#경제', image: issueCardSample },
+  { id: 2, title: '기후 변화와 탄소 중립 경제', tag: '#환경', image: issueCardSample },
+  { id: 3, title: 'AI 기술의 미래와 사회 변화 경제', tag: '#기술', image: issueCardSample },
+  { id: 4, title: '세계 경제 포럼: 글로벌 정책 전환 경제', tag: '#정치', image: issueCardSample },
 ];
 
 const dummyActivities = [

@@ -1,18 +1,18 @@
 import React, { useState, useRef } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom'; 
-import InterestSelect from '../components/interest/InterestSelect';
-import MainNav from '../layout/MainNav';
-import Footer from '../layout/Footer';
-import defaultProfileImg from '../assets/images/level/ic_Judy.png';
-import cameraIcon from '../assets/images/profile/ic_ProfileCamera.png';
+import InterestSelect from '../../components/interest/InterestSelect';
+import MainNav from '../../layout/MainNav';
+import Footer from '../../layout/Footer';
+import judyIcon from '../../assets/images/level/ic_Judy.png';
+import cameraIcon from '../../assets/images/profile/ic_ProfileCamera.png';
 
 export default function ProfileEditPage() {
   const [nickname, setNickname] = useState('');
   const [interest, setInterest] = useState('');
   const [profileImg, setProfileImg] = useState(() => {
     const savedImage = localStorage.getItem('profileImg');
-    return savedImage ? savedImage : defaultProfileImg;
+    return savedImage ? savedImage : judyIcon;
   });
   const fileInputRef = useRef();
   const navigate = useNavigate();
@@ -29,7 +29,7 @@ export default function ProfileEditPage() {
       };
       reader.readAsDataURL(file);
     } else {
-      setProfileImg(defaultProfileImg);
+      setProfileImg(judyIcon);
       localStorage.removeItem('profileImg'); //지우기
     }
   };
@@ -161,20 +161,31 @@ const SectionTitle = styled.h3`
 `;
 
 const SubmitButton = styled.button`
-  margin-top: 50px;
-  background: #235BA9;
+  width: 189px;
+  height: 64px;
+  padding: 12px;
+  font-size: 20px;
+  font-family: 'NotoSansCustom';
+  font-weight: 600;
+  background-color: #235BA9;
   color: white;
-  font-size: 18px;
-  padding: 12px 32px;
   border: none;
-  border-radius: 10px;
+  border-radius: 30px;
   cursor: pointer;
+  margin-top: 40px;
 `;
 
-const Logout = styled.div`
-  margin-top: 40px;
-  color: #888;
-  text-decoration: underline;
-  text-underline-offset: 10px; 
+const Logout = styled.button`
+  width: 189px;
+  height: 64px;
+  padding: 12px;
+  font-size: 20px;
+  font-family: 'NotoSansCustom';
+  font-weight: 600;
+  background-color: #C4C4C4;
+  color: white;
+  border: none;
+  border-radius: 30px;
   cursor: pointer;
+  margin-top: 16px;
 `;
