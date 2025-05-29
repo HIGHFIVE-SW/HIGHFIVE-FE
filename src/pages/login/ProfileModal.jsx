@@ -1,9 +1,9 @@
 import React, { useRef, useState } from 'react';
 import styled from 'styled-components';
-import avatar from '../assets/images/profile/DefaultProfile.png';
-import cameraIcon from '../assets/images/profile/ic_ProfileCamera.png';
+import avatar from '../../assets/images/profile/DefaultProfile.png';
+import cameraIcon from '../../assets/images/profile/ic_ProfileCamera.png';
 import InterestModal from './InterestModal';
-import NotoSansKR from '../assets/fonts/NotoSansKR-VariableFont_wght.ttf';
+import NotoSansKR from '../../assets/fonts/NotoSansKR-VariableFont_wght.ttf';
 
 const NotoSansFont = `
   @font-face {

@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useLocation } from 'react-router-dom';
-import MainNav from '../layout/MainNav';
-import Footer from '../layout/Footer';
-import ActivityCard from '../components/activity/ActivityCard';
-import Pagination from '../components/common/Pagination';
-import usePagination from '../hooks/usePagination';
-import activityImage from '../assets/images/activity/ic_ActivityImage.png';
+import MainNav from '../../layout/MainNav';
+import Footer from '../../layout/Footer';
+import ActivityCard from '../../components/activity/ActivityCard';
+import Pagination from '../../components/common/Pagination';
+import usePagination from '../../hooks/usePagination';
+import activityImage from '../../assets/images/activity/ic_ActivityImage.png';
 
 const dummyGlobalIssues = Array.from({ length: 40 }, (_, idx) => ({
   id: idx + 1,

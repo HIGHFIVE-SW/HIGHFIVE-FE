@@ -1,29 +1,28 @@
 // src/routes/Route.jsx
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
-import LoginPage from '../pages/LoginPage';
-import InterestModal from '../pages/InterestModal';
-
-import GlobalIssuePage from '../pages/GlobalIssuePage';
+import LoginPage from '../pages/login/LoginPage';
+import InterestModal from '../pages/login/InterestModal';
+import GlobalIssuePage from '../pages/issue/GlobalIssuePage';
 import ActivityPage from '../pages/ActivityPage';
-import SearchResultPage from '../pages/SearchResultPage';
-import MoreGlobalPage from '../pages/MoreGlobalPage';
-import MoreActivityPage from '../pages/MoreActivityPage';
+import SearchResultPage from '../pages/main/SearchResultPage';
+import MoreGlobalPage from '../pages/main/MoreGlobalPage';
+import MoreActivityPage from '../pages/main/MoreActivityPage';
 import ReviewBoardPage from '../pages/board/ReviewBoardPage';
-import MainPage from '../pages/MainPage';
-import GlobalIssueDetailPage from '../pages/GlobalIssueDetailPage'; 
+import MainPage from '../pages/main/MainPage';
+import GlobalIssueDetailPage from '../pages/issue/GlobalIssueDetailPage'; 
 import FreeBoardPage from '../pages/board/FreeBoardPage';
-import MoreDetailPage from '../pages/MoreDetailPage';
 import RankingPage from '../pages/RankingPage';
 import LevelGuide from '../components/level/LevelGuide';
-import Mypage from '../pages/MyPage';
-import ProfileEditPage from '../pages/ProfileEditPage';
-import UserPage from '../pages/UserPage';
+import Mypage from '../pages/my/MyPage';
+import ProfileEditPage from '../pages/my/ProfileEditPage';
+import UserPage from '../pages/my/UserPage';
 import PostWritePage from '../pages/board/PostWritePage';
 import BoardDetailPage from '../pages/board/BoardDetailPage';
 import BoardSearchResultPage from '../pages/board/BoardSearchResultPage';
 import MoreReviewPage from '../pages/board/MoreReviewPage';
 import MoreFreePage from '../pages/board/MoreFreePage';
+import MoreDetailPage from '../pages/issue/MoreDetailPage';
 
 export default function AppRoutes() {
   return (
@@ -36,18 +35,16 @@ export default function AppRoutes() {
       <Route path="/ranking" element={<RankingPage />} />
       <Route path="/mypage" element={<Mypage />} />
       <Route path="/profile/edit" element={<ProfileEditPage />} />
+      <Route path="/more-detail" element={<MoreDetailPage />} />
 
       <Route path="/search" element={<SearchResultPage />} />
       <Route path="/more/global" element={<MoreGlobalPage />} />
       <Route path="/more/activity" element={<MoreActivityPage />} />
-      <Route path="/more-detail" element={<MoreDetailPage />} />
       <Route path="/global-issue/:id" element={<GlobalIssueDetailPage />} />
       <Route path="/board/review" element={<ReviewBoardPage />} />
       <Route path="/board/free" element={<FreeBoardPage />} />
       <Route path="/level-guide" element={<LevelGuide />} />
 
-      <Route path="/global-issue-detail" element={<GlobalIssueDetailPage />} />
-      <Route path="/more-detail" element={<MoreActivityPage />} />
       <Route path="/user" element={<UserPage />} />
       <Route path="/board/write" element={<PostWritePage />} />
       <Route path="/board/detail/:id" element={<BoardDetailPage />} />

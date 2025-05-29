@@ -1,26 +1,26 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import MainNav from '../layout/MainNav';
-import Footer from '../layout/Footer';
-import ActivityTypeChart from '../components/mypage/ActivityTypeChart';
-import ActivityTrendChart from '../components/mypage/ActivityTrendChart';
-import MyPostList from '../components/mypage/MyPostList';
+import MainNav from '../../layout/MainNav';
+import Footer from '../../layout/Footer';
+import ActivityTypeChart from '../../components/my/ActivityTypeChart';
+import ActivityTrendChart from '../../components/my/ActivityTrendChart';
+import MyPostList from '../../components/my/MyPostList';
 
-import defaultProfileImg from '../assets/images/profile/DefaultProfile.png';
-import rankImg from '../assets/images/level/ic_Master.png';
+import defaultProfile from '../../assets/images/profile/DefaultProfile.png';
+import masterIcon from '../../assets/images/level/ic_Master.png';
 
 const UserPage = () => {
   const { state } = useLocation();
   const navigate = useNavigate();
   const user = state || {};
-  const [activeTab, setActiveTab] = useState('statistics');
+  const [activeTab, setActiveTab] = React.useState('statistics');
   const currentUser = localStorage.getItem('nickname');
 
   const profile = {
     nickname: user.nickname || '알 수 없음',
-    profileUrl: user.nickname === '추지은' ? user.profileUrl : defaultProfileImg,
-    rankImage: rankImg,
+    profileUrl: user.nickname === '추지은' ? user.profileUrl : defaultProfile,
+    rankImage: masterIcon,
     level: 'Lv3 글로벌 마스터',
     progress: 80,
     point: user.exp || 1608,

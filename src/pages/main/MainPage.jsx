@@ -1,33 +1,33 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
-import MainNav from '../layout/MainNav';
-import Footer from '../layout/Footer';
-import IssueCard from '../components/issue/IssueCard';
-import Chatbot from '../components/chatbot/Chatbot';
+import MainNav from '../../layout/MainNav';
+import Footer from '../../layout/Footer';
+import IssueCard from '../../components/issue/IssueCard';
+import Chatbot from '../../components/chatbot/Chatbot';
 
-import globalIssueImage from '../assets/images/main/ic_GlobalIssue.png';
-import issueSampleImage from '../assets/images/issue/ic_IssueCardSample.png';
-import envCard from '../assets/images/main/EnvironmentButton.png';
-import peopleCard from '../assets/images/main/PeopleButton.png';
-import economyCard from '../assets/images/main/EconomyButton.png';
-import techCard from '../assets/images/main/TechButton.png';
+import globalIssueImage from '../../assets/images/main/ic_GlobalIssue.png';
+import issueCardSample from '../../assets/images/issue/ic_IssueCardSample.png';
+import environmentButton from '../../assets/images/main/EnvironmentButton.png';
+import peopleButton from '../../assets/images/main/PeopleButton.png';
+import economyButton from '../../assets/images/main/EconomyButton.png';
+import techButton from '../../assets/images/main/TechButton.png';
 
 export default function MainPage() {
   const [bookmarked, setBookmarked] = useState(new Array(3).fill(false));
   const navigate = useNavigate();
 
   const dummyIssues = [
-    { title: '글로벌 “관세 전쟁” 공포 … 국내 증시 ‘타격’', tag: '#정치' },
-    { title: '글로벌 “관세 전쟁” 공포 … 국내 증시 ‘타격’', tag: '#경제' },
-    { title: '글로벌 “관세 전쟁” 공포 … 국내 증시 ‘타격’', tag: '#사회' },
+    { title: "글로벌 '관세 전쟁' 공포 ... 국내 증시 '타격'", tag: '#정치' },
+    { title: "글로벌 '관세 전쟁' 공포 ... 국내 증시 '타격'", tag: '#경제' },
+    { title: "글로벌 '관세 전쟁' 공포 ... 국내 증시 '타격'", tag: '#사회' },
   ];
 
   const categories = [
-    { title: '환경', img: envCard },
-    { title: '사람과 사회', img: peopleCard },
-    { title: '경제', img: economyCard },
-    { title: '기술', img: techCard },
+    { title: '환경', img: environmentButton },
+    { title: '사람과 사회', img: peopleButton },
+    { title: '경제', img: economyButton },
+    { title: '기술', img: techButton },
   ];
 
   const toggleBookmark = (idx) => {
@@ -80,7 +80,7 @@ export default function MainPage() {
                 key={idx}
                 title={item.title}
                 tag={item.tag}
-                image={issueSampleImage}
+                image={issueCardSample}
                 bookmarked={bookmarked[idx]}
                 onToggle={() => toggleBookmark(idx)}
               />
