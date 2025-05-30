@@ -29,6 +29,7 @@ export default function Toolbar({ editor, onImageInsert }) {
       };
       reader.readAsDataURL(file);
     }
+    e.target.value = '';
   };
 
   const handleColorChange = (e) => {

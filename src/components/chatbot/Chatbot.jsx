@@ -233,7 +233,7 @@ const ChatInput = styled.input`
   border: none;
   outline: none;
   font-size: 16px;
-  padding: 12px;
+  padding: 6px;
 `;
 
 const SendButton = styled.button`

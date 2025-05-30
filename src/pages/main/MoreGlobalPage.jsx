@@ -1,6 +1,7 @@
 // src/pages/MoreGlobalPage.jsx
 
 import React, { useState } from 'react';
+import { useEffect } from 'react';
 import styled from 'styled-components';
 import { useLocation } from 'react-router-dom';
 import MainNav from '../../layout/MainNav';
@@ -18,6 +19,8 @@ const dummyGlobalIssues = Array.from({ length: 40 }, (_, idx) => ({
 }));
 
 export default function MoreGlobalPage() {
+  useEffect(() => {
+          window.scrollTo({ top: 0, left: 0 });}, []);
   const location = useLocation();
   const query = new URLSearchParams(location.search).get('query')?.toLowerCase() || '';
 

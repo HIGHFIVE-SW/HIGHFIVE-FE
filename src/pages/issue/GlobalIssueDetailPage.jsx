@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { useLocation, useNavigate } from 'react-router-dom';
 import MainNav from '../../layout/MainNav';
@@ -62,6 +62,8 @@ const dummyActivities = [
 
 
 export default function GlobalIssueDetailPage() {
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0 });}, []);
   const location = useLocation();
   const navigate = useNavigate();
   const { label, title } = location.state || {};

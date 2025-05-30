@@ -1,4 +1,4 @@
-// src/pages/MyPage.jsx
+// src/pages/my/MyPage.jsx
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -32,6 +32,8 @@ export default function MyPage() {
 
   useEffect(() => {
     if (location.state) {
+      // 페이지 진입 시 최상단으로 스크롤
+      window.scrollTo({ top: 0, left: 0 });
       setProfile(prev => ({
         ...prev,
         nickname: location.state.nickname || prev.nickname,
@@ -55,32 +57,50 @@ export default function MyPage() {
         <PageWrapper>
           <LeftPanel>
             <TitleText>마이페이지</TitleText>
+
             <ProfileWrapper>
               <ProfileImage src={profile.profileUrl} alt="프로필 이미지" />
               <EditIconButton onClick={() => navigate('/profile/edit')}>
                 <EditIcon src={profilePencilIcon} alt="편집 아이콘" />
               </EditIconButton>
             </ProfileWrapper>
+
             <Nickname>{profile.nickname}</Nickname>
             <KeywordTag>#{profile.keyword}</KeywordTag>
+
             <Card>
-              <CardTitle>나의 등급</CardTitle>
+              <CardTitle
+                onClick={() => navigate('/level')}
+                style={{ cursor: 'pointer' }}
+              >
+                나의 등급
+              </CardTitle>
               <LevelImage src={profile.rankImage} alt="등급 이미지" />
               <LevelText>{profile.level}</LevelText>
               <ProgressWrapper>
                 <ProgressBar style={{ width: `${profile.progress}%` }} />
               </ProgressWrapper>
               <ProgressLabel>Lv4 유니버스 리더</ProgressLabel>
-
             </Card>
+
             <Card>
-              <CardTitle>랭킹</CardTitle>
+              <CardTitle
+                onClick={() => navigate('/ranking')}
+                style={{ cursor: 'pointer' }}
+              >
+                랭킹
+              </CardTitle>
               <LevelImage src={profile.rankImage} alt="등급 이미지" />
               <LevelText>{profile.level}</LevelText>
               <RankRow>
                 <RankItem>
                   <Label>랭킹</Label>
-                  <Value>{profile.rank}</Value>
+                  <Value
+                    onClick={() => navigate('/ranking')}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    {profile.rank}
+                  </Value>
                 </RankItem>
                 <Divider />
                 <RankItem>
@@ -91,9 +111,6 @@ export default function MyPage() {
             </Card>
           </LeftPanel>
 
-
-
-          {/* Right Panel */}
           <RightPanel>
             <TabsWrapper>
               <Tabs>
@@ -164,9 +181,8 @@ const LeftPanel = styled.div`
 const TitleText = styled.div`
   font-weight: bold;
   font-size: 22px;
-  margin-bottom: 8px;
-  color: #000;
   margin-bottom: 24px;
+  color: #000;
 `;
 
 const ProfileWrapper = styled.div`
@@ -232,7 +248,6 @@ const Card = styled.div`
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   margin-bottom: 20px;
   text-align: center;
-  
 `;
 
 const CardTitle = styled.h4`
@@ -317,7 +332,7 @@ const Tabs = styled.div`
   display: flex;
   gap: 24px;
   border-bottom: 1px solid #ddd;
-  width: fit-content;             
+  width: fit-content;
   margin: 0 auto;
 `;
 
@@ -329,7 +344,6 @@ const Tab = styled.div`
   color: ${({ active }) => (active ? '#235ba9' : '#999')};
   cursor: pointer;
   transition: color 0.2s;
-
   &:after {
     content: '';
     position: absolute;
@@ -343,11 +357,8 @@ const Tab = styled.div`
   }
 `;
 
-
-
 const GraphSection = styled.div`
   display: flex;
   flex-direction: column;
   gap: 48px;
 `;
-
