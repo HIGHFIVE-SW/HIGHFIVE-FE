@@ -175,17 +175,10 @@ const SubmitButton = styled.button`
   margin-top: 40px;
 `;
 
-const Logout = styled.button`
-  width: 189px;
-  height: 64px;
-  padding: 12px;
-  font-size: 20px;
-  font-family: 'NotoSansCustom';
-  font-weight: 600;
-  background-color: #C4C4C4;
-  color: white;
-  border: none;
-  border-radius: 30px;
+const Logout = styled.div`
+  margin-top: 40px;
+  color: #888;
+  text-decoration: underline;
+  text-underline-offset: 10px; 
   cursor: pointer;
-  margin-top: 16px;
 `;

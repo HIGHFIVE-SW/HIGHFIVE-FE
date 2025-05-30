@@ -120,27 +120,27 @@ export const reviews = [
 
 export default function ReviewBoardPage() {
   const TypeCategories = ["전체", "공모전", "봉사활동", "서포터즈", "인턴십"];
-
   const [selectedCategory, setSelectedCategory] = useState("전체");
   const [selectedTypeCategory, setSelectedTypeCategory] = useState("전체");
   const [sortOrder, setSortOrder] = useState("최신순");
   const [isGuideOpen, setIsGuideOpen] = useState(false);
   const navigate = useNavigate();
-  const guideRef = useRef();
+
+  // HelpWrapper 전체를 감싸는 ref
+  const helpWrapperRef = useRef(null);
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (guideRef.current && !guideRef.current.contains(event.target)) {
-        setIsGuideOpen(false);
-      }
+    const handleClickOutside = (e) => {
+      // HelpWrapper 내부 클릭은 무시
+      if (helpWrapperRef.current?.contains(e.target)) return;
+      // 외부 클릭만 닫기
+      setIsGuideOpen(false);
     };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // 필터링·정렬·페이지네이션
   const filteredReviews =
     selectedCategory === "전체"
       ? reviews
@@ -152,27 +152,38 @@ export default function ReviewBoardPage() {
     return 0;
   });
 
-  //페이지네이션 
   const itemsPerPage = 9;
-  const { currentPage, totalPages, currentData, goToPage } = usePagination(sortedReviews, itemsPerPage);
+  const { currentPage, totalPages, currentData, goToPage } = usePagination(
+    sortedReviews,
+    itemsPerPage
+  );
 
   return (
     <>
       <BoardNav />
       <HeaderSection>
-        <HelpWrapper>
-          <HelpIcon src={helpIcon} alt="도움말" onClick={() => setIsGuideOpen(!isGuideOpen)} />
+        {/* HelpWrapper에 ref 지정 */}
+        <HelpWrapper ref={helpWrapperRef}>
+          <HelpIcon
+            src={helpIcon}
+            alt="도움말"
+            onClick={() => setIsGuideOpen((prev) => !prev)}
+          />
           {isGuideOpen && (
-            <Popover ref={guideRef}>
+            <Popover>
               <ReviewBoardGuide onClose={() => setIsGuideOpen(false)} />
             </Popover>
           )}
         </HelpWrapper>
+
         <Title>후기 게시판</Title>
         <Subtitle>후기 공유하고 포인트 받자!</Subtitle>
       </HeaderSection>
 
-      <CategoryFilter selectedCategory={selectedCategory} onSelectCategory={setSelectedCategory} />
+      <CategoryFilter
+        selectedCategory={selectedCategory}
+        onSelectCategory={setSelectedCategory}
+      />
 
       <MainLayout>
         <BoardSidebar />
@@ -197,22 +208,23 @@ export default function ReviewBoardPage() {
 
           <CardGrid>
             {currentData.map((review) => (
-              <ReviewCard 
-                key={review.id} 
-                id={review.id}
-                {...review} 
-              />
+              <ReviewCard key={review.id} id={review.id} {...review} />
             ))}
           </CardGrid>
         </RightContent>
-      </MainLayout>      
-      <Pagination currentPage={currentPage} totalPages={totalPages} goToPage={goToPage} />
+      </MainLayout>
+
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        goToPage={goToPage}
+      />
       <Footer />
     </>
   );
 }
 
-
+// styled-components (변경 없음)
 const HeaderSection = styled.div`
   background-color: #f9fbff;
   text-align: center;
