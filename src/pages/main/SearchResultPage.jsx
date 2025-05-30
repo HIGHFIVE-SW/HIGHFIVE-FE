@@ -5,10 +5,10 @@ import MainNav from '../../layout/MainNav';
 import Footer from '../../layout/Footer';
 import IssueCard from '../../components/issue/IssueCard';
 import ActivityCard from '../../components/activity/ActivityCard';
-import SearchBar from '../../components/common/SearchBar';
 import issueCardSample from '../../assets/images/issue/ic_IssueCardSample.png';
 import activityImage from '../../assets/images/activity/ic_ActivityImage.png';
 import { useLocation, useNavigate } from 'react-router-dom';
+import SearchBar from '../../components/search/SearchBar';
 
 const dummyGlobalIssues = [
   { id: 1, title: '글로벌 관세 전쟁 공포', tag: '#경제', image: issueCardSample },
@@ -82,13 +82,13 @@ export default function SearchResultPage() {
       <MainNav />
       <Content>
         <SearchHeader>
-          <SearchBar
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onSearch={handleSearch}
-            placeholder="검색어를 입력해주세요."
-            inputRef={inputRef}
-          />
+            <SearchBar
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onSearch={handleSearch}
+              placeholder="검색어를 입력해주세요."
+              inputRef={inputRef}
+            />
         </SearchHeader>
 
         {searchQuery && (

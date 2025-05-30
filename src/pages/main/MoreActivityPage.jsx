@@ -7,6 +7,7 @@ import ActivityCard from '../../components/activity/ActivityCard';
 import Pagination from '../../components/common/Pagination';
 import usePagination from '../../hooks/usePagination';
 import activityImage from '../../assets/images/activity/ic_ActivityImage.png';
+import { useEffect } from 'react';
 
 const dummyGlobalIssues = Array.from({ length: 40 }, (_, idx) => ({
   id: idx + 1,
@@ -17,6 +18,8 @@ const dummyGlobalIssues = Array.from({ length: 40 }, (_, idx) => ({
 }));
 
 export default function MoreActivityPage() {
+  useEffect(() => {
+          window.scrollTo({ top: 0, left: 0 });}, []);
   const location = useLocation();
   const query = new URLSearchParams(location.search).get('query')?.toLowerCase() || '';
   const [bookmarkedIds, setBookmarkedIds] = useState([]);

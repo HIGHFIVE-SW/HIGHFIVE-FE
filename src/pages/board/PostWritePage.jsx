@@ -50,7 +50,26 @@ export default function PostWritePage() {
   };
 
   const insertImage = (src) => {
-    editor?.chain().focus().setImage({ src }).run();
+    if (!editor) return;
+
+    // 문서 내 이미지 노드 개수 세기
+    let imgCount = 0;
+    editor.state.doc.descendants((node) => {
+      if (node.type.name === 'image') imgCount += 1;
+    });
+
+    if (imgCount >= 5) {
+      alert('이미지는 최대 5개까지만 업로드할 수 있습니다.');
+      return;
+    }
+
+    editor
+      .chain()
+      .focus()
+      .setImage({ src })
+      .createParagraphNear()  // 이미지 뒤에 빈 단락 생성
+      .focus()
+      .run();
   };
 
   const handleAwardImageChange = (e) => {
@@ -346,6 +365,13 @@ const EditorWrapper = styled.div`
     font-size: 16px;
     outline: none;
   }
+
+  img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+   }
 `;
 
 const ActivityNameSection = styled.div`

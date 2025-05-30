@@ -1,6 +1,7 @@
 // src/pages/MoreFreePage.jsx
 import React, { useState } from 'react';
 import styled from 'styled-components';
+import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import MainNav from '../../layout/board/BoardNav';
 import Footer from '../../layout/Footer';
@@ -17,6 +18,8 @@ const dummyFreePosts = Array.from({ length: 50 }, (_, idx) => ({
 }));
 
 export default function MoreFreePage() {
+  useEffect(() => {
+        window.scrollTo({ top: 0, left: 0 });}, []);
   const location = useLocation();
   const query = new URLSearchParams(location.search).get('query') || '';
 

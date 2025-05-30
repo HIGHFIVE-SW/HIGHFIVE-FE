@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';  // ← 추가
 import styled from 'styled-components';
-
+import { useEffect } from 'react';
 import beginnerIcon from '../assets/images/level/ic_Beginner.png';
 import proIcon from '../assets/images/level/ic_Pro.png';
 import masterIcon from '../assets/images/level/ic_Master.png';
@@ -33,6 +33,8 @@ const getRankIcon = (exp) => {
 };
 
 export default function RankingPage() {
+    useEffect(() => {
+          window.scrollTo({ top: 0, left: 0 });}, []);
   const navigate = useNavigate();  // ← 추가
   const topRanker = rankingData[0];
   const [showGuide, setShowGuide] = useState(false);

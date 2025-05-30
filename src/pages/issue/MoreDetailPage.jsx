@@ -1,4 +1,5 @@
 import React from 'react';
+import { useEffect } from 'react';
 import styled from 'styled-components';
 import { useLocation } from 'react-router-dom';
 import MainNav from '../../layout/MainNav';
@@ -15,11 +16,14 @@ function normalizeLabel(label) {
 }
 
 export default function MoreDetailPage() {
+  useEffect(() => {
+      window.scrollTo({ top: 0, left: 0 });}, []);
+      
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const rawFilterTag = queryParams.get('query');
   const filterTag = normalizeLabel(rawFilterTag); // 정규화된 필터 태그
-
+  
   const dummyActivities = [
     ...Array.from({ length: 15 }, (_, idx) => ({
       id: idx + 1,

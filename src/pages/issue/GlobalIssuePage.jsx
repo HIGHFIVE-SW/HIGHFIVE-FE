@@ -49,6 +49,7 @@ export default function GlobalIssuePage() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    window.scrollTo({ top: 0, left: 0 });
     if (query) setActiveCategory(query);
   }, [query]);
 

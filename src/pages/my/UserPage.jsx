@@ -1,4 +1,5 @@
 import React from 'react';
+import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import MainNav from '../../layout/MainNav';
@@ -6,11 +7,12 @@ import Footer from '../../layout/Footer';
 import ActivityTypeChart from '../../components/my/ActivityTypeChart';
 import ActivityTrendChart from '../../components/my/ActivityTrendChart';
 import MyPostList from '../../components/my/MyPostList';
-
 import defaultProfile from '../../assets/images/profile/DefaultProfile.png';
 import masterIcon from '../../assets/images/level/ic_Master.png';
 
 const UserPage = () => {
+  useEffect(() => {
+        window.scrollTo({ top: 0, left: 0 });}, []);
   const { state } = useLocation();
   const navigate = useNavigate();
   const user = state || {};
@@ -64,7 +66,8 @@ const UserPage = () => {
             </Card>
             
             <Card>
-              <CardTitle>랭킹</CardTitle>
+              <CardTitle onClick={() => navigate('/ranking')}
+                style={{ cursor: 'pointer' }}>랭킹</CardTitle>
               <LevelImage src={profile.rankImage} alt="등급 이미지" />
               <LevelText>{profile.level}</LevelText>
               <RankRow>

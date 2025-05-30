@@ -37,7 +37,7 @@ export default function BookmarkList() {
 
   useEffect(() => {
     goToPage(1);
-  }, [selectedType, goToPage]);
+  }, [selectedType]);
 
   const handleTitleClick = (item) => {
     if (selectedType === 'issue') {

@@ -46,6 +46,7 @@ export default function BoardDetailPage() {
   const menuRef = useRef(null);
 
   useEffect(() => {
+    window.scrollTo({ top: 0, left: 0 });
     const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
         setShowPostMenu(false);

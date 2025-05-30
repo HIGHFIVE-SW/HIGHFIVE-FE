@@ -24,7 +24,7 @@ const MyPostsList = () => {
 
   useEffect(() => {
     goToPage(1); // 1페이지로 초기화
-  }, [goToPage]);
+  }, []);
 
   return (
     <Wrapper>
