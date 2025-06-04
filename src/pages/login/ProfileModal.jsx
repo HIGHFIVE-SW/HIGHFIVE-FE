@@ -6,12 +6,12 @@ import InterestModal from './InterestModal';
 import NotoSansKR from '../../assets/fonts/NotoSansKR-VariableFont_wght.ttf';
 
 const NotoSansFont = `
-  @font-face {
-    font-family: 'NotoSansCustom';
-    src: url(${NotoSansKR}) format('truetype');
-    font-weight: 100 900;
-    font-style: normal;
-  }
+@font-face {
+  font-family: 'NotoSansCustom';
+  src: url(${NotoSansKR}) format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+}
 `;
 
 const GlobalFontStyle = styled.div`
@@ -31,9 +31,7 @@ export default function ProfileModal({ onClose }) {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfileImg(reader.result); // base64 저장
-      };
+      reader.onloadend = () => setProfileImg(reader.result); // base64 저장
       reader.readAsDataURL(file);
     }
   };
@@ -46,38 +44,38 @@ export default function ProfileModal({ onClose }) {
 
   return (
     <>
-      <GlobalFontStyle />
       <ModalOverlay onClick={onClose}>
-        <ModalBox onClick={(e) => e.stopPropagation()}>
+        <ModalBox onClick={e => e.stopPropagation()}>
+          <GlobalFontStyle />
           <h2>프로필을 설정해주세요.</h2>
-
           <ProfileImageWrapper>
-            <img src={profileImg} alt="avatar" />
+            <img src={profileImg} alt="프로필" />
             <CameraIcon onClick={handleCameraClick} />
             <HiddenFileInput
               type="file"
-              ref={fileInputRef}
               accept="image/*"
+              ref={fileInputRef}
               onChange={handleFileChange}
             />
           </ProfileImageWrapper>
-
           <NicknameInput
             value={nickname}
-            onChange={(e) => setNickname(e.target.value)}
+            onChange={e => setNickname(e.target.value)}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
             placeholder="닉네임을 입력해 주세요."
-            hasText={nickname.trim().length > 0}
-            isFocused={isFocused}
+            $hasText={nickname.trim().length > 0}
+            $isFocused={isFocused}
           />
-
-          <NextButton onClick={handleNext} active={nickname.trim().length > 0}>
+          <NextButton
+            $active={nickname.trim().length > 0}
+            onClick={handleNext}
+            disabled={nickname.trim().length === 0}
+          >
             다음
           </NextButton>
         </ModalBox>
       </ModalOverlay>
-
       {showInterestModal && (
         <InterestModal
           onClose={onClose}
@@ -157,8 +155,8 @@ const NicknameInput = styled.input`
   padding: 14px;
   margin-top: 16px;
   border: 2px solid
-    ${({ isFocused, hasText }) =>
-      isFocused || hasText ? '#235BA9' : '#C4C4C4'};
+    ${({ $isFocused, $hasText }) =>
+      $isFocused || $hasText ? '#235BA9' : '#C4C4C4'};
   border-radius: 16px;
   font-size: 16px;
   font-family: 'NotoSansCustom';
@@ -174,10 +172,10 @@ const NextButton = styled.button`
   font-size: 20px;
   font-family: 'NotoSansCustom';
   font-weight: 600;
-  background-color: ${({ active }) => (active ? '#235BA9' : '#C4C4C4')};
+  background-color: ${({ $active }) => ($active ? '#235BA9' : '#C4C4C4')};
   color: white;
   border: none;
   border-radius: 30px;
-  cursor: ${({ active }) => (active ? 'pointer' : 'default')};
+  cursor: ${({ $active }) => ($active ? 'pointer' : 'default')};
   transition: background-color 0.2s ease;
 `;

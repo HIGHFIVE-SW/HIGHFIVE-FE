@@ -1,5 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
+import { useNavigate, useLocation } from 'react-router-dom';
+import axiosInstance from '../../api/axiosInstance';
+
 import img1 from '../../assets/images/login/onboarding/001.png';
 import img2 from '../../assets/images/login/onboarding/002.png';
 import img3 from '../../assets/images/login/onboarding/003.png';
@@ -47,8 +50,46 @@ export default function OnboardingPage() {
   const [currentPage, setCurrentPage] = useState(0);
   const [showModal, setShowModal] = useState(false);
 
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    const checkUserProfile = async () => {
+      const params = new URLSearchParams(location.search);
+      const token = params.get('token');
+
+      if (!token) return;
+
+      try {
+        // 토큰 저장 (axiosInstance 인터셉터가 자동으로 헤더에 추가)
+        localStorage.setItem('token', token);
+
+        // 프로필 조회
+        const { data } = await axiosInstance.get('/users/profile');
+        const { result } = data;
+        
+        // 프로필 미완료 시 모달 표시
+        if (!result || !result.nickname || !result.keyword) {
+          setShowModal(true);
+        } else {
+          navigate('/main');
+        }
+      } catch (error) {
+        console.error('프로필 조회 실패:', error);
+        // 에러가 발생해도 프로필 모달을 표시
+        setShowModal(true);
+      }
+    };
+
+    checkUserProfile();
+  }, [location.search, navigate]);
+
   const handleDotClick = (index) => setCurrentPage(index);
-  const handleGoogleLoginClick = () => setShowModal(true);
+
+  // 구글 로그인 연동
+  const handleGoogleLoginClick = () => {
+    window.location.href = "http://61.109.236.137:8080/oauth2/authorization/google";
+  };
 
   return (
     <Wrapper>
@@ -84,6 +125,7 @@ export default function OnboardingPage() {
   );
 }
 
+// 스타일 컴포넌트들은 기존 코드와 동일
 const Wrapper = styled.div`
   width: 100%;
   max-width: 100vw;
@@ -120,7 +162,7 @@ const RightGroup = styled.div`
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -65%); /* 정중앙으로 이동 */
+  transform: translate(-50%, -65%);
   display: flex;
   flex-direction: column;
   align-items: center;

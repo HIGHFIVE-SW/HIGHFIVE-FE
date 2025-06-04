@@ -26,9 +26,9 @@ const rankingData = [
 ];
 
 const getRankIcon = (exp) => {
-  if (exp >= 3000) return leaderIcon;
-  if (exp >= 1500) return masterIcon;
-  if (exp >= 200) return proIcon;
+  if (exp >= 4000) return leaderIcon;
+  if (exp >= 2000) return masterIcon;
+  if (exp >= 500) return proIcon;
   return beginnerIcon;
 };
 

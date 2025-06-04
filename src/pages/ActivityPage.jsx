@@ -1,53 +1,107 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import MainNav from '../layout/MainNav';
 import Footer from '../layout/Footer';
 import ActivityCard from '../components/activity/ActivityCard';
-import usePagination from '../hooks/usePagination';
 import Pagination from '../components/common/Pagination';
-import activityImage1 from '../assets/images/activity/ic_ActivityImage.png';
 import CustomDropdown from '../components/common/CustomDropdown';
-
-const dummyActivities = [
-  { id: 1, title: '제 22회 한국 경제 논문 공모전', tags: ['#환경', '#공모전'], date: '2025.04.15~2025.04.20', image: activityImage1 },
-  { id: 2, title: '환경 공모전', tags: ['#환경', '#공모전'], date: '2025.04.15~2025.04.20', image: activityImage1 },
-  { id: 3, title: '환경 봉사활동', tags: ['#환경', '#봉사활동'], date: '2025.04.15~2025.04.20', image: activityImage1 },
-  { id: 4, title: '환경 봉사활동', tags: ['#환경', '#봉사활동'], date: '2025.04.15~2025.04.20', image: activityImage1 },
-  { id: 5, title: '사람과 사회 공모전', tags: ['#사람과사회', '#공모전'], date: '2025.04.15~2025.04.20', image: activityImage1 },
-  { id: 6, title: '사람과 사회 인턴십', tags: ['#사람과사회', '#인턴십'], date: '2025.04.15~2025.04.20', image: activityImage1 },
-  { id: 7, title: '경제 서포터즈', tags: ['#경제', '#서포터즈'], date: '2025.04.15~2025.04.20', image: activityImage1 },
-  { id: 8, title: '경제 공모전', tags: ['#경제', '#공모전'], date: '2025.04.15~2025.04.20', image: activityImage1 },
-  { id: 9, title: '기술 봉사활동', tags: ['#기술', '#봉사활동'], date: '2025.04.15~2025.04.20', image: activityImage1 },
-  { id: 10, title: '기술 봉사활동', tags: ['#기술', '#봉사활동'], date: '2025.04.15~2025.04.20', image: activityImage1 },
-  { id: 11, title: '기술 공모전', tags: ['#기술', '#공모전'], date: '2025.04.15~2025.04.20', image: activityImage1 },
-  { id: 12, title: '경제 봉사활동', tags: ['#경제', '#봉사활동'], date: '2025.04.15~2025.04.20', image: activityImage1 },
-  { id: 13, title: '사람과 사회 봉사활동', tags: ['#사람과사회', '#봉사활동'], date: '2025.04.15~2025.04.20', image: activityImage1 },
-  { id: 14, title: '환경 세미나 참가', tags: ['#환경', '#공모전'], date: '2025.04.15~2025.04.20', image: activityImage1 },
-];
+import activitiesApi from '../api/ActivitiesApi';
 
 const fieldOptions = ["전체", "경제", "환경", "사람과사회", "기술"];
 const typeOptions = ["전체", "공모전", "봉사활동", "인턴십", "서포터즈"];
 
+const ACTIVITY_TYPE_MAP = {
+  '봉사활동': 'VOLUNTEER',
+  '공모전': 'CONTEST',
+  '서포터즈': 'SUPPORTERS',
+  '인턴십': 'INTERNSHIP'
+};
+
+const KEYWORD_MAP = {
+  '환경': 'Environment',
+  '사람과사회': 'PeopleAndSociety',
+  '경제': 'Economy',
+  '기술': 'Technology'
+};
+
 export default function ActivityPage() {
-  const [bookmarked, setBookmarked] = useState([]);
+  const [activities, setActivities] = useState([]);
   const [fieldFilter, setFieldFilter] = useState('전체');
   const [typeFilter, setTypeFilter] = useState('전체');
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const toggleBookmark = (id) => {
-    setBookmarked((prev) =>
-      prev.includes(id) ? prev.filter((b) => b !== id) : [...prev, id]
-    );
+const fetchActivities = async (page) => {
+  try {
+    setLoading(true);
+    setError(null);
+
+    // 1. 관심 분야(키워드) 필터가 '전체'가 아니면 키워드 RESTful API 사용
+    if (fieldFilter !== '전체') {
+      const keyword = KEYWORD_MAP[fieldFilter];
+      if (keyword) {
+        const response = await activitiesApi.getActivitiesByKeyword({
+          keyword,
+          page
+        });
+        setActivities(response.content);
+        setTotalPages(response.totalPages);
+        setLoading(false);
+        return;
+      }
+    }
+
+    // 2. 활동 유형 필터가 '전체'가 아니면 타입 RESTful API 사용
+    if (typeFilter !== '전체') {
+      const activityType = ACTIVITY_TYPE_MAP[typeFilter];
+      if (activityType) {
+        const response = await activitiesApi.getActivitiesByType({
+          activityType,
+          page
+        });
+        setActivities(response.content);
+        setTotalPages(response.totalPages);
+        setLoading(false);
+        return;
+      }
+    }
+
+    // 3. 둘 다 '전체'면 기존 쿼리 API 사용
+    const response = await activitiesApi.getActivities({
+      page,
+      fieldFilter,
+      typeFilter
+    });
+    setActivities(response.content);
+    setTotalPages(response.totalPages);
+  } catch (err) {
+    setError(err.message);
+    console.error('활동 목록 조회 실패:', err);
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+  useEffect(() => {
+    fetchActivities(currentPage);
+    // eslint-disable-next-line
+  }, [currentPage, fieldFilter, typeFilter]);
+
+  const toggleBookmark = async (id) => {
+    try {
+      await activitiesApi.toggleBookmark(id);
+      setActivities((prev) =>
+        prev.map((a) =>
+          a.id === id ? { ...a, bookmarked: !a.bookmarked } : a
+        )
+      );
+    } catch (err) {
+      console.error('북마크 토글 실패:', err);
+    }
   };
-
-  const filtered = dummyActivities.filter((activity) => {
-    const [fieldTag, typeTag] = activity.tags;
-    const matchField = fieldFilter === '전체' || fieldTag === `#${fieldFilter}`;
-    const matchType = typeFilter === '전체' || typeTag === `#${typeFilter}`;
-    return matchField && matchType;
-  });
-
-  const itemsPerPage = 12;
-  const { currentPage, totalPages, currentData, goToPage } = usePagination(filtered, itemsPerPage);
 
   return (
     <Wrapper>
@@ -58,56 +112,69 @@ export default function ActivityPage() {
       </HeaderSection>
 
       <ContentSection>
-      <FilterSection>
-        <FilterBlock>
-          <FilterLabel>관심 분야</FilterLabel>
-          <CustomDropdown
-            options={fieldOptions}
-            selected={fieldFilter}
-            onSelect={(option) => setFieldFilter(option)}
-          />
-        </FilterBlock>
-        <FilterBlock>
-          <FilterLabel>활동 유형</FilterLabel>
-          <CustomDropdown
-            options={typeOptions}
-            selected={typeFilter}
-            onSelect={(option) => setTypeFilter(option)}
-          />
-        </FilterBlock>
-      </FilterSection>
+        <FilterSection>
+          <FilterBlock>
+            <FilterLabel>관심 분야</FilterLabel>
+            <CustomDropdown
+              options={fieldOptions}
+              selected={fieldFilter}
+              onSelect={setFieldFilter}
+            />
+          </FilterBlock>
+          <FilterBlock>
+            <FilterLabel>활동 유형</FilterLabel>
+            <CustomDropdown
+              options={typeOptions}
+              selected={typeFilter}
+              onSelect={setTypeFilter}
+            />
+          </FilterBlock>
+        </FilterSection>
 
-        <CardGrid>
-            {currentData.map((activity) => (
-                <ActivityCard
+        {error && <ErrorMessage>{error}</ErrorMessage>}
+        
+        {loading ? (
+          <LoadingMessage>로딩 중...</LoadingMessage>
+        ) : (
+          <CardGrid>
+            {activities.map((activity) => (
+              <ActivityCard
                 key={activity.id}
                 title={activity.title}
-                tags={activity.tags.join(' ')}
+                tags={activity.tags}
                 date={activity.date}
                 image={activity.image}
-                bookmarked={bookmarked.includes(activity.id)}
+                bookmarked={activity.bookmarked}
                 onToggle={() => toggleBookmark(activity.id)}
-                />         
+                isClosed={activity.isClosed}
+                siteUrl={activity.siteUrl}
+              />
             ))}
-        {Array.from({ length: 4 - currentData.length }).map((_, idx) => (
-          <div
-            key={`placeholder-${idx}`}
-            style={{
-              width: '100%',
-              height: '0px',
-            }}
-          />
-        ))}
-        </CardGrid>
+            {Array.from({ length: 4 - (activities.length % 4) }).map((_, idx) => (
+              <div
+                key={`placeholder-${idx}`}
+                style={{
+                  width: '100%',
+                  height: '0px',
+                }}
+              />
+            ))}
+          </CardGrid>
+        )}
       </ContentSection>
 
-      <Pagination currentPage={currentPage} totalPages={totalPages} goToPage={goToPage} />
+      <Pagination
+        currentPage={currentPage + 1}
+        totalPages={totalPages}
+        goToPage={(page) => setCurrentPage(page - 1)}
+      />
 
       <Footer />
     </Wrapper>
   );
 }
 
+// 이하 스타일 컴포넌트는 기존과 동일
 const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
@@ -134,7 +201,7 @@ const Subtitle = styled.p`
 `;
 
 const ContentSection = styled.div`
-  padding: 40px 60px 40px 38px; /* top, right, bottom, left */
+  padding: 40px 60px 40px 38px;
 `;
 
 const FilterSection = styled.div`
@@ -170,3 +237,16 @@ const CardGrid = styled.div`
   margin: 0 auto;
 `;
 
+const ErrorMessage = styled.div`
+  color: #ff0000;
+  text-align: center;
+  margin: 20px 0;
+  font-size: 16px;
+`;
+
+const LoadingMessage = styled.div`
+  text-align: center;
+  margin: 20px 0;
+  font-size: 16px;
+  color: #666;
+`;

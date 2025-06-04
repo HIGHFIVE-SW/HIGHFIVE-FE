@@ -103,7 +103,7 @@ export default function Chatbot() {
                 <CardItem onClick={() => handleCardClick('글로벌 이슈')}>
                   <img src={card1} alt="글로벌 이슈 추천" />
                   <CardTitle>요즘 뜨는 글로벌 이슈 추천</CardTitle>
-                  <CardDesc>“요즘 뜨는 뉴스 알려줘”</CardDesc>
+                  <CardDesc>“태풍관련 뉴스 알려줘”</CardDesc>
                 </CardItem>
                 <CardItem onClick={() => handleCardClick('관심사 기반')}>
                   <img src={card2} alt="관심사 활동 추천" />
