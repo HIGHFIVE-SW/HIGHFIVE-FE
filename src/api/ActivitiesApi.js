@@ -149,7 +149,7 @@ class ActivitiesApi {
     const isClosed = endDate < now;
 
     return {
-      id: activity.activityId,
+      id: activity.id || activity.activityId,
       activityId: activity.activityId,
       title: activity.name,
       name: activity.name,

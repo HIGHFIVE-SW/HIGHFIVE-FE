@@ -1,106 +1,62 @@
-import React, { useState, useEffect } from 'react';
+// pages/ActivityPage.js
+import React from 'react';
 import styled from 'styled-components';
+import { useQueryClient } from '@tanstack/react-query';
 import MainNav from '../layout/MainNav';
 import Footer from '../layout/Footer';
 import ActivityCard from '../components/activity/ActivityCard';
 import Pagination from '../components/common/Pagination';
 import CustomDropdown from '../components/common/CustomDropdown';
-import activitiesApi from '../api/ActivitiesApi';
+import { useActivityStore } from '../store/activityStore';
+import { useActivities, useToggleBookmark } from '../query/useActivities';
 
 const fieldOptions = ["전체", "경제", "환경", "사람과사회", "기술"];
 const typeOptions = ["전체", "공모전", "봉사활동", "인턴십", "서포터즈"];
 
-const ACTIVITY_TYPE_MAP = {
-  '봉사활동': 'VOLUNTEER',
-  '공모전': 'CONTEST',
-  '서포터즈': 'SUPPORTERS',
-  '인턴십': 'INTERNSHIP'
-};
-
-const KEYWORD_MAP = {
-  '환경': 'Environment',
-  '사람과사회': 'PeopleAndSociety',
-  '경제': 'Economy',
-  '기술': 'Technology'
-};
-
 export default function ActivityPage() {
-  const [activities, setActivities] = useState([]);
-  const [fieldFilter, setFieldFilter] = useState('전체');
-  const [typeFilter, setTypeFilter] = useState('전체');
-  const [currentPage, setCurrentPage] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const {
+    fieldFilter,
+    typeFilter,
+    currentPage,
+    setFieldFilter,
+    setTypeFilter,
+    setCurrentPage
+  } = useActivityStore();
+  
+  const { 
+    data: activitiesData, 
+    isLoading, 
+    error,
+    isError 
+  } = useActivities();
+  
+  const toggleBookmarkMutation = useToggleBookmark();
+  const queryClient = useQueryClient();
 
-const fetchActivities = async (page) => {
-  try {
-    setLoading(true);
-    setError(null);
+  const activities = activitiesData?.content || [];
+  const totalPages = activitiesData?.totalPages || 0;
 
-    // 1. 관심 분야(키워드) 필터가 '전체'가 아니면 키워드 RESTful API 사용
-    if (fieldFilter !== '전체') {
-      const keyword = KEYWORD_MAP[fieldFilter];
-      if (keyword) {
-        const response = await activitiesApi.getActivitiesByKeyword({
-          keyword,
-          page
-        });
-        setActivities(response.content);
-        setTotalPages(response.totalPages);
-        setLoading(false);
-        return;
-      }
-    }
+  const handleToggleBookmark = (activityId) => {
+    toggleBookmarkMutation.mutate(activityId);
+  };
 
-    // 2. 활동 유형 필터가 '전체'가 아니면 타입 RESTful API 사용
-    if (typeFilter !== '전체') {
-      const activityType = ACTIVITY_TYPE_MAP[typeFilter];
-      if (activityType) {
-        const response = await activitiesApi.getActivitiesByType({
-          activityType,
-          page
-        });
-        setActivities(response.content);
-        setTotalPages(response.totalPages);
-        setLoading(false);
-        return;
-      }
-    }
-
-    // 3. 둘 다 '전체'면 기존 쿼리 API 사용
-    const response = await activitiesApi.getActivities({
-      page,
-      fieldFilter,
-      typeFilter
+  // 필터 변경 시 캐시 prefetch
+  const handleFieldFilterChange = (newFilter) => {
+    setFieldFilter(newFilter);
+    
+    // 새 필터로 데이터 prefetch
+    queryClient.prefetchQuery({
+      queryKey: ['activities', newFilter, typeFilter, 0],
     });
-    setActivities(response.content);
-    setTotalPages(response.totalPages);
-  } catch (err) {
-    setError(err.message);
-    console.error('활동 목록 조회 실패:', err);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
-
-  useEffect(() => {
-    fetchActivities(currentPage);
-    // eslint-disable-next-line
-  }, [currentPage, fieldFilter, typeFilter]);
-
-  const toggleBookmark = async (id) => {
-    try {
-      await activitiesApi.toggleBookmark(id);
-      setActivities((prev) =>
-        prev.map((a) =>
-          a.id === id ? { ...a, bookmarked: !a.bookmarked } : a
-        )
-      );
-    } catch (err) {
-      console.error('북마크 토글 실패:', err);
-    }
+  const handleTypeFilterChange = (newFilter) => {
+    setTypeFilter(newFilter);
+    
+    // 새 필터로 데이터 prefetch
+    queryClient.prefetchQuery({
+      queryKey: ['activities', fieldFilter, newFilter, 0],
+    });
   };
 
   return (
@@ -118,7 +74,7 @@ const fetchActivities = async (page) => {
             <CustomDropdown
               options={fieldOptions}
               selected={fieldFilter}
-              onSelect={setFieldFilter}
+              onSelect={handleFieldFilterChange}
             />
           </FilterBlock>
           <FilterBlock>
@@ -126,14 +82,14 @@ const fetchActivities = async (page) => {
             <CustomDropdown
               options={typeOptions}
               selected={typeFilter}
-              onSelect={setTypeFilter}
+              onSelect={handleTypeFilterChange}
             />
           </FilterBlock>
         </FilterSection>
 
-        {error && <ErrorMessage>{error}</ErrorMessage>}
+        {isError && <ErrorMessage>{error?.message}</ErrorMessage>}
         
-        {loading ? (
+        {isLoading ? (
           <LoadingMessage>로딩 중...</LoadingMessage>
         ) : (
           <CardGrid>
@@ -145,7 +101,7 @@ const fetchActivities = async (page) => {
                 date={activity.date}
                 image={activity.image}
                 bookmarked={activity.bookmarked}
-                onToggle={() => toggleBookmark(activity.id)}
+                onToggle={() => handleToggleBookmark(activity.id)}
                 isClosed={activity.isClosed}
                 siteUrl={activity.siteUrl}
               />
@@ -173,6 +129,9 @@ const fetchActivities = async (page) => {
     </Wrapper>
   );
 }
+
+// 스타일 컴포넌트는 기존과 동일...
+
 
 // 이하 스타일 컴포넌트는 기존과 동일
 const Wrapper = styled.div`
