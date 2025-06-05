@@ -10,7 +10,7 @@ import CustomDropdown from '../components/common/CustomDropdown';
 import { useActivityStore } from '../store/activityStore';
 import { useActivities, useToggleBookmark } from '../query/useActivities';
 
-const fieldOptions = ["전체", "경제", "환경", "사람과사회", "기술"];
+const fieldOptions = ["전체", "경제", "환경", "사람과 사회", "기술"];
 const typeOptions = ["전체", "공모전", "봉사활동", "인턴십", "서포터즈"];
 
 export default function ActivityPage() {
@@ -103,7 +103,7 @@ export default function ActivityPage() {
                 bookmarked={activity.bookmarked}
                 onToggle={() => handleToggleBookmark(activity.id)}
                 isClosed={activity.isClosed}
-                siteUrl={activity.siteUrl}
+                siteUrl={activity.siteUrl || 'https://naver.com'}
               />
             ))}
             {Array.from({ length: 4 - (activities.length % 4) }).map((_, idx) => (

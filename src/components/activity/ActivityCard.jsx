@@ -9,7 +9,7 @@ export default function ActivityCard({
   tags,
   image,
   date,
-  bookmarked,
+  bookmarked = false,
   onToggle,
   isClosed,
   siteUrl

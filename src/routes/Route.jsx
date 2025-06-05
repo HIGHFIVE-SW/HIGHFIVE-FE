@@ -22,7 +22,6 @@ import BoardDetailPage from '../pages/board/BoardDetailPage';
 import BoardSearchResultPage from '../pages/board/BoardSearchResultPage';
 import MoreReviewPage from '../pages/board/MoreReviewPage';
 import MoreFreePage from '../pages/board/MoreFreePage';
-import MoreDetailPage from '../pages/issue/MoreDetailPage';
 
 export default function AppRoutes() {
   return (
@@ -35,7 +34,6 @@ export default function AppRoutes() {
       <Route path="/ranking" element={<RankingPage />} />
       <Route path="/mypage" element={<Mypage />} />
       <Route path="/profile/edit" element={<ProfileEditPage />} />
-      <Route path="/more-detail" element={<MoreDetailPage />} />
 
       <Route path="/search" element={<SearchResultPage />} />
       <Route path="/more/global" element={<MoreGlobalPage />} />
