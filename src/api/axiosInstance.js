@@ -2,15 +2,17 @@ import axios from 'axios';
 
 const getBaseURL = () => {
   const path = window.location.pathname;
+  // 로그인 관련 경로는 8080 포트 사용
   if (
     path === '/' ||
     path.startsWith('/interest') ||
     path.startsWith('/oauth2') ||
     path.startsWith('/login')
   ) {
-    return 'url';
+    return 'http://61.109.236.137:8080';
   }
-  return 'url';
+  // 나머지 API는 8000 포트 사용
+  return 'http://61.109.236.137:8000';
 };
 
 const axiosInstance = axios.create({
