@@ -68,6 +68,7 @@ export const useToggleBookmark = () => {
       const queryKey = ['activities', fieldFilter, typeFilter, currentPage];
       
       await queryClient.cancelQueries({ queryKey });
+      await queryClient.cancelQueries({ queryKey: ['bookmarkedActivities'] });
       
       const previousData = queryClient.getQueryData(queryKey);
       
@@ -93,9 +94,10 @@ export const useToggleBookmark = () => {
       }
     },
     onSettled: () => {
-      // 성공/실패 관계없이 쿼리 무효화
+      // 성공/실패 관계없이 모든 관련 쿼리 무효화
       const queryKey = ['activities', fieldFilter, typeFilter, currentPage];
       queryClient.invalidateQueries({ queryKey });
+      queryClient.invalidateQueries({ queryKey: ['bookmarkedActivities'] });
     }
   });
 };

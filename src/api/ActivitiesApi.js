@@ -136,6 +136,20 @@ class ActivitiesApi {
     }
   }
 
+  // 북마크한 활동글 조회
+  async getBookmarkedActivities(page = 0) {
+    try {
+      const response = await api.get(`/profile/activities/bookmark?page=${page}`);
+      if (!response.data.isSuccess) {
+        throw new Error(response.data.message || '북마크한 활동글 조회에 실패했습니다.');
+      }
+      return response.data.result;
+    } catch (error) {
+      console.error('북마크한 활동글 조회 실패:', error);
+      throw this.handleApiError(error);
+    }
+  }
+
   // 활동 데이터 변환
   transformActivity = (activity) => {
     const koreanKeyword = REVERSE_KEYWORD_MAP[activity.keyword] || activity.keyword;

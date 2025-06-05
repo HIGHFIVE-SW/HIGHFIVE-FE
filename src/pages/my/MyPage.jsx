@@ -31,6 +31,13 @@ export default function MyPage() {
     rank: 1,
   });
 
+  const KEYWORD_MAPPING = {
+  'Environment': '환경',
+  'PeopleAndSociety': '사람과사회',
+  'Economy': '경제',
+  'Technology': '기술'
+};
+
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -113,7 +120,8 @@ export default function MyPage() {
             </ProfileWrapper>
 
             <Nickname>{profile.nickname}</Nickname>
-            <KeywordTag>#{profile.keyword}</KeywordTag>
+            <KeywordTag>#{KEYWORD_MAPPING[profile.keyword] || profile.keyword}</KeywordTag>
+
 
             <Card>
               <CardTitle
