@@ -6,51 +6,79 @@ import usePagination from '../../hooks/usePagination';
 import Pagination from '../common/Pagination';
 import bookmarkIcon from '../../assets/images/common/BookmarkFilledButton.png';
 import { useNavigate } from 'react-router-dom';
+import activitiesApi from '../../api/ActivitiesApi';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
-const dummyIssueData = Array.from({ length: 23 }, (_, i) => ({
-  id: i + 1,
-  title: `관광 공공 데이터 공모전 (${i + 1})`,
-  category: '환경',
-  date: '2025.04.14',
-}));
+// 쿼리 키 상수 정의
+const QUERY_KEYS = {
+  ACTIVITIES: 'activities',
+  BOOKMARKED_ACTIVITIES: 'bookmarkedActivities'
+};
 
-const dummyActivityData = Array.from({ length: 17 }, (_, i) => ({
-  id: i + 1,
-  title: `환경 공모전 (${i + 1})`,
-  category: '#환경 #공모전',
-  date: '2025.04.14',
-}));
 
 export default function BookmarkList() {
   const [selectedType, setSelectedType] = useState('issue');
-  const data = selectedType === 'issue' ? dummyIssueData : dummyActivityData;
-
-  const itemsPerPage = 10;
-  const {
-    currentPage,
-    goToPage,
-    totalPages,
-    currentData: paginatedData,
-  } = usePagination(data, itemsPerPage);
-
+  const [currentPage, setCurrentPage] = useState(0);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    goToPage(1);
-  }, [selectedType]);
+  const { data: bookmarkedActivities, isLoading, error } = useQuery({
+    queryKey: [QUERY_KEYS.BOOKMARKED_ACTIVITIES, currentPage],
+    queryFn: () => activitiesApi.getBookmarkedActivities(currentPage),
+    enabled: selectedType === 'activity'
+  });
 
-  const handleTitleClick = (item) => {
+  const toggleBookmarkMutation = useMutation({
+    mutationFn: (activityId) => activitiesApi.toggleBookmark(activityId),
+    onMutate: async (activityId) => {
+      // 진행 중인 모든 관련 쿼리 취소
+      await queryClient.cancelQueries({ queryKey: [QUERY_KEYS.ACTIVITIES] });
+      await queryClient.cancelQueries({ queryKey: [QUERY_KEYS.BOOKMARKED_ACTIVITIES] });
+
+      // 이전 데이터 저장
+      const previousData = queryClient.getQueryData([QUERY_KEYS.BOOKMARKED_ACTIVITIES, currentPage]);
+
+      // 낙관적 업데이트
+      queryClient.setQueryData([QUERY_KEYS.BOOKMARKED_ACTIVITIES, currentPage], (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          content: old.content.filter(activity => activity.activityId !== activityId),
+          totalElements: old.totalElements - 1
+        };
+      });
+
+      return { previousData };
+    },
+    onError: (err, activityId, context) => {
+      // 에러 발생 시 이전 데이터로 롤백
+      if (context?.previousData) {
+        queryClient.setQueryData([QUERY_KEYS.BOOKMARKED_ACTIVITIES, currentPage], context.previousData);
+      }
+    },
+    onSettled: () => {
+      // 성공/실패 관계없이 모든 관련 쿼리 무효화
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.ACTIVITIES] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.BOOKMARKED_ACTIVITIES] });
+    }
+  });
+
+  const handleTitleClick = (activity) => {
     if (selectedType === 'issue') {
       navigate('/global-issue-detail', {
         state: {
-          label: `#${item.category}`,
-          title: item.title,
+          label: `#${activity.keyword}`,
+          title: activity.name,
         },
       });
     } else {
-      const firstKeyword = item.category.split(' ')[0];
-      navigate(`/more-detail?query=${encodeURIComponent(firstKeyword)}`);
+      navigate(`/more-detail?query=${encodeURIComponent(activity.keyword)}`);
     }
+  };
+
+  const handleBookmarkToggle = (e, activityId) => {
+    e.stopPropagation();
+    toggleBookmarkMutation.mutate(activityId);
   };
 
   return (
@@ -70,55 +98,63 @@ export default function BookmarkList() {
         </TabButton>
       </CenteredToggleRow>
 
-      {paginatedData.length === 0 ? (
-        <EmptyMessage>북마크한 항목이 없습니다.</EmptyMessage>
-      ) : (
-        <>
-          <TableContainer>
-            <Table>
-              <thead>
-                <tr>
-                  <th>No.</th>
-                  <th>제목</th>
-                  <th>카테고리</th>
-                  <th>날짜</th>
-                  <th>북마크</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginatedData.map((item, idx) => (
-                  <tr key={item.id}>
-                    <td>{(currentPage - 1) * itemsPerPage + idx + 1}</td>
-                    <td>
-                      <TitleLink onClick={() => handleTitleClick(item)}>
-                        {item.title}
-                      </TitleLink>
-                    </td>
-                    <td>
-                      {selectedType === 'issue' ? (
-                        <CategoryTag>{item.category}</CategoryTag>
-                      ) : (
-                        <ActivityTag>{item.category}</ActivityTag>
-                      )}
-                    </td>
-                    <td>{item.date}</td>
-                    <td>
-                      <BookmarkIcon src={bookmarkIcon} alt="bookmark" />
-                    </td>
+      {selectedType === 'activity' ? (
+        isLoading ? (
+          <LoadingMessage>로딩 중...</LoadingMessage>
+        ) : error ? (
+          <ErrorMessage>데이터를 불러오는데 실패했습니다.</ErrorMessage>
+        ) : bookmarkedActivities?.content.length === 0 ? (
+          <EmptyMessage>북마크한 활동이 없습니다.</EmptyMessage>
+        ) : (
+          <>
+            <TableContainer>
+              <Table>
+                <thead>
+                  <tr>
+                    <th>No.</th>
+                    <th>제목</th>
+                    <th>카테고리</th>
+                    <th>날짜</th>
+                    <th>북마크</th>
                   </tr>
-                ))}
-              </tbody>
-            </Table>
-          </TableContainer>
+                </thead>
+                <tbody>
+                  {bookmarkedActivities?.content.map((activity, idx) => (
+                    <tr key={activity.bookmarkId}>
+                      <td>{bookmarkedActivities.pageable.offset + idx + 1}</td>
+                      <td>
+                        <TitleLink onClick={() => handleTitleClick(activity)}>
+                          {activity.name}
+                        </TitleLink>
+                      </td>
+                      <td>
+                        <ActivityTag>#{activity.keyword}</ActivityTag>
+                      </td>
+                      <td>{new Date(activity.startDate).toLocaleDateString()}</td>
+                      <td>
+                        <BookmarkIcon 
+                          src={bookmarkIcon} 
+                          alt="bookmark"
+                          onClick={(e) => handleBookmarkToggle(e, activity.activityId)}
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </TableContainer>
 
-          <PaginationWrapper>
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              goToPage={goToPage}
-            />
-          </PaginationWrapper>
-        </>
+            <PaginationWrapper>
+              <Pagination
+                currentPage={currentPage + 1}
+                totalPages={bookmarkedActivities?.totalPages || 0}
+                goToPage={(page) => setCurrentPage(page - 1)}
+              />
+            </PaginationWrapper>
+          </>
+        )
+      ) : (
+        <EmptyMessage>글로벌 이슈 북마크는 준비 중입니다.</EmptyMessage>
       )}
     </Wrapper>
   );
@@ -244,4 +280,18 @@ const PaginationWrapper = styled.div`
   display: flex;
   justify-content: center;
   width: 100%;
+`;
+
+const LoadingMessage = styled.div`
+  padding: 60px;
+  text-align: center;
+  color: #888;
+  font-size: 15px;
+`;
+
+const ErrorMessage = styled.div`
+  padding: 60px;
+  text-align: center;
+  color: #ff4d4f;
+  font-size: 15px;
 `;

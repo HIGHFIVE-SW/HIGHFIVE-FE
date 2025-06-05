@@ -1,23 +1,40 @@
 import React from 'react';
 import styled from 'styled-components';
-import { Link } from 'react-router-dom';
+import BookmarkFilledButton from '../../assets/images/common/BookmarkFilledButton.png';
+import BookmarkButton from '../../assets/images/common/BookmarkButton.png';
 
-export default function ActivityCard({ title, tags, image, date, bookmarked, onToggle, isClosed }) {
-  const destination = getLinkFromTags(tags); //  자동 링크 결정
 
+export default function ActivityCard({
+  title,
+  tags,
+  image,
+  date,
+  bookmarked,
+  onToggle,
+  isClosed,
+  siteUrl
+}) {
   return (
-    <CardLink to={destination}>
+    <CardLink
+      href={siteUrl || '#'}
+      target="_blank"
+      rel="noopener noreferrer"
+      $disabled={!siteUrl}
+      tabIndex={siteUrl ? 0 : -1}
+      aria-disabled={!siteUrl}
+      onClick={e => {
+        if (!siteUrl) e.preventDefault();
+      }}
+    >
       <Card>
         <ImageWrapper>
           <IssueImage src={image} alt="활동 이미지" />
           {isClosed && <ClosedBadge>마감</ClosedBadge>}
           <BookmarkIcon
-            src={bookmarked
-              ? require('../../assets/images/common/BookmarkFilledButton.png')
-              : require('../../assets/images/common/BookmarkButton.png')}
+            src={bookmarked ? BookmarkFilledButton : BookmarkButton}
             alt="북마크"
-            onClick={(e) => {
-              e.preventDefault(); // 링크 이동 방지
+            onClick={e => {
+              e.preventDefault();
               onToggle();
             }}
           />
@@ -36,40 +53,30 @@ export default function ActivityCard({ title, tags, image, date, bookmarked, onT
   );
 }
 
-// ✅ 태그에 따라 이동할 링크 결정
-function getLinkFromTags(tags) {
-  const allTags = Array.isArray(tags) ? tags : typeof tags === 'string' ? tags.split(' ') : [];
-
-  if (allTags.includes('#봉사활동')) return '/activity/volunteer';
-  if (allTags.includes('#인턴십')) return '/activity/internship';
-  if (allTags.includes('#공모전')) return '/activity/contest';
-  if (allTags.includes('#서포터즈')) return '/activity/supporters';
-
-  return '/activity/preview';
-}
-
-const CardLink = styled(Link)`
+const CardLink = styled.a`
   text-decoration: none;
   color: inherit;
   display: inline-block;
+  cursor: ${({ $disabled }) => ($disabled ? 'not-allowed' : 'pointer')};
+  pointer-events: ${({ $disabled }) => ($disabled ? 'none' : 'auto')};
 
   &:hover {
     opacity: 0.9;
   }
 `;
 
- const Card = styled.div`
-   width: 330px;
-   height: 430px;
-   border: 3px solid #235BA9;
-   background-color: #fff;
-   text-align: left;
-   box-sizing: border-box;
-   display: flex;               /* flex 컨테이너 유지 */
-   flex-direction: column;      /* 세로 정렬 */
-   overflow: visible;
-   padding: 0 20px;
-   cursor: pointer;
+const Card = styled.div`
+  width: 330px;
+  height: 430px;
+  border: 3px solid #235BA9;
+  background-color: #fff;
+  text-align: left;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  overflow: visible;
+  padding: 0 20px;
+  cursor: pointer;
 
   .activity-title {
     font-size: 23px;
@@ -83,31 +90,32 @@ const CardLink = styled(Link)`
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
-    }
+  }
 `;
 
 const ImageWrapper = styled.div`
   width: 100%;
   height: 230px;
   position: relative;
-  display: flex;
   justify-content: center;
   align-items: center;
   box-sizing: border-box;
   overflow: visible;
+  left: -20px;
 `;
 
 const IssueImage = styled.img`
-  width: 325px;
+  width: 324px;
   height: 230px;
   object-fit: cover;
+  object-position: top; 
   display: block;
 `;
 
 const BookmarkIcon = styled.img`
   position: absolute;
   bottom: -45.5px;
-  right: 1px;
+  right : -20px;
   width: 55px;
   height: 55px;
   cursor: pointer;
@@ -115,33 +123,31 @@ const BookmarkIcon = styled.img`
 `;
 
 const Tags = styled.p`
-   font-size: 18px;
-   margin: 0;
-   margin-top: auto;            /* 이 한 줄로 아래로 밀어줍니다 */
- 
-   span {
-     color: #235BA9;
-     margin-right: 10px;
-   }
- `;
+  font-size: 18px;
+  margin: 0;
+  margin-top: auto;
+  span {
+    color: #235BA9;
+    margin-right: 10px;
+  }
+`;
 
- const DateText = styled.p`
-   font-size: 15px;
-   color: #808080;
-+  margin-top: 8px;             /* 태그와 날짜 사이 간격 */
- `;
+const DateText = styled.p`
+  font-size: 15px;
+  color: #808080;
+  margin-top: 8px;
+`;
 
 const ClosedBadge = styled.div`
   position: absolute;
   top: 0px;
-  left: -20px;
+  left: -1px;
   background-color: #656565;
   color: white;
   font-size: 15px;
   padding: 8px 20px;
   z-index: 20;
   font-family: 'NotoSansCustom';
-
   display: flex;
   align-items: center;
   justify-content: center;

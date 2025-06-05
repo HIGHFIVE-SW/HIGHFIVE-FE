@@ -1,53 +1,63 @@
-import React, { useState } from 'react';
+// pages/ActivityPage.js
+import React from 'react';
 import styled from 'styled-components';
+import { useQueryClient } from '@tanstack/react-query';
 import MainNav from '../layout/MainNav';
 import Footer from '../layout/Footer';
 import ActivityCard from '../components/activity/ActivityCard';
-import usePagination from '../hooks/usePagination';
 import Pagination from '../components/common/Pagination';
-import activityImage1 from '../assets/images/activity/ic_ActivityImage.png';
 import CustomDropdown from '../components/common/CustomDropdown';
-
-const dummyActivities = [
-  { id: 1, title: '제 22회 한국 경제 논문 공모전', tags: ['#환경', '#공모전'], date: '2025.04.15~2025.04.20', image: activityImage1 },
-  { id: 2, title: '환경 공모전', tags: ['#환경', '#공모전'], date: '2025.04.15~2025.04.20', image: activityImage1 },
-  { id: 3, title: '환경 봉사활동', tags: ['#환경', '#봉사활동'], date: '2025.04.15~2025.04.20', image: activityImage1 },
-  { id: 4, title: '환경 봉사활동', tags: ['#환경', '#봉사활동'], date: '2025.04.15~2025.04.20', image: activityImage1 },
-  { id: 5, title: '사람과 사회 공모전', tags: ['#사람과사회', '#공모전'], date: '2025.04.15~2025.04.20', image: activityImage1 },
-  { id: 6, title: '사람과 사회 인턴십', tags: ['#사람과사회', '#인턴십'], date: '2025.04.15~2025.04.20', image: activityImage1 },
-  { id: 7, title: '경제 서포터즈', tags: ['#경제', '#서포터즈'], date: '2025.04.15~2025.04.20', image: activityImage1 },
-  { id: 8, title: '경제 공모전', tags: ['#경제', '#공모전'], date: '2025.04.15~2025.04.20', image: activityImage1 },
-  { id: 9, title: '기술 봉사활동', tags: ['#기술', '#봉사활동'], date: '2025.04.15~2025.04.20', image: activityImage1 },
-  { id: 10, title: '기술 봉사활동', tags: ['#기술', '#봉사활동'], date: '2025.04.15~2025.04.20', image: activityImage1 },
-  { id: 11, title: '기술 공모전', tags: ['#기술', '#공모전'], date: '2025.04.15~2025.04.20', image: activityImage1 },
-  { id: 12, title: '경제 봉사활동', tags: ['#경제', '#봉사활동'], date: '2025.04.15~2025.04.20', image: activityImage1 },
-  { id: 13, title: '사람과 사회 봉사활동', tags: ['#사람과사회', '#봉사활동'], date: '2025.04.15~2025.04.20', image: activityImage1 },
-  { id: 14, title: '환경 세미나 참가', tags: ['#환경', '#공모전'], date: '2025.04.15~2025.04.20', image: activityImage1 },
-];
+import { useActivityStore } from '../store/activityStore';
+import { useActivities, useToggleBookmark } from '../query/useActivities';
 
 const fieldOptions = ["전체", "경제", "환경", "사람과사회", "기술"];
 const typeOptions = ["전체", "공모전", "봉사활동", "인턴십", "서포터즈"];
 
 export default function ActivityPage() {
-  const [bookmarked, setBookmarked] = useState([]);
-  const [fieldFilter, setFieldFilter] = useState('전체');
-  const [typeFilter, setTypeFilter] = useState('전체');
+  const {
+    fieldFilter,
+    typeFilter,
+    currentPage,
+    setFieldFilter,
+    setTypeFilter,
+    setCurrentPage
+  } = useActivityStore();
+  
+  const { 
+    data: activitiesData, 
+    isLoading, 
+    error,
+    isError 
+  } = useActivities();
+  
+  const toggleBookmarkMutation = useToggleBookmark();
+  const queryClient = useQueryClient();
 
-  const toggleBookmark = (id) => {
-    setBookmarked((prev) =>
-      prev.includes(id) ? prev.filter((b) => b !== id) : [...prev, id]
-    );
+  const activities = activitiesData?.content || [];
+  const totalPages = activitiesData?.totalPages || 0;
+
+  const handleToggleBookmark = (activityId) => {
+    toggleBookmarkMutation.mutate(activityId);
   };
 
-  const filtered = dummyActivities.filter((activity) => {
-    const [fieldTag, typeTag] = activity.tags;
-    const matchField = fieldFilter === '전체' || fieldTag === `#${fieldFilter}`;
-    const matchType = typeFilter === '전체' || typeTag === `#${typeFilter}`;
-    return matchField && matchType;
-  });
+  // 필터 변경 시 캐시 prefetch
+  const handleFieldFilterChange = (newFilter) => {
+    setFieldFilter(newFilter);
+    
+    // 새 필터로 데이터 prefetch
+    queryClient.prefetchQuery({
+      queryKey: ['activities', newFilter, typeFilter, 0],
+    });
+  };
 
-  const itemsPerPage = 12;
-  const { currentPage, totalPages, currentData, goToPage } = usePagination(filtered, itemsPerPage);
+  const handleTypeFilterChange = (newFilter) => {
+    setTypeFilter(newFilter);
+    
+    // 새 필터로 데이터 prefetch
+    queryClient.prefetchQuery({
+      queryKey: ['activities', fieldFilter, newFilter, 0],
+    });
+  };
 
   return (
     <Wrapper>
@@ -58,56 +68,72 @@ export default function ActivityPage() {
       </HeaderSection>
 
       <ContentSection>
-      <FilterSection>
-        <FilterBlock>
-          <FilterLabel>관심 분야</FilterLabel>
-          <CustomDropdown
-            options={fieldOptions}
-            selected={fieldFilter}
-            onSelect={(option) => setFieldFilter(option)}
-          />
-        </FilterBlock>
-        <FilterBlock>
-          <FilterLabel>활동 유형</FilterLabel>
-          <CustomDropdown
-            options={typeOptions}
-            selected={typeFilter}
-            onSelect={(option) => setTypeFilter(option)}
-          />
-        </FilterBlock>
-      </FilterSection>
+        <FilterSection>
+          <FilterBlock>
+            <FilterLabel>관심 분야</FilterLabel>
+            <CustomDropdown
+              options={fieldOptions}
+              selected={fieldFilter}
+              onSelect={handleFieldFilterChange}
+            />
+          </FilterBlock>
+          <FilterBlock>
+            <FilterLabel>활동 유형</FilterLabel>
+            <CustomDropdown
+              options={typeOptions}
+              selected={typeFilter}
+              onSelect={handleTypeFilterChange}
+            />
+          </FilterBlock>
+        </FilterSection>
 
-        <CardGrid>
-            {currentData.map((activity) => (
-                <ActivityCard
+        {isError && <ErrorMessage>{error?.message}</ErrorMessage>}
+        
+        {isLoading ? (
+          <LoadingMessage>로딩 중...</LoadingMessage>
+        ) : (
+          <CardGrid>
+            {activities.map((activity) => (
+              <ActivityCard
                 key={activity.id}
                 title={activity.title}
-                tags={activity.tags.join(' ')}
+                tags={activity.tags}
                 date={activity.date}
                 image={activity.image}
-                bookmarked={bookmarked.includes(activity.id)}
-                onToggle={() => toggleBookmark(activity.id)}
-                />         
+                bookmarked={activity.bookmarked}
+                onToggle={() => handleToggleBookmark(activity.id)}
+                isClosed={activity.isClosed}
+                siteUrl={activity.siteUrl}
+              />
             ))}
-        {Array.from({ length: 4 - currentData.length }).map((_, idx) => (
-          <div
-            key={`placeholder-${idx}`}
-            style={{
-              width: '100%',
-              height: '0px',
-            }}
-          />
-        ))}
-        </CardGrid>
+            {Array.from({ length: 4 - (activities.length % 4) }).map((_, idx) => (
+              <div
+                key={`placeholder-${idx}`}
+                style={{
+                  width: '100%',
+                  height: '0px',
+                }}
+              />
+            ))}
+          </CardGrid>
+        )}
       </ContentSection>
 
-      <Pagination currentPage={currentPage} totalPages={totalPages} goToPage={goToPage} />
+      <Pagination
+        currentPage={currentPage + 1}
+        totalPages={totalPages}
+        goToPage={(page) => setCurrentPage(page - 1)}
+      />
 
       <Footer />
     </Wrapper>
   );
 }
 
+// 스타일 컴포넌트는 기존과 동일...
+
+
+// 이하 스타일 컴포넌트는 기존과 동일
 const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
@@ -134,7 +160,7 @@ const Subtitle = styled.p`
 `;
 
 const ContentSection = styled.div`
-  padding: 40px 60px 40px 38px; /* top, right, bottom, left */
+  padding: 40px 60px 40px 38px;
 `;
 
 const FilterSection = styled.div`
@@ -170,3 +196,16 @@ const CardGrid = styled.div`
   margin: 0 auto;
 `;
 
+const ErrorMessage = styled.div`
+  color: #ff0000;
+  text-align: center;
+  margin: 20px 0;
+  font-size: 16px;
+`;
+
+const LoadingMessage = styled.div`
+  text-align: center;
+  margin: 20px 0;
+  font-size: 16px;
+  color: #666;
+`;

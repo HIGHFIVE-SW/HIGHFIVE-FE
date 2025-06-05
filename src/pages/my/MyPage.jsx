@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { getUserProfile } from '../../api/userApi';
 import ActivityTypeChart from '../../components/my/ActivityTypeChart';
 import ActivityTrendChart from '../../components/my/ActivityTrendChart';
 import MyPostList from '../../components/my/MyPostList';
@@ -10,7 +11,7 @@ import styled from 'styled-components';
 import MainNav from '../../layout/MainNav';
 import Footer from '../../layout/Footer';
 
-import judyIcon from '../../assets/images/level/ic_Judy.png';
+import DefaultProfile from '../../assets/images/profile/DefaultProfile.png';
 import masterIcon from '../../assets/images/level/ic_Master.png';
 import profilePencilIcon from '../../assets/images/profile/ic_ProfilePenscil.png';
 
@@ -20,15 +21,56 @@ export default function MyPage() {
   const location = useLocation();
 
   const [profile, setProfile] = useState({
-    nickname: localStorage.getItem('nickname') || 'JUDY',
-    keyword: localStorage.getItem('keyword') || '환경',
-    profileUrl: localStorage.getItem('profileUrl') || judyIcon,
+    nickname: '',
+    keyword: '',
+    profileUrl: DefaultProfile,
     rankImage: masterIcon,
     level: 'Lv3 글로벌 마스터',
     progress: 80,
     point: 1608,
     rank: 1,
   });
+
+  const KEYWORD_MAPPING = {
+  'Environment': '환경',
+  'PeopleAndSociety': '사람과사회',
+  'Economy': '경제',
+  'Technology': '기술'
+};
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const profileData = await getUserProfile();
+        console.log('받아온 프로필 데이터:', profileData);
+        
+        if (profileData) {
+          setProfile(prev => ({
+            ...prev,
+            nickname: profileData.nickname || 'JUDY',
+            keyword: profileData.keyword || '환경',
+            profileUrl: profileData.profileUrl || DefaultProfile,
+          }));
+          
+          // localStorage에도 저장
+          localStorage.setItem('nickname', profileData.nickname || 'JUDY');
+          localStorage.setItem('keyword', profileData.keyword || '환경');
+          localStorage.setItem('profileUrl', profileData.profileUrl || DefaultProfile);
+        }
+      } catch (error) {
+        console.error('프로필 정보를 가져오는데 실패했습니다:', error);
+        // 에러 발생 시 기본값 설정
+        setProfile(prev => ({
+          ...prev,
+          nickname: 'JUDY',
+          keyword: '환경',
+          profileUrl: DefaultProfile,
+        }));
+      }
+    };
+
+    fetchProfile();
+  }, []);
 
   useEffect(() => {
     if (location.state) {
@@ -50,6 +92,11 @@ export default function MyPage() {
     { activityType: 'SUPPORTERS', count: 0 },
   ];
 
+  const handleTabClick = (tabName) => {
+    console.log('탭 클릭됨:', tabName);
+    setActiveTab(tabName);
+  };
+
   return (
     <PageContainer>
       <MainNav />
@@ -59,14 +106,22 @@ export default function MyPage() {
             <TitleText>마이페이지</TitleText>
 
             <ProfileWrapper>
-              <ProfileImage src={profile.profileUrl} alt="프로필 이미지" />
+              <ProfileImage 
+                src={profile.profileUrl} 
+                alt="프로필 이미지" 
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = DefaultProfile;
+                }}
+              />
               <EditIconButton onClick={() => navigate('/profile/edit')}>
                 <EditIcon src={profilePencilIcon} alt="편집 아이콘" />
               </EditIconButton>
             </ProfileWrapper>
 
             <Nickname>{profile.nickname}</Nickname>
-            <KeywordTag>#{profile.keyword}</KeywordTag>
+            <KeywordTag>#{KEYWORD_MAPPING[profile.keyword] || profile.keyword}</KeywordTag>
+
 
             <Card>
               <CardTitle
@@ -116,33 +171,35 @@ export default function MyPage() {
               <Tabs>
                 <Tab
                   active={activeTab === 'statistics'}
-                  onClick={() => setActiveTab('statistics')}
+                  onClick={() => handleTabClick('statistics')}
                 >
                   활동 통계
                 </Tab>
                 <Tab
                   active={activeTab === 'bookmark'}
-                  onClick={() => setActiveTab('bookmark')}
+                  onClick={() => handleTabClick('bookmark')}
                 >
                   북마크
                 </Tab>
                 <Tab
                   active={activeTab === 'posts'}
-                  onClick={() => setActiveTab('posts')}
+                  onClick={() => handleTabClick('posts')}
                 >
                   작성한 글
                 </Tab>
               </Tabs>
             </TabsWrapper>
 
-            {activeTab === 'statistics' && (
-              <GraphSection>
-                <ActivityTrendChart />
-                <ActivityTypeChart data={dummyTypeStats} />
-              </GraphSection>
-            )}
-            {activeTab === 'bookmark' && <BookmarkList />}
-            {activeTab === 'posts' && <MyPostList />}
+            <ContentSection>
+              {activeTab === 'statistics' && (
+                <GraphSection>
+                  <ActivityTrendChart />
+                  <ActivityTypeChart data={dummyTypeStats} />
+                </GraphSection>
+              )}
+              {activeTab === 'bookmark' && <BookmarkList />}
+              {activeTab === 'posts' && <MyPostList />}
+            </ContentSection>
           </RightPanel>
         </PageWrapper>
       </ContentWrapper>
@@ -157,6 +214,7 @@ const PageContainer = styled.div`
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  background-color: #fff;
 `;
 
 const ContentWrapper = styled.main`
@@ -166,7 +224,9 @@ const ContentWrapper = styled.main`
 
 const PageWrapper = styled.div`
   display: flex;
-  font-family: 'NotoSansCustom';
+  font-family: 'NotoSansCustom', -apple-system, BlinkMacSystemFont, sans-serif;
+  width: 100%;
+  min-height: calc(100vh - 80px);
 `;
 
 const LeftPanel = styled.div`
@@ -176,6 +236,7 @@ const LeftPanel = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
+  border-right: 1px solid #e8e8e8;
 `;
 
 const TitleText = styled.div`
@@ -183,6 +244,7 @@ const TitleText = styled.div`
   font-size: 22px;
   margin-bottom: 24px;
   color: #000;
+  align-self: flex-start;
 `;
 
 const ProfileWrapper = styled.div`
@@ -195,6 +257,7 @@ const ProfileWrapper = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 `;
 
 const ProfileImage = styled.img`
@@ -218,6 +281,15 @@ const EditIconButton = styled.button`
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: scale(1.05);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
 `;
 
 const EditIcon = styled.img`
@@ -227,7 +299,9 @@ const EditIcon = styled.img`
 
 const Nickname = styled.h3`
   font-size: 20px;
-  margin-bottom: 8px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  color: #333;
 `;
 
 const KeywordTag = styled.div`
@@ -238,6 +312,7 @@ const KeywordTag = styled.div`
   font-size: 14px;
   font-weight: 500;
   margin-bottom: 24px;
+  border: 1px solid rgba(35, 91, 169, 0.2);
 `;
 
 const Card = styled.div`
@@ -245,15 +320,26 @@ const Card = styled.div`
   border-radius: 16px;
   padding: 20px;
   width: 100%;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   margin-bottom: 20px;
   text-align: center;
+  transition: box-shadow 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  }
 `;
 
 const CardTitle = styled.h4`
   font-size: 16px;
   font-weight: bold;
-  margin-bottom: 12px;
+  margin: 0 0 12px 0;
+  color: #333;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: #235ba9;
+  }
 `;
 
 const LevelImage = styled.img`
@@ -266,6 +352,7 @@ const LevelText = styled.div`
   font-size: 15px;
   font-weight: 600;
   margin-bottom: 12px;
+  color: #333;
 `;
 
 const ProgressWrapper = styled.div`
@@ -279,7 +366,8 @@ const ProgressWrapper = styled.div`
 
 const ProgressBar = styled.div`
   height: 100%;
-  background-color: #235ba9;
+  background: linear-gradient(90deg, #235ba9 0%, #4a90e2 100%);
+  transition: width 0.3s ease;
 `;
 
 const ProgressLabel = styled.div`
@@ -303,23 +391,30 @@ const RankItem = styled.div`
 const Label = styled.div`
   font-size: 14px;
   color: #666;
+  margin-bottom: 4px;
 `;
 
 const Value = styled.div`
   font-size: 16px;
   font-weight: bold;
-  margin-top: 4px;
+  color: #333;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: #235ba9;
+  }
 `;
 
 const Divider = styled.div`
   height: 36px;
   width: 1px;
-  background-color: #ccc;
+  background-color: #ddd;
 `;
 
 const RightPanel = styled.div`
   flex: 1;
   padding: 32px 48px;
+  background-color: #fff;
 `;
 
 const TabsWrapper = styled.div`
@@ -343,7 +438,13 @@ const Tab = styled.div`
   font-weight: 600;
   color: ${({ active }) => (active ? '#235ba9' : '#999')};
   cursor: pointer;
-  transition: color 0.2s;
+  transition: color 0.2s ease;
+  user-select: none;
+
+  &:hover {
+    color: ${({ active }) => (active ? '#235ba9' : '#666')};
+  }
+
   &:after {
     content: '';
     position: absolute;
@@ -353,8 +454,12 @@ const Tab = styled.div`
     height: 3px;
     background-color: #235ba9;
     border-radius: 2px;
-    transition: width 0.3s;
+    transition: width 0.3s ease;
   }
+`;
+
+const ContentSection = styled.div`
+  min-height: 400px;
 `;
 
 const GraphSection = styled.div`

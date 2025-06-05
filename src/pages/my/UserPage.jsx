@@ -1,5 +1,4 @@
-import React from 'react';
-import { useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import MainNav from '../../layout/MainNav';
@@ -11,12 +10,12 @@ import defaultProfile from '../../assets/images/profile/DefaultProfile.png';
 import masterIcon from '../../assets/images/level/ic_Master.png';
 
 const UserPage = () => {
-  useEffect(() => {
-        window.scrollTo({ top: 0, left: 0 });}, []);
   const { state } = useLocation();
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('statistics');
+  const [imageError, setImageError] = useState(false);
+  
   const user = state || {};
-  const [activeTab, setActiveTab] = React.useState('statistics');
   const currentUser = localStorage.getItem('nickname');
 
   const profile = {
@@ -37,8 +36,36 @@ const UserPage = () => {
     { activityType: 'SUPPORTERS', count: 0 },
   ];
 
+  // 페이지 초기화 및 리다이렉트 로직
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0 });
+    
+    // 자신의 페이지에 접근 시 마이페이지로 리다이렉트
+    if (profile.nickname === currentUser) {
+      navigate('/mypage', { replace: true });
+    }
+  }, [profile.nickname, currentUser, navigate]);
+
+  // 탭 클릭 핸들러 최적화
+  const handleTabClick = useCallback((tabName) => {
+    console.log('탭 변경:', tabName);
+    setActiveTab(tabName);
+  }, []);
+
+  // 랭킹 페이지 이동 핸들러
+  const handleRankingClick = useCallback(() => {
+    navigate('/ranking');
+  }, [navigate]);
+
+  // 이미지 에러 핸들러
+  const handleImageError = useCallback((e) => {
+    console.error('프로필 이미지 로드 실패:', profile.profileUrl);
+    setImageError(true);
+    e.target.src = defaultProfile;
+  }, [profile.profileUrl]);
+
+  // 현재 사용자 본인의 페이지인 경우 렌더링하지 않음
   if (profile.nickname === currentUser) {
-    navigate('/mypage');
     return null;
   }
 
@@ -49,15 +76,28 @@ const UserPage = () => {
         <PageWrapper>
           <LeftPanel>
             <TitleText>'{profile.nickname}'님의 페이지</TitleText>
+            
             <ProfileWrapper>
-              <ProfileImage src={profile.profileUrl} alt="프로필" />
+              <ProfileImage 
+                src={imageError ? defaultProfile : profile.profileUrl} 
+                alt={`${profile.nickname} 프로필`}
+                onError={handleImageError}
+                width="120"
+                height="120"
+              />
             </ProfileWrapper>
+            
             <Nickname>{profile.nickname}</Nickname>
             <KeywordTag>#{profile.keyword}</KeywordTag>
             
             <Card>
-              <CardTitle>나의 등급</CardTitle>
-              <LevelImage src={profile.rankImage} alt="등급" />
+              <CardTitle>등급 정보</CardTitle>
+              <LevelImage 
+                src={profile.rankImage} 
+                alt="등급 아이콘"
+                width="60"
+                height="60"
+              />
               <LevelText>{profile.level}</LevelText>
               <ProgressWrapper>
                 <ProgressBar style={{ width: `${profile.progress}%` }} />
@@ -66,9 +106,18 @@ const UserPage = () => {
             </Card>
             
             <Card>
-              <CardTitle onClick={() => navigate('/ranking')}
-                style={{ cursor: 'pointer' }}>랭킹</CardTitle>
-              <LevelImage src={profile.rankImage} alt="등급 이미지" />
+              <CardTitle 
+                onClick={handleRankingClick}
+                style={{ cursor: 'pointer' }}
+              >
+                랭킹 정보
+              </CardTitle>
+              <LevelImage 
+                src={profile.rankImage} 
+                alt="등급 아이콘"
+                width="60"
+                height="60"
+              />
               <LevelText>{profile.level}</LevelText>
               <RankRow>
                 <RankItem>
@@ -89,26 +138,32 @@ const UserPage = () => {
               <Tabs>
                 <Tab
                   active={activeTab === 'statistics'}
-                  onClick={() => setActiveTab('statistics')}
+                  onClick={() => handleTabClick('statistics')}
+                  aria-selected={activeTab === 'statistics'}
+                  role="tab"
                 >
                   활동 통계
                 </Tab>
                 <Tab
                   active={activeTab === 'posts'}
-                  onClick={() => setActiveTab('posts')}
+                  onClick={() => handleTabClick('posts')}
+                  aria-selected={activeTab === 'posts'}
+                  role="tab"
                 >
                   작성한 글
                 </Tab>
               </Tabs>
             </TabsWrapper>
 
-            {activeTab === 'statistics' && (
-              <GraphSection>
-                <ActivityTrendChart />
-                <ActivityTypeChart data={dummyTypeStats} />
-              </GraphSection>
-            )}
-            {activeTab === 'posts' && <MyPostList />}
+            <ContentSection>
+              {activeTab === 'statistics' && (
+                <GraphSection>
+                  <ActivityTrendChart />
+                  <ActivityTypeChart data={dummyTypeStats} />
+                </GraphSection>
+              )}
+              {activeTab === 'posts' && <MyPostList />}
+            </ContentSection>
           </RightPanel>
         </PageWrapper>
       </ContentWrapper>
@@ -119,12 +174,13 @@ const UserPage = () => {
 
 export default UserPage;
 
-/* Styled Components - MyPage와 동일한 스타일 적용 */
+/* Styled Components */
 
 const PageContainer = styled.div`
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  background-color: #fff;
 `;
 
 const ContentWrapper = styled.main`
@@ -134,7 +190,9 @@ const ContentWrapper = styled.main`
 
 const PageWrapper = styled.div`
   display: flex;
-  font-family: 'NotoSansCustom';
+  font-family: 'NotoSansCustom', -apple-system, BlinkMacSystemFont, sans-serif;
+  width: 100%;
+  min-height: calc(100vh - 80px);
 `;
 
 const LeftPanel = styled.div`
@@ -144,6 +202,7 @@ const LeftPanel = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
+  border-right: 1px solid #e8e8e8;
 `;
 
 const ProfileWrapper = styled.div`
@@ -155,6 +214,7 @@ const ProfileWrapper = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 `;
 
 const ProfileImage = styled.img`
@@ -162,19 +222,23 @@ const ProfileImage = styled.img`
   height: 100%;
   border-radius: 50%;
   object-fit: cover;
+  background-color: #f0f0f0;
 `;
 
 const TitleText = styled.div`
   font-weight: bold;
   font-size: 22px;
-  margin-bottom: 8px;
-  color: #000;
   margin-bottom: 24px;
+  color: #000;
+  text-align: center;
+  word-break: keep-all;
 `;
 
 const Nickname = styled.h3`
   font-size: 20px;
-  margin-bottom: 8px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  color: #333;
 `;
 
 const KeywordTag = styled.div`
@@ -185,6 +249,7 @@ const KeywordTag = styled.div`
   font-size: 14px;
   font-weight: 500;
   margin-bottom: 24px;
+  border: 1px solid rgba(35, 91, 169, 0.2);
 `;
 
 const Card = styled.div`
@@ -192,27 +257,40 @@ const Card = styled.div`
   border-radius: 16px;
   padding: 20px;
   width: 100%;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   margin-bottom: 20px;
   text-align: center;
+  transition: box-shadow 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  }
 `;
 
 const CardTitle = styled.h4`
   font-size: 16px;
   font-weight: bold;
-  margin-bottom: 12px;
+  margin: 0 0 12px 0;
+  color: #333;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: #235ba9;
+  }
 `;
 
 const LevelImage = styled.img`
   width: 60px;
   height: 60px;
   margin-bottom: 8px;
+  background-color: #f0f0f0;
 `;
 
 const LevelText = styled.div`
   font-size: 15px;
   font-weight: 600;
   margin-bottom: 12px;
+  color: #333;
 `;
 
 const ProgressWrapper = styled.div`
@@ -226,7 +304,8 @@ const ProgressWrapper = styled.div`
 
 const ProgressBar = styled.div`
   height: 100%;
-  background-color: #235ba9;
+  background: linear-gradient(90deg, #235ba9 0%, #4a90e2 100%);
+  transition: width 0.3s ease;
 `;
 
 const ProgressLabel = styled.div`
@@ -250,27 +329,25 @@ const RankItem = styled.div`
 const Label = styled.div`
   font-size: 14px;
   color: #666;
+  margin-bottom: 4px;
 `;
 
 const Value = styled.div`
   font-size: 16px;
   font-weight: bold;
-  margin-top: 4px;
+  color: #333;
 `;
 
 const Divider = styled.div`
   height: 36px;
   width: 1px;
-  background-color: #ccc;
+  background-color: #ddd;
 `;
 
 const RightPanel = styled.div`
   flex: 1;
   padding: 32px 48px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
+  background-color: #fff;
 `;
 
 const TabsWrapper = styled.div`
@@ -285,6 +362,7 @@ const Tabs = styled.div`
   border-bottom: 1px solid #ddd;
   width: fit-content;
   margin: 0 auto;
+  role: tablist;
 `;
 
 const Tab = styled.div`
@@ -294,7 +372,18 @@ const Tab = styled.div`
   font-weight: 600;
   color: ${({ active }) => (active ? '#235ba9' : '#999')};
   cursor: pointer;
-  transition: color 0.2s;
+  transition: color 0.2s ease;
+  user-select: none;
+
+  &:hover {
+    color: ${({ active }) => (active ? '#235ba9' : '#666')};
+  }
+
+  &:focus {
+    outline: 2px solid #235ba9;
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
 
   &:after {
     content: '';
@@ -305,8 +394,12 @@ const Tab = styled.div`
     height: 3px;
     background-color: #235ba9;
     border-radius: 2px;
-    transition: width 0.3s;
+    transition: width 0.3s ease;
   }
+`;
+
+const ContentSection = styled.div`
+  min-height: 400px;
 `;
 
 const GraphSection = styled.div`

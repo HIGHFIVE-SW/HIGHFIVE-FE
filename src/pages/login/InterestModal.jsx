@@ -1,6 +1,8 @@
+// InterestModal.jsx
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
+import { setUserProfile } from '../../api/userApi'; // 경로는 프로젝트 구조에 맞게 조정
 
 import envCard from '../../assets/images/interestmodal/ic_EnvironmentInterest.png';
 import societyCard from '../../assets/images/interestmodal/ic_SocietyInterest.png';
@@ -26,30 +28,10 @@ const GlobalFontStyle = styled.div`
 `;
 
 const interests = [
-  {
-    id: 'environment',
-    label: '환경',
-    image: envCard,
-    activeImage: envCardActive,
-  },
-  {
-    id: 'society',
-    label: '사회',
-    image: societyCard,
-    activeImage: societyCardActive,
-  },
-  {
-    id: 'economy',
-    label: '경제',
-    image: economyCard,
-    activeImage: economyCardActive,
-  },
-  {
-    id: 'tech',
-    label: '기술',
-    image: techCard,
-    activeImage: techCardActive,
-  },
+  { id: 'environment', label: '환경', apiValue: 'Environment', image: envCard, activeImage: envCardActive },
+  { id: 'society', label: '사람과 사회', apiValue: 'PeopleAndSociety', image: societyCard, activeImage: societyCardActive },
+  { id: 'economy', label: '경제', apiValue: 'Economy', image: economyCard, activeImage: economyCardActive },
+  { id: 'tech', label: '기술', apiValue: 'Technology', image: techCard, activeImage: techCardActive },
 ];
 
 export default function InterestModal({ onClose, nickname, profileUrl }) {
@@ -58,56 +40,72 @@ export default function InterestModal({ onClose, nickname, profileUrl }) {
 
   const handleSelect = (id) => setSelected(id);
 
-  const handleComplete = () => {
+  const handleComplete = async () => {
     if (selected) {
-      const selectedLabel = interests.find(i => i.id === selected)?.label || '';
+      const selectedInterest = interests.find(i => i.id === selected);
+      try {
+        // 항상 3개 필드 포함!
+        const userData = {
+          nickname: nickname,
+          keyword: selectedInterest.apiValue,
+          profileUrl:
+            profileUrl !== '/static/media/DefaultProfile.c57a8fc43667160da616.png'
+              ? profileUrl
+              : "기본값"
+        };
 
-      // ✅ 저장
-      localStorage.setItem('nickname', nickname);
-      localStorage.setItem('profileUrl', profileUrl);
-      localStorage.setItem('keyword', selectedLabel);
+        console.log('전송할 데이터:', userData);
 
-      // ✅ 메인으로 이동
-      navigate('/main');
+        const response = await setUserProfile(userData);
+
+        if (response?.isSuccess) {
+          navigate('/main');
+        } else {
+          console.error('프로필 저장 실패:', response);
+          alert(response?.message || '회원정보 저장에 실패했습니다.');
+        }
+      } catch (e) {
+        console.error('프로필 저장 실패:', e.response?.data || e);
+        if (e.response?.data?.message) {
+          alert(e.response.data.message);
+        } else if (e.message === 'Network Error') {
+          alert('서버 연결에 실패했습니다. 잠시 후 다시 시도해주세요.');
+        } else {
+          alert('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+        }
+      }
     } else {
       alert('관심 분야를 선택해주세요.');
     }
   };
 
   return (
-    <>
-      <GlobalFontStyle />
-      <ModalOverlay onClick={onClose}>
-        <ModalBox onClick={(e) => e.stopPropagation()}>
-          <ContentWrapper>
-            <HeaderWrapper>
-              <Title>관심 분야를 선택해주세요.</Title>
-              <Subtitle>*한 가지만 선택해주세요</Subtitle>
-            </HeaderWrapper>
-            <Grid>
-              {interests.map((item) => (
-                <InterestCard
-                  key={item.id}
-                  onClick={() => handleSelect(item.id)}
-                  selected={selected === item.id}
-                >
-                  <CardInner>
-                    <CardImage
-                      src={selected === item.id ? item.activeImage : item.image}
-                      alt={item.id}
-                    />
-                    <LabelText selected={selected === item.id}>{item.label}</LabelText>
-                  </CardInner>
-                </InterestCard>
-              ))}
-            </Grid>
-          </ContentWrapper>
-          <NextButton onClick={handleComplete} disabled={!selected}>
-            완료
-          </NextButton>
-        </ModalBox>
-      </ModalOverlay>
-    </>
+    <ModalOverlay onClick={onClose}>
+      <ModalBox onClick={e => e.stopPropagation()}>
+        <GlobalFontStyle />
+        <HeaderWrapper>
+          <Title>관심 분야를 선택해주세요.</Title>
+          <Subtitle>*한 가지만 선택해주세요</Subtitle>
+        </HeaderWrapper>
+        <Grid>
+          {interests.map((item) => (
+            <InterestCard
+              key={item.id}
+              selected={selected === item.id}
+              onClick={() => handleSelect(item.id)}
+            >
+              <CardInner>
+                <CardImage src={selected === item.id ? item.activeImage : item.image} />
+                <LabelText selected={selected === item.id}>{item.label}</LabelText>
+              </CardInner>
+            </InterestCard>
+          ))}
+        </Grid>
+        <NextButton disabled={!selected} onClick={handleComplete}>
+          완료
+        </NextButton>
+      </ModalBox>
+    </ModalOverlay>
   );
 }
 
