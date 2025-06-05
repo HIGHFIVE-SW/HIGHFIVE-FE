@@ -1,7 +1,6 @@
 // hooks/useIssues.js
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import issuesApi from '../api/IssueApi';
-import styled from 'styled-components';
 
 // 쿼리 키 상수 정의
 export const QUERY_KEYS = {
@@ -74,23 +73,3 @@ export const useIssueDetail = (issueId) => {
     cacheTime: 10 * 60 * 1000, // 10분
   });
 };
-
-const RecommendCards = styled.div`
-  display: flex;
-  flex-wrap: nowrap;
-  justify-content: space-between;
-  gap: 20px;
-  margin-top: 20px;
-  margin-bottom: 40px;
-  overflow-x: auto;
-`;
-
-const Card = styled.div`
-  width: 260px;
-  height: 400px;
-`;
-
-const IssueImage = styled.img`
-  width: 254px;
-  height: 160px;
-`;

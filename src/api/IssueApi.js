@@ -39,7 +39,9 @@ class IssuesApi {
 
   async getIssuesByKeyword({ keyword, page = 0 }) {
     try {
-      const mappedKeyword = KEYWORD_MAP[keyword] || keyword;
+      // keyword가 객체인 경우 처리
+      const keywordValue = typeof keyword === 'object' ? keyword.value || keyword.keyword : keyword;
+      const mappedKeyword = KEYWORD_MAP[keywordValue] || keywordValue;
       
       const response = await api.get(`/issues/keyword/${mappedKeyword}?page=${page}`);
       if (!response.data.isSuccess) {
@@ -78,7 +80,7 @@ async getIssueDetail(issueId) {
       siteUrl: issue.siteUrl,
       imageUrl: issue.imageUrl || '/assets/images/main/ic_NoImage.png',
       keyword: koreanKeyword,
-      category: `#${koreanKeyword}`,
+      category: `${koreanKeyword}`,
       bookmarked: issue.bookmarked || false
     };
   } catch (error) {

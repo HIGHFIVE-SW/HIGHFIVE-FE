@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useNavigate, useParams } from 'react-router-dom';
 import MainNav from '../../layout/MainNav';
@@ -10,10 +10,13 @@ import { useIssueDetail, useToggleIssueBookmark } from '../../query/useIssues';
 import { useActivitiesByKeywordLimited } from '../../query/useActivities';
 import ActivityCard from '../../components/activity/ActivityCard';
 import { formatDate } from '../../utils/formatDate';
+import { useActivities, useToggleBookmark } from '../../query/useActivities';
 
 export default function GlobalIssueDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [selectedCategory, setSelectedCategory] = useState('전체');
+  const toggleActivityBookmark = useToggleBookmark();
 
   const { data: issue, isLoading, error } = useIssueDetail(id);
   const toggleBookmark = useToggleIssueBookmark();
@@ -26,8 +29,14 @@ export default function GlobalIssueDetailPage() {
     }
   );
 
+  const { data: activitiesData, isLoading: isActivitiesLoading } = useActivities(0, selectedCategory === '전체' ? '' : selectedCategory);
+
   const handleBookmarkToggle = () => {
     toggleBookmark.mutate(id);
+  };
+
+  const handleActivityBookmarkToggle = (activityId) => {
+    toggleActivityBookmark.mutate(activityId);
   };
 
   if (isLoading) {
@@ -124,7 +133,7 @@ export default function GlobalIssueDetailPage() {
                     : ''
                 }
                 bookmarked={activity.bookmarked}
-                onToggle={() => {}}
+                onToggle={() => handleActivityBookmarkToggle(activity.id || activity.activityId)}
                 isClosed={activity.endDate ? new Date(activity.endDate) < new Date() : false}
                 siteUrl={activity.siteUrl}
               />
@@ -159,7 +168,7 @@ const RecommendWrapper = styled.div`
 `;
 
 const Label = styled.div`
-  color: #1a1a1a;
+  color: #656565;
   font-size: 20px;
   font-weight: 500;
   margin-bottom: 12px;
@@ -219,6 +228,15 @@ const OriginalLink = styled.a`
   color: #235BA9;
   margin-top: 10px;
   cursor: pointer;
+  text-decoration: none;
+
+  &:hover {
+    color: #FFCD4A;
+  }
+
+  &:visited {
+    color: #235BA9;
+  }
 `;
 
 const LinkImage = styled.img`

@@ -5,6 +5,7 @@ import MainNav from '../../layout/MainNav';
 import Footer from '../../layout/Footer';
 import IssueCard from '../../components/issue/IssueCard';
 import Chatbot from '../../components/chatbot/Chatbot';
+import { useIssues, useToggleIssueBookmark } from '../../query/useIssues';
 
 import globalIssueImage from '../../assets/images/main/ic_GlobalIssue.png';
 import issueCardSample from '../../assets/images/issue/ic_IssueCardSample.png';
@@ -14,14 +15,12 @@ import economyButton from '../../assets/images/main/EconomyButton.png';
 import techButton from '../../assets/images/main/TechButton.png';
 
 export default function MainPage() {
-  const [bookmarked, setBookmarked] = useState(new Array(3).fill(false));
   const navigate = useNavigate();
+  const toggleBookmark = useToggleIssueBookmark();
 
-  const dummyIssues = [
-    { title: "글로벌 '관세 전쟁' 공포 ... 국내 증시 '타격'", tag: '#정치' },
-    { title: "글로벌 '관세 전쟁' 공포 ... 국내 증시 '타격'", tag: '#경제' },
-    { title: "글로벌 '관세 전쟁' 공포 ... 국내 증시 '타격'", tag: '#사회' },
-  ];
+  // 최신 이슈 3개 조회
+  const { data: issuesData, isLoading } = useIssues(0);
+  const latestIssues = issuesData?.content?.slice(0, 3) || [];
 
   const categories = [
     { title: '환경', img: environmentButton },
@@ -30,10 +29,8 @@ export default function MainPage() {
     { title: '기술', img: techButton },
   ];
 
-  const toggleBookmark = (idx) => {
-    const updated = [...bookmarked];
-    updated[idx] = !updated[idx];
-    setBookmarked(updated);
+  const handleBookmarkToggle = (issueId) => {
+    toggleBookmark.mutate(issueId);
   };
 
   return (
@@ -75,16 +72,22 @@ export default function MainPage() {
           </Header>
           <MoreLink onClick={() => navigate('/global-issue')}>더보기 &gt;</MoreLink>
           <IssueGrid>
-            {dummyIssues.map((item, idx) => (
-              <IssueCard
-                key={idx}
-                title={item.title}
-                tag={item.tag}
-                image={issueCardSample}
-                bookmarked={bookmarked[idx]}
-                onToggle={() => toggleBookmark(idx)}
-              />
-            ))}
+            {isLoading ? (
+              <LoadingText>로딩 중...</LoadingText>
+            ) : latestIssues.length > 0 ? (
+              latestIssues.map((issue) => (
+                <IssueCard
+                  key={issue.id}
+                  title={issue.title}
+                  tag={issue.category}
+                  image={issue.thumbnailUrl}
+                  bookmarked={issue.bookmarked}
+                  onToggle={() => handleBookmarkToggle(issue.id)}
+                />
+              ))
+            ) : (
+              <NoIssuesText>최신 이슈가 없습니다.</NoIssuesText>
+            )}
           </IssueGrid>
         </Wrapper>
 
@@ -214,4 +217,20 @@ const IssueGrid = styled.div`
   gap: 150px;
   flex-wrap: wrap;
   margin-bottom: 150px;
+`;
+
+const LoadingText = styled.div`
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 40px 0;
+  font-size: 16px;
+  color: #666;
+`;
+
+const NoIssuesText = styled.div`
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 40px 0;
+  font-size: 16px;
+  color: #666;
 `;
