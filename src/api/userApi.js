@@ -2,6 +2,13 @@
 import axios from 'axios';
 import axiosInstance from './axiosInstance';
 
+export const TIER_LABEL_MAP = {
+  beginner: '초보 여행가',
+  pro: '프로 탐험가',
+  master: '글로벌 마스터',
+  leader: '유니버스 리더'
+};
+
 // 8080 포트의 axios 인스턴스 생성
 const axiosInstance8080 = axios.create({
   baseURL: 'http://61.109.236.137:8080',
@@ -79,5 +86,19 @@ export const setUserProfile = async (userData) => {
     throw error;
   }
 };
+export const getRankingByTier = async (tierKey) => {
+  try {
+    const response = await axiosInstance8080.get(`/users/rankings/${tierKey}`);
+    console.log(`[${tierKey}] 티어 랭킹 조회 결과:`, response.data);
 
+    if (response.data.isSuccess) {
+      return response.data.result; // 유저 배열 반환
+    } else {
+      throw new Error(response.data.message || '랭킹 조회 실패');
+    }
+  } catch (error) {
+    console.error('티어 랭킹 API 호출 실패:', error);
+    throw error;
+  }
+};
 
