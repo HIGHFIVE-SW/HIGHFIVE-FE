@@ -11,8 +11,12 @@ import styled from 'styled-components';
 import MainNav from '../../layout/MainNav';
 import Footer from '../../layout/Footer';
 
-import DefaultProfile from '../../assets/images/profile/DefaultProfile.png';
+import beginnerIcon from '../../assets/images/level/ic_Beginner.png';
+import proIcon from '../../assets/images/level/ic_Pro.png';
 import masterIcon from '../../assets/images/level/ic_Master.png';
+import leaderIcon from '../../assets/images/level/ic_Leader.png';
+
+import DefaultProfile from '../../assets/images/profile/DefaultProfile.png';
 import profilePencilIcon from '../../assets/images/profile/ic_ProfilePenscil.png';
 
 export default function MyPage() {
@@ -24,63 +28,130 @@ export default function MyPage() {
     nickname: '',
     keyword: '',
     profileUrl: DefaultProfile,
-    rankImage: masterIcon,
-    level: 'Lv3 글로벌 마스터',
-    progress: 80,
-    point: 1608,
-    rank: 1,
+    exp: 0,
+    ranking: 0,
+    level: '초보 여행가의 랭킹전',
   });
 
   const KEYWORD_MAPPING = {
-  'Environment': '환경',
-  'PeopleAndSociety': '사람과사회',
-  'Economy': '경제',
-  'Technology': '기술'
-};
+    Environment: '환경',
+    PeopleAndSociety: '사람과사회',
+    Economy: '경제',
+    Technology: '기술',
+  };
+
+  // 현재 exp에 맞는 레벨(label, icon)을 반환
+  const getLevelInfo = (exp) => {
+    if (exp >= 4000) {
+      return { label: 'Lv4. 유니버스 리더', icon: leaderIcon };
+    }
+    if (exp >= 2000) {
+      return { label: 'Lv3. 글로벌 마스터', icon: masterIcon };
+    }
+    if (exp >= 500) {
+      return { label: 'Lv2. 프로 탐험가들', icon: proIcon };
+    }
+    return { label: 'Lv1. 초보 여행가', icon: beginnerIcon };
+  };
+
+  // 현재 exp 기준으로 “다음 단계” 레벨(label, icon)을 반환
+  const getNextLevelInfo = (exp) => {
+    if (exp < 500) {
+      return { label: 'Lv2. 프로 탐험가들', icon: proIcon };
+    }
+    if (exp < 2000) {
+      return { label: 'Lv3. 글로벌 마스터', icon: masterIcon };
+    }
+    if (exp < 4000) {
+      return { label: 'Lv4. 유니버스 리더', icon: leaderIcon };
+    }
+    // 이미 가장 높은 단계(>=4000)라면
+    return { label: '최고 랭킹 달성', icon: leaderIcon };
+  };
+
+  // exp에 따라 현재 레벨 구간 이전/다음 임계값을 계산
+  const calcProgressPercent = (exp) => {
+    // 레벨 기준 임계값
+    const thresholds = [0, 500, 2000, 4000];
+    let prev = 0;
+    let next = 500;
+
+    if (exp < thresholds[1]) {
+      prev = thresholds[0];
+      next = thresholds[1];
+    } else if (exp < thresholds[2]) {
+      prev = thresholds[1];
+      next = thresholds[2];
+    } else if (exp < thresholds[3]) {
+      prev = thresholds[2];
+      next = thresholds[3];
+    } else {
+      // 이미 4000 이상(최고 레벨)
+      return 100;
+    }
+
+    // (exp - prev) / (next - prev) * 100
+    const percent = ((exp - prev) / (next - prev)) * 100;
+    return Math.min(100, Math.floor(percent));
+  };
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const profileData = await getUserProfile();
-        console.log('받아온 프로필 데이터:', profileData);
-        
-        if (profileData) {
-          setProfile(prev => ({
+        const myProfile = await getUserProfile();
+        const myNickname = myProfile?.nickname;
+
+        // 내 마이페이지 진입
+        if (!location.state || location.state.nickname === myNickname) {
+          console.log('내 마이페이지로 진입');
+          setProfile((prev) => ({
             ...prev,
-            nickname: profileData.nickname || 'JUDY',
-            keyword: profileData.keyword || '환경',
-            profileUrl: profileData.profileUrl || DefaultProfile,
+            nickname: myProfile.nickname ?? 'JUDY',
+            keyword: myProfile.keyword ?? 'Environment',
+            profileUrl: myProfile.profileUrl ?? DefaultProfile,
+            exp: myProfile.exp ?? 0,
+            ranking: myProfile.ranking ?? 0,
+            level: getLevelInfo(myProfile.exp ?? 0).label,
           }));
-          
-          // localStorage에도 저장
-          localStorage.setItem('nickname', profileData.nickname || 'JUDY');
-          localStorage.setItem('keyword', profileData.keyword || '환경');
-          localStorage.setItem('profileUrl', profileData.profileUrl || DefaultProfile);
+
+          // localStorage.setItem('nickname', myProfile.nickname || 'JUDY');
+          // localStorage.setItem('keyword', myProfile.keyword || 'Environment');
+          // localStorage.setItem('profileUrl', myProfile.profileUrl || DefaultProfile);
+        } else {
+          // 다른 사람의 마이페이지 진입
+          const user = location.state;
+          console.log('다른 사람 마이페이지:', user);
+          setProfile((prev) => ({
+            ...prev,
+            nickname: user.nickname ?? 'JUDY',
+            keyword: user.keyword ?? 'Environment',
+            profileUrl: user.profileUrl ?? DefaultProfile,
+            exp: user.exp ?? 0,
+            ranking: user.ranking ?? 0,
+            level: getLevelInfo(user.exp ?? 0).label,
+          }));
         }
+
+        window.scrollTo({ top: 0, left: 0 });
       } catch (error) {
         console.error('프로필 정보를 가져오는데 실패했습니다:', error);
-        // 에러 발생 시 기본값 설정
-        setProfile(prev => ({
-          ...prev,
-          nickname: 'JUDY',
-          keyword: '환경',
-          profileUrl: DefaultProfile,
-        }));
       }
     };
 
     fetchProfile();
-  }, []);
+  }, [location.state]);
 
   useEffect(() => {
     if (location.state) {
-      // 페이지 진입 시 최상단으로 스크롤
       window.scrollTo({ top: 0, left: 0 });
-      setProfile(prev => ({
+      setProfile((prev) => ({
         ...prev,
         nickname: location.state.nickname || prev.nickname,
         keyword: location.state.keyword || prev.keyword,
         profileUrl: location.state.profileUrl || prev.profileUrl,
+        exp: location.state.exp ?? prev.exp,
+        ranking: location.state.ranking ?? prev.ranking,
+        level: getLevelInfo(location.state.exp ?? prev.exp).label,
       }));
     }
   }, [location.state]);
@@ -97,6 +168,9 @@ export default function MyPage() {
     setActiveTab(tabName);
   };
 
+  // exp에 따라 계산된 프로그래스 바 백분율
+  const progressPct = calcProgressPercent(profile.exp);
+
   return (
     <PageContainer>
       <MainNav />
@@ -106,9 +180,9 @@ export default function MyPage() {
             <TitleText>마이페이지</TitleText>
 
             <ProfileWrapper>
-              <ProfileImage 
-                src={profile.profileUrl} 
-                alt="프로필 이미지" 
+              <ProfileImage
+                src={profile.profileUrl}
+                alt="프로필 이미지"
                 onError={(e) => {
                   e.target.onerror = null;
                   e.target.src = DefaultProfile;
@@ -122,22 +196,22 @@ export default function MyPage() {
             <Nickname>{profile.nickname}</Nickname>
             <KeywordTag>#{KEYWORD_MAPPING[profile.keyword] || profile.keyword}</KeywordTag>
 
-
+            {/* “나의 등급” 카드 */}
             <Card>
-              <CardTitle
-                onClick={() => navigate('/level')}
-                style={{ cursor: 'pointer' }}
-              >
-                나의 등급
-              </CardTitle>
-              <LevelImage src={profile.rankImage} alt="등급 이미지" />
-              <LevelText>{profile.level}</LevelText>
+              <CardTitle>나의 등급</CardTitle>
+              <LevelImage
+                src={getLevelInfo(profile.exp).icon}
+                alt="My rank icon"
+              />
+              <LevelText>{getLevelInfo(profile.exp).label}</LevelText>
               <ProgressWrapper>
-                <ProgressBar style={{ width: `${profile.progress}%` }} />
+                <ProgressBar style={{ width: `${progressPct}%` }} />
               </ProgressWrapper>
-              <ProgressLabel>Lv4 유니버스 리더</ProgressLabel>
+              {/* ▶ 다음 단계 랭킹을 표시 */}
+              <ProgressLabel>{getNextLevelInfo(profile.exp).label}</ProgressLabel>
             </Card>
 
+            {/* 랭킹 & 포인트 카드 */}
             <Card>
               <CardTitle
                 onClick={() => navigate('/ranking')}
@@ -145,8 +219,11 @@ export default function MyPage() {
               >
                 랭킹
               </CardTitle>
-              <LevelImage src={profile.rankImage} alt="등급 이미지" />
-              <LevelText>{profile.level}</LevelText>
+              <LevelImage
+                src={getLevelInfo(profile.exp).icon}
+                alt="My rank icon"
+              />
+              <LevelText>{getLevelInfo(profile.exp).label}</LevelText>
               <RankRow>
                 <RankItem>
                   <Label>랭킹</Label>
@@ -154,13 +231,13 @@ export default function MyPage() {
                     onClick={() => navigate('/ranking')}
                     style={{ cursor: 'pointer' }}
                   >
-                    {profile.rank}
+                    {profile.ranking}
                   </Value>
                 </RankItem>
                 <Divider />
                 <RankItem>
                   <Label>포인트</Label>
-                  <Value>{profile.point}xp</Value>
+                  <Value>{profile.exp}xp</Value>
                 </RankItem>
               </RankRow>
             </Card>
