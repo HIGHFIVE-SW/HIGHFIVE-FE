@@ -71,7 +71,7 @@ const CardInner = styled.div`
 `;
 
 const CardImage = styled.img`
-  width: 70px;s
+  width: 70px;
   height: 111px;
   object-fit: contain;
 `;
