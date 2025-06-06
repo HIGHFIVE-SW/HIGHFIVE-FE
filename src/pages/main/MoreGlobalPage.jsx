@@ -1,46 +1,53 @@
 // src/pages/MoreGlobalPage.jsx
 
-import React, { useState } from 'react';
-import { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useLocation } from 'react-router-dom';
 import MainNav from '../../layout/MainNav';
 import Footer from '../../layout/Footer';
 import IssueCard from '../../components/issue/IssueCard';
 import Pagination from '../../components/common/Pagination';
-import issueCardSample from '../../assets/images/issue/ic_IssueCardSample.png';
 import usePagination from '../../hooks/usePagination';
-
-const dummyGlobalIssues = Array.from({ length: 40 }, (_, idx) => ({
-  id: idx + 1,
-  title: '제 22회 한국 경제 논문 공모전',
-  tag: '#경제',
-  image: issueCardSample,
-}));
+import { searchAllIssues } from '../../api/MainSearchApi';
 
 export default function MoreGlobalPage() {
   useEffect(() => {
-          window.scrollTo({ top: 0, left: 0 });}, []);
+    window.scrollTo({ top: 0, left: 0 });
+  }, []);
+
   const location = useLocation();
   const query = new URLSearchParams(location.search).get('query')?.toLowerCase() || '';
 
-  const finalIssues = query
-    ? dummyGlobalIssues.filter(
-        (item) =>
-          item.title.toLowerCase().includes(query) ||
-          item.tag.toLowerCase().includes(query)
-      )
-    : dummyGlobalIssues;
-
+  const [searchResults, setSearchResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [totalPages, setTotalPages] = useState(0);
+  const [currentPage, setCurrentPage] = useState(0);
   const [bookmarkedIds, setBookmarkedIds] = useState([]);
-  const itemsPerPage = 12;
 
-  const {
-    currentPage,
-    totalPages,
-    currentData: paginatedIssues,
-    goToPage,
-  } = usePagination(finalIssues, itemsPerPage);
+  useEffect(() => {
+    if (query) {
+      fetchSearchResults(query, currentPage);
+    }
+  }, [query, currentPage]);
+
+  const fetchSearchResults = async (searchQuery, page) => {
+    setLoading(true);
+    try {
+      const response = await searchAllIssues({ 
+        keyword: searchQuery, 
+        page,
+        size: 12 
+      });
+      if (response.isSuccess) {
+        setSearchResults(response.result.content);
+        setTotalPages(response.result.totalPages);
+      }
+    } catch (error) {
+      console.error('검색 결과를 가져오는데 실패했습니다:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const toggleBookmark = (id) => {
     setBookmarkedIds((prev) =>
@@ -48,30 +55,42 @@ export default function MoreGlobalPage() {
     );
   };
 
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
   return (
     <Wrapper>
       <MainNav />
       <Content>
-        <Title>‘{query}’의 검색 결과</Title>
+        <Title>'{query}'의 검색 결과</Title>
         <Subtitle>글로벌 이슈</Subtitle>
-        <CardGrid>
-          {(finalIssues.length === 1 ? finalIssues : paginatedIssues).map((item) => (
-            <IssueCard
-              key={item.id}
-              title={item.title}
-              tag={item.tag}
-              image={item.image}
-              bookmarked={bookmarkedIds.includes(item.id)}
-              onToggle={() => toggleBookmark(item.id)}
-            />
-          ))}
-        </CardGrid>
-        {finalIssues.length > itemsPerPage && (
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            goToPage={goToPage}
-          />
+        {loading ? (
+          <LoadingMessage>검색 중...</LoadingMessage>
+        ) : searchResults.length === 0 ? (
+          <NoResult>검색 결과가 없습니다.</NoResult>
+        ) : (
+          <>
+            <CardGrid>
+              {searchResults.slice(0, 4).map((item) => (
+                <IssueCard
+                  key={item.id}
+                  title={item.title}
+                  tag={item.categoryKr || item.keyword || '카테고리 없음'}
+                  image={item.image || require('../../assets/images/issue/ic_IssueCardSample.png')}
+                  bookmarked={item.bookmarked}
+                  onToggle={() => toggleBookmark(item.id)}
+                />
+              ))}
+            </CardGrid>
+            {totalPages > 1 && (
+              <Pagination
+                currentPage={currentPage + 1}
+                totalPages={totalPages}
+                goToPage={(page) => setCurrentPage(page - 1)}
+              />
+            )}
+          </>
         )}
       </Content>
       <Footer />
@@ -106,4 +125,18 @@ const CardGrid = styled.div`
   width: 100%;
   max-width: 1540px;
   margin: 0 auto;
+`;
+
+const LoadingMessage = styled.p`
+  text-align: center;
+  font-size: 18px;
+  color: #666;
+  margin-top: 40px;
+`;
+
+const NoResult = styled.p`
+  text-align: center;
+  font-size: 18px;
+  color: #999;
+  margin-top: 40px;
 `;

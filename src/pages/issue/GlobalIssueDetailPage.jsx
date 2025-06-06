@@ -1,43 +1,83 @@
-import React, { useState } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import MainNav from '../../layout/MainNav';
 import Footer from '../../layout/Footer';
 import linkIcon from '../../assets/images/issue/ic_Link.png';
 import BookmarkButtonIcon from '../../assets/images/common/BookmarkButton.png';
 import BookmarkFilledIcon from '../../assets/images/common/BookmarkFilledButton.png';
 import { useIssueDetail, useToggleIssueBookmark } from '../../query/useIssues';
-import { useActivitiesByKeywordLimited } from '../../query/useActivities';
+import { useActivitiesByKeywordLimited, useToggleBookmark } from '../../query/useActivities';
 import ActivityCard from '../../components/activity/ActivityCard';
 import { formatDate } from '../../utils/formatDate';
-import { useActivities, useToggleBookmark } from '../../query/useActivities';
 
 export default function GlobalIssueDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [selectedCategory, setSelectedCategory] = useState('전체');
-  const toggleActivityBookmark = useToggleBookmark();
-
+  
+  // 쿼리 클라이언트 및 훅들
+  const queryClient = useQueryClient();
+  const toggleBookmarkMutation = useToggleBookmark();
+  
+  // 이슈 데이터 조회
   const { data: issue, isLoading, error } = useIssueDetail(id);
-  const toggleBookmark = useToggleIssueBookmark();
+  const toggleIssueBookmark = useToggleIssueBookmark();
 
-  // 추천 활동 조회 추가
-  const { data: recommendedActivities, isLoading: activitiesLoading } = useActivitiesByKeywordLimited(
-    issue?.keyword, // 이슈의 키워드로 관련 활동 조회
+  // 추천 활동 조회
+  const { 
+    data: recommendedActivities, 
+    isLoading: activitiesLoading,
+    error: activitiesError,
+    isError: isActivitiesError
+  } = useActivitiesByKeywordLimited(
+    issue?.keyword,
     {
-      enabled: !!issue?.keyword // issue가 로드된 후에만 실행
+      enabled: !!issue?.keyword
     }
   );
 
-  const { data: activitiesData, isLoading: isActivitiesLoading } = useActivities(0, selectedCategory === '전체' ? '' : selectedCategory);
-
-  const handleBookmarkToggle = () => {
-    toggleBookmark.mutate(id);
+  // 이슈 북마크 토글
+  const handleIssueBookmarkToggle = () => {
+    toggleIssueBookmark.mutate(id);
   };
 
-  const handleActivityBookmarkToggle = (activityId) => {
-    toggleActivityBookmark.mutate(activityId);
-  };
+  // 활동 북마크 토글
+const handleActivityBookmarkToggle = async (activityId) => {
+  // 즉시 UI 업데이트 (optimistic)
+  queryClient.setQueryData(
+    ['activitiesByKeywordLimited', issue?.keyword], 
+    (oldData) => {
+      if (!oldData || !Array.isArray(oldData)) return oldData;
+      
+      return oldData.map((activity) =>
+        (activity.id === activityId || activity.activityId === activityId)
+          ? { ...activity, bookmarked: !activity.bookmarked }
+          : activity
+      );
+    }
+  );
+
+  // 서버 요청
+  try {
+    await toggleBookmarkMutation.mutateAsync(activityId);
+  } catch (error) {
+    // 실패 시 롤백
+    queryClient.setQueryData(
+      ['activitiesByKeywordLimited', issue?.keyword], 
+      (oldData) => {
+        if (!oldData || !Array.isArray(oldData)) return oldData;
+        
+        return oldData.map((activity) =>
+          (activity.id === activityId || activity.activityId === activityId)
+            ? { ...activity, bookmarked: !activity.bookmarked } // 다시 원래대로
+            : activity
+        );
+      }
+    );
+    console.error('북마크 토글 실패:', error);
+  }
+};
 
   if (isLoading) {
     return (
@@ -92,7 +132,7 @@ export default function GlobalIssueDetailPage() {
           <BookmarkIcon
             src={issue.bookmarked ? BookmarkFilledIcon : BookmarkButtonIcon}
             alt="북마크"
-            onClick={handleBookmarkToggle}
+            onClick={handleIssueBookmarkToggle}
           />
         </HeaderWrapper>
         
@@ -117,25 +157,26 @@ export default function GlobalIssueDetailPage() {
         <RecommendCardsHeader>
           <RecommendTitle>'{issue.keyword}' 관련 추천 활동</RecommendTitle>
         </RecommendCardsHeader>
+        
+        {isActivitiesError && (
+          <ErrorMessage>{activitiesError?.message}</ErrorMessage>
+        )}
+        
         <RecommendCards>
           {activitiesLoading ? (
             <LoadingText>추천 활동을 불러오는 중...</LoadingText>
           ) : recommendedActivities && recommendedActivities.length > 0 ? (
             recommendedActivities.map((activity) => (
               <ActivityCard
-                key={activity.id || activity.activityId}
-                title={activity.title || activity.name}
-                tags={activity.tags || [`#${activity.keyword}`, `#${activity.activityType}`]}
-                image={activity.imageUrl}
-                date={
-                  activity.startDate && activity.endDate
-                    ? `${activity.startDate.split('T')[0].replace(/-/g, '.')} ~ ${activity.endDate.split('T')[0].replace(/-/g, '.')}`
-                    : ''
-                }
+                key={activity.id}
+                title={activity.title}
+                tags={activity.tags}
+                date={activity.date}
+                image={activity.image}
                 bookmarked={activity.bookmarked}
-                onToggle={() => handleActivityBookmarkToggle(activity.id || activity.activityId)}
-                isClosed={activity.endDate ? new Date(activity.endDate) < new Date() : false}
-                siteUrl={activity.siteUrl}
+                onToggle={() => handleActivityBookmarkToggle(activity.id)}
+                isClosed={activity.isClosed}
+                siteUrl={activity.siteUrl || 'https://naver.com'}
               />
             ))
           ) : (
@@ -148,6 +189,7 @@ export default function GlobalIssueDetailPage() {
   );
 }
 
+// 스타일 컴포넌트들
 const PageWrapper = styled.div`
   display: flex;
   flex-direction: column;
@@ -167,6 +209,19 @@ const RecommendWrapper = styled.div`
   padding: 0 20px;
 `;
 
+const HeaderWrapper = styled.div`
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+`;
+
+const LabelWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
 const Label = styled.div`
   color: #656565;
   font-size: 20px;
@@ -184,6 +239,15 @@ const DateText = styled.p`
   font-size: 17px;
   color: #888;
   margin-bottom: 20px;
+`;
+
+const BookmarkIcon = styled.img`
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 50px;
+  height: 50px;
+  cursor: pointer;
 `;
 
 const Divider = styled.hr`
@@ -268,28 +332,6 @@ const RecommendCards = styled.div`
   overflow-x: auto;
 `;
 
-const LabelWrapper = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`;
-
-const HeaderWrapper = styled.div`
-  position: relative;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-`;
-
-const BookmarkIcon = styled.img`
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 50px;
-  height: 50px;
-  cursor: pointer;
-`;
-
 const LoadingContainer = styled.div`
   display: flex;
   justify-content: center;
@@ -330,4 +372,11 @@ const NoActivitiesText = styled.div`
   padding: 40px 0;
   font-size: 16px;
   color: #666;
+`;
+
+const ErrorMessage = styled.div`
+  color: #ff0000;
+  text-align: center;
+  margin: 20px 0;
+  font-size: 16px;
 `;

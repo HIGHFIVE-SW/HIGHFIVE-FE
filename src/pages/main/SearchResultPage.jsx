@@ -5,17 +5,11 @@ import MainNav from '../../layout/MainNav';
 import Footer from '../../layout/Footer';
 import IssueCard from '../../components/issue/IssueCard';
 import ActivityCard from '../../components/activity/ActivityCard';
-import issueCardSample from '../../assets/images/issue/ic_IssueCardSample.png';
 import activityImage from '../../assets/images/activity/ic_ActivityImage.png';
 import { useLocation, useNavigate } from 'react-router-dom';
 import SearchBar from '../../components/search/SearchBar';
+import { searchIssues } from '../../api/MainSearchApi';
 
-const dummyGlobalIssues = [
-  { id: 1, title: '글로벌 관세 전쟁 공포', tag: '#경제', image: issueCardSample },
-  { id: 2, title: '기후 변화와 탄소 중립 경제', tag: '#환경', image: issueCardSample },
-  { id: 3, title: 'AI 기술의 미래와 사회 변화 경제', tag: '#기술', image: issueCardSample },
-  { id: 4, title: '세계 경제 포럼: 글로벌 정책 전환 경제', tag: '#정치', image: issueCardSample },
-];
 
 const dummyActivities = [
   { id: 1, title: '제 22회 한국 경제 논문 공모전', tags: ['#경제', '#공모전'], date: '2025.04.15~2025.04.20', image: activityImage },
@@ -35,6 +29,8 @@ export default function SearchResultPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [bookmarkedGlobalIds, setBookmarkedGlobalIds] = useState([]);
   const [bookmarkedActivityIds, setBookmarkedActivityIds] = useState([]);
+  const [searchResults, setSearchResults] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -42,8 +38,25 @@ export default function SearchResultPage() {
     if (queryFromURL) {
       setInputValue(queryFromURL);
       setSearchQuery(queryFromURL);
+      fetchSearchResults(queryFromURL);
     }
   }, [location.search]);
+
+  const fetchSearchResults = async (query) => {
+    if (!query.trim()) return;
+    
+    setLoading(true);
+    try {
+      const response = await searchIssues({ keyword: query });
+      if (response.isSuccess) {
+        setSearchResults(response.result.content);
+      }
+    } catch (error) {
+      console.error('검색 결과를 가져오는데 실패했습니다:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSearch = () => {
     if (inputValue.trim()) {
@@ -52,12 +65,6 @@ export default function SearchResultPage() {
   };
 
   const lowerQuery = searchQuery.toLowerCase();
-
-  const filteredGlobal = dummyGlobalIssues.filter(
-    (item) =>
-      item.title.toLowerCase().includes(lowerQuery) ||
-      item.tag.toLowerCase().includes(lowerQuery)
-  );
 
   const filteredActivities = dummyActivities.filter(
     (item) =>
@@ -93,13 +100,15 @@ export default function SearchResultPage() {
 
         {searchQuery && (
           <>
-            <ResultTitle>‘{searchQuery}’의 검색 결과</ResultTitle>
+            <ResultTitle>'{searchQuery}'의 검색 결과</ResultTitle>
 
-            {filteredGlobal.length === 0 && filteredActivities.length === 0 ? (
+            {loading ? (
+              <LoadingMessage>검색 중...</LoadingMessage>
+            ) : searchResults.length === 0 && filteredActivities.length === 0 ? (
               <NoResult>검색 결과가 없습니다.</NoResult>
             ) : (
               <>
-                {filteredGlobal.length > 0 && (
+                {searchResults.length > 0 && (
                   <Section>
                     <SectionHeader>
                       <h3>글로벌 이슈</h3>
@@ -108,14 +117,18 @@ export default function SearchResultPage() {
                       </MoreBtn>
                     </SectionHeader>
                     <CardGrid>
-                      {filteredGlobal.map((item) => (
+                      {searchResults.slice(0, 4).map((issue) => (
                         <IssueCard
-                          key={item.id}
-                          title={item.title}
-                          tag={item.tag}
-                          image={item.image}
-                          bookmarked={bookmarkedGlobalIds.includes(item.id)}
-                          onToggle={() => toggleGlobalBookmark(item.id)}
+                          key={issue.id}
+                          id={issue.id}
+                          title={issue.title}
+                          tag={issue.categoryKr || issue.category || issue.keyword || '카테고리 없음'}
+                          image={issue.thumbnailUrl || issue.image || ''}
+                          bookmarked={issue.bookmarked}
+                          onToggle={() => toggleGlobalBookmark(issue.id)}
+                          onClick={() => navigate(`/global-issue/${issue.id}`, {
+                            state: { label: issue.categoryKr || issue.category, title: issue.title }
+                          })}
                         />
                       ))}
                     </CardGrid>
@@ -216,5 +229,12 @@ const NoResult = styled.p`
   text-align: center;
   font-size: 18px;
   color: #999;
+  margin-top: 40px;
+`;
+
+const LoadingMessage = styled.p`
+  text-align: center;
+  font-size: 18px;
+  color: #666;
   margin-top: 40px;
 `;
