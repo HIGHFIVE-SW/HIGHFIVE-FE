@@ -1,3 +1,5 @@
+// src/pages/user/UserPage.jsx
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
@@ -6,27 +8,59 @@ import Footer from '../../layout/Footer';
 import ActivityTypeChart from '../../components/my/ActivityTypeChart';
 import ActivityTrendChart from '../../components/my/ActivityTrendChart';
 import MyPostList from '../../components/my/MyPostList';
+
 import defaultProfile from '../../assets/images/profile/DefaultProfile.png';
+import beginnerIcon from '../../assets/images/level/ic_Beginner.png';
+import proIcon from '../../assets/images/level/ic_Pro.png';
 import masterIcon from '../../assets/images/level/ic_Master.png';
+import leaderIcon from '../../assets/images/level/ic_Leader.png';
+
+const getLevelInfo = (exp) => {
+  if (exp >= 4000) return { label: 'Lv4 유니버스 리더', icon: leaderIcon };
+  if (exp >= 2000) return { label: 'Lv3 글로벌 마스터', icon: masterIcon };
+  if (exp >= 500) return { label: 'Lv2 프로 탐험가들', icon: proIcon };
+  return { label: 'Lv1 초보 여행가', icon: beginnerIcon };
+};
+
+const getNextLevelInfo = (exp) => {
+  if (exp < 500) return { label: 'Lv2 프로 탐험가들', icon: proIcon };
+  if (exp < 2000) return { label: 'Lv3 글로벌 마스터', icon: masterIcon };
+  if (exp < 4000) return { label: 'Lv4 유니버스 리더', icon: leaderIcon };
+  return { label: '최고 랭킹 달성', icon: leaderIcon };
+};
+
+const calcProgressPercent = (exp) => {
+  const thresholds = [0, 500, 2000, 4000];
+  let prev = 0, next = 500;
+
+  if (exp < thresholds[1]) [prev, next] = [thresholds[0], thresholds[1]];
+  else if (exp < thresholds[2]) [prev, next] = [thresholds[1], thresholds[2]];
+  else if (exp < thresholds[3]) [prev, next] = [thresholds[2], thresholds[3]];
+  else return 100;
+
+  return Math.min(100, Math.floor(((exp - prev) / (next - prev)) * 100));
+};
 
 const UserPage = () => {
   const { state } = useLocation();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('statistics');
   const [imageError, setImageError] = useState(false);
-  
+
   const user = state || {};
   const currentUser = localStorage.getItem('nickname');
+  const exp = user.exp || 0;
+  const levelInfo = getLevelInfo(exp);
 
   const profile = {
     nickname: user.nickname || '알 수 없음',
-    profileUrl: user.nickname === '추지은' ? user.profileUrl : defaultProfile,
-    rankImage: masterIcon,
-    level: 'Lv3 글로벌 마스터',
-    progress: 80,
-    point: user.exp || 1608,
-    rank: user.id || 1,
-    keyword: user.keyword || '경제',
+    profileUrl: user.profileUrl || defaultProfile,
+    rankImage: levelInfo.icon,
+    level: levelInfo.label,
+    progress: calcProgressPercent(exp),
+    point: exp,
+    rank: user.ranking ?? 0,
+    keyword: user.keyword || '환경',
   };
 
   const dummyTypeStats = [
@@ -36,38 +70,27 @@ const UserPage = () => {
     { activityType: 'SUPPORTERS', count: 0 },
   ];
 
-  // 페이지 초기화 및 리다이렉트 로직
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0 });
-    
-    // 자신의 페이지에 접근 시 마이페이지로 리다이렉트
     if (profile.nickname === currentUser) {
       navigate('/mypage', { replace: true });
     }
   }, [profile.nickname, currentUser, navigate]);
 
-  // 탭 클릭 핸들러 최적화
   const handleTabClick = useCallback((tabName) => {
-    console.log('탭 변경:', tabName);
     setActiveTab(tabName);
   }, []);
 
-  // 랭킹 페이지 이동 핸들러
   const handleRankingClick = useCallback(() => {
     navigate('/ranking');
   }, [navigate]);
 
-  // 이미지 에러 핸들러
   const handleImageError = useCallback((e) => {
-    console.error('프로필 이미지 로드 실패:', profile.profileUrl);
     setImageError(true);
     e.target.src = defaultProfile;
-  }, [profile.profileUrl]);
+  }, []);
 
-  // 현재 사용자 본인의 페이지인 경우 렌더링하지 않음
-  if (profile.nickname === currentUser) {
-    return null;
-  }
+  if (profile.nickname === currentUser) return null;
 
   return (
     <PageContainer>
@@ -76,48 +99,33 @@ const UserPage = () => {
         <PageWrapper>
           <LeftPanel>
             <TitleText>'{profile.nickname}'님의 페이지</TitleText>
-            
+
             <ProfileWrapper>
-              <ProfileImage 
-                src={imageError ? defaultProfile : profile.profileUrl} 
+              <ProfileImage
+                src={imageError ? defaultProfile : profile.profileUrl}
                 alt={`${profile.nickname} 프로필`}
                 onError={handleImageError}
-                width="120"
-                height="120"
               />
             </ProfileWrapper>
-            
+
             <Nickname>{profile.nickname}</Nickname>
             <KeywordTag>#{profile.keyword}</KeywordTag>
-            
+
             <Card>
               <CardTitle>등급 정보</CardTitle>
-              <LevelImage 
-                src={profile.rankImage} 
-                alt="등급 아이콘"
-                width="60"
-                height="60"
-              />
+              <LevelImage src={profile.rankImage} alt="등급 아이콘" />
               <LevelText>{profile.level}</LevelText>
               <ProgressWrapper>
                 <ProgressBar style={{ width: `${profile.progress}%` }} />
               </ProgressWrapper>
-              <ProgressLabel>Lv4 유니버스 리더</ProgressLabel>
+              <ProgressLabel>{getNextLevelInfo(profile.point).label}</ProgressLabel>
             </Card>
-            
+
             <Card>
-              <CardTitle 
-                onClick={handleRankingClick}
-                style={{ cursor: 'pointer' }}
-              >
+              <CardTitle onClick={handleRankingClick} style={{ cursor: 'pointer' }}>
                 랭킹 정보
               </CardTitle>
-              <LevelImage 
-                src={profile.rankImage} 
-                alt="등급 아이콘"
-                width="60"
-                height="60"
-              />
+              <LevelImage src={profile.rankImage} alt="등급 아이콘" />
               <LevelText>{profile.level}</LevelText>
               <RankRow>
                 <RankItem>
@@ -136,20 +144,10 @@ const UserPage = () => {
           <RightPanel>
             <TabsWrapper>
               <Tabs>
-                <Tab
-                  active={activeTab === 'statistics'}
-                  onClick={() => handleTabClick('statistics')}
-                  aria-selected={activeTab === 'statistics'}
-                  role="tab"
-                >
+                <Tab active={activeTab === 'statistics'} onClick={() => handleTabClick('statistics')}>
                   활동 통계
                 </Tab>
-                <Tab
-                  active={activeTab === 'posts'}
-                  onClick={() => handleTabClick('posts')}
-                  aria-selected={activeTab === 'posts'}
-                  role="tab"
-                >
+                <Tab active={activeTab === 'posts'} onClick={() => handleTabClick('posts')}>
                   작성한 글
                 </Tab>
               </Tabs>
@@ -222,7 +220,6 @@ const ProfileImage = styled.img`
   height: 100%;
   border-radius: 50%;
   object-fit: cover;
-  background-color: #f0f0f0;
 `;
 
 const TitleText = styled.div`
@@ -231,7 +228,6 @@ const TitleText = styled.div`
   margin-bottom: 24px;
   color: #000;
   text-align: center;
-  word-break: keep-all;
 `;
 
 const Nickname = styled.h3`
@@ -260,11 +256,6 @@ const Card = styled.div`
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   margin-bottom: 20px;
   text-align: center;
-  transition: box-shadow 0.2s ease;
-
-  &:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-  }
 `;
 
 const CardTitle = styled.h4`
@@ -272,18 +263,13 @@ const CardTitle = styled.h4`
   font-weight: bold;
   margin: 0 0 12px 0;
   color: #333;
-  transition: color 0.2s ease;
-
-  &:hover {
-    color: #235ba9;
-  }
+  cursor: pointer;
 `;
 
 const LevelImage = styled.img`
   width: 60px;
   height: 60px;
   margin-bottom: 8px;
-  background-color: #f0f0f0;
 `;
 
 const LevelText = styled.div`
@@ -362,7 +348,6 @@ const Tabs = styled.div`
   border-bottom: 1px solid #ddd;
   width: fit-content;
   margin: 0 auto;
-  role: tablist;
 `;
 
 const Tab = styled.div`
@@ -372,17 +357,9 @@ const Tab = styled.div`
   font-weight: 600;
   color: ${({ active }) => (active ? '#235ba9' : '#999')};
   cursor: pointer;
-  transition: color 0.2s ease;
-  user-select: none;
 
   &:hover {
     color: ${({ active }) => (active ? '#235ba9' : '#666')};
-  }
-
-  &:focus {
-    outline: 2px solid #235ba9;
-    outline-offset: 2px;
-    border-radius: 4px;
   }
 
   &:after {
