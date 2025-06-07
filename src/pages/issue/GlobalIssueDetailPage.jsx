@@ -1,149 +1,195 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import styled from 'styled-components';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import MainNav from '../../layout/MainNav';
 import Footer from '../../layout/Footer';
-import ActivityCard from '../../components/activity/ActivityCard';
-import issueCardSample from '../../assets/images/issue/ic_IssueCardSample.png';
 import linkIcon from '../../assets/images/issue/ic_Link.png';
-import bookmarkButton from '../../assets/images/common/BookmarkButton.png';
-import bookmarkFilledButton from '../../assets/images/common/BookmarkFilledButton.png';
-
-const dummyActivities = [
-  {
-    id: 1,
-    title: '제 22회 한국 경제 논문 공모전',
-    tags: ['#경제', '#공모전'],
-    date: '2025.04.15~2025.04.20',
-    image: issueCardSample,
-    bookmarked: false,
-  },
-  {
-    id: 2,
-    title: '경제 공모전',
-    tags: ['#경제', '#공모전'],
-    date: '2025.04.15~2025.04.20',
-    image: issueCardSample,
-    bookmarked: false,
-  },
-  {
-    id: 3,
-    title: '경제 봉사활동',
-    tags: ['#경제', '#봉사활동'],
-    date: '2025.04.15~2025.04.20',
-    image: issueCardSample,
-    bookmarked: false,
-  },
-  {
-    id: 4,
-    title: '경제 서포터즈',
-    tags: ['#경제', '#서포터즈'],
-    date: '2025.04.15~2025.04.20',
-    image: issueCardSample,
-    bookmarked: false,
-  },
-  {
-    id: 5,
-    title: '환경 서포터즈',
-    tags: ['#환경', '#서포터즈'],
-    date: '2025.04.15~2025.04.20',
-    image: issueCardSample,
-    bookmarked: false,
-  },
-  {
-    id: 6,
-    title: '사람과 사회 서포터즈',
-    tags: ['#사람과 사회', '#서포터즈'],
-    date: '2025.04.15~2025.04.20',
-    image: issueCardSample,
-    bookmarked: false,
-  },
-];
-
+import BookmarkButtonIcon from '../../assets/images/common/BookmarkButton.png';
+import BookmarkFilledIcon from '../../assets/images/common/BookmarkFilledButton.png';
+import { useIssueDetail, useToggleIssueBookmark } from '../../query/useIssues';
+import { useActivitiesByKeywordLimited, useToggleBookmark } from '../../query/useActivities';
+import ActivityCard from '../../components/activity/ActivityCard';
+import { formatDate } from '../../utils/formatDate';
 
 export default function GlobalIssueDetailPage() {
-  useEffect(() => {
-    window.scrollTo({ top: 0, left: 0 });}, []);
-  const location = useLocation();
+  const { id } = useParams();
   const navigate = useNavigate();
-  const { label, title } = location.state || {};
+  
+  // 쿼리 클라이언트 및 훅들
+  const queryClient = useQueryClient();
+  const toggleBookmarkMutation = useToggleBookmark();
+  
+  // 이슈 데이터 조회
+  const { data: issue, isLoading, error } = useIssueDetail(id);
+  const toggleIssueBookmark = useToggleIssueBookmark();
 
-  const [bookmarked, setBookmarked] = useState(false);
-  const toggleBookmark = () => setBookmarked((prev) => !prev);
+  // 추천 활동 조회
+  const { 
+    data: recommendedActivities, 
+    isLoading: activitiesLoading,
+    error: activitiesError,
+    isError: isActivitiesError
+  } = useActivitiesByKeywordLimited(
+    issue?.keyword,
+    {
+      enabled: !!issue?.keyword
+    }
+  );
 
-  const filteredActivities = dummyActivities.filter((activity) =>
-    activity.tags.includes(label) );
+  // 이슈 북마크 토글
+  const handleIssueBookmarkToggle = () => {
+    toggleIssueBookmark.mutate(id);
+  };
+
+  // 활동 북마크 토글
+const handleActivityBookmarkToggle = async (activityId) => {
+  // 즉시 UI 업데이트 (optimistic)
+  queryClient.setQueryData(
+    ['activitiesByKeywordLimited', issue?.keyword], 
+    (oldData) => {
+      if (!oldData || !Array.isArray(oldData)) return oldData;
+      
+      return oldData.map((activity) =>
+        (activity.id === activityId || activity.activityId === activityId)
+          ? { ...activity, bookmarked: !activity.bookmarked }
+          : activity
+      );
+    }
+  );
+
+  // 서버 요청
+  try {
+    await toggleBookmarkMutation.mutateAsync(activityId);
+  } catch (error) {
+    // 실패 시 롤백
+    queryClient.setQueryData(
+      ['activitiesByKeywordLimited', issue?.keyword], 
+      (oldData) => {
+        if (!oldData || !Array.isArray(oldData)) return oldData;
+        
+        return oldData.map((activity) =>
+          (activity.id === activityId || activity.activityId === activityId)
+            ? { ...activity, bookmarked: !activity.bookmarked } // 다시 원래대로
+            : activity
+        );
+      }
+    );
+    console.error('북마크 토글 실패:', error);
+  }
+};
+
+  if (isLoading) {
+    return (
+      <PageWrapper>
+        <MainNav />
+        <LoadingContainer>
+          <p>이슈를 불러오는 중...</p>
+        </LoadingContainer>
+        <Footer />
+      </PageWrapper>
+    );
+  }
+
+  if (error) {
+    return (
+      <PageWrapper>
+        <MainNav />
+        <ErrorContainer>
+          <p>이슈를 불러오는데 실패했습니다: {error.message}</p>
+          <button onClick={() => window.location.reload()}>다시 시도</button>
+        </ErrorContainer>
+        <Footer />
+      </PageWrapper>
+    );
+  }
+
+  if (!issue) {
+    return (
+      <PageWrapper>
+        <MainNav />
+        <ErrorContainer>
+          <p>이슈를 찾을 수 없습니다.</p>
+          <button onClick={() => navigate('/global-issue')}>이슈 목록으로 돌아가기</button>
+        </ErrorContainer>
+        <Footer />
+      </PageWrapper>
+    );
+  }
 
   return (
     <PageWrapper>
       <MainNav />
       <ContentWrapper>
-      <HeaderWrapper>
-        <div>
+        <HeaderWrapper>
+          <div>
             <LabelWrapper>
-            <Label>{label?.replace('#', '')}</Label>
+              <Label>{issue.category}</Label>
             </LabelWrapper>
-            <Title>{title}</Title>
-            <Date>2025.04.07</Date>
-        </div>
-        <BookmarkIcon
-            src={bookmarked ? bookmarkFilledButton : bookmarkButton}
+            <Title>{issue.title}</Title>
+            <DateText>{formatDate(issue.issueDate)}</DateText>
+          </div>
+          <BookmarkIcon
+            src={issue.bookmarked ? BookmarkFilledIcon : BookmarkButtonIcon}
             alt="북마크"
-            onClick={toggleBookmark}
-        />
+            onClick={handleIssueBookmarkToggle}
+          />
         </HeaderWrapper>
         
         <Divider />
-        <MainImage src={issueCardSample} alt="이슈 이미지" />
+        <MainImage src={issue.imageUrl} alt="이슈 이미지" />
         <SummarySection>
           <SummaryTitle>내용 요약</SummaryTitle>
-          <SummaryText>
-            7일 국내 증시는 윤석열 전 대통령 파면 결정으로 정치적 불확실성이 해소됐음에도 불구하고,
-            미국의 전 세계 수입품에 대한 관세 부과로 촉발된 글로벌 관세 전쟁 우려로 인해 코스피와
-            코스닥이 5% 넘게 급락했다. 미국 증시의 폭락 여파로 아시아 주요 증시도 큰 하락세를
-            보였으며, 원·달러 환율 역시 급등했다. 전문가들은 정치 리스크 해소가 단발적으로는
-            국내 증시에 긍정적 영향을 줄 수 있으나, 글로벌 경제 불확실성에 따른 변동성에
-            당분간 유의할 필요가 있다고 분석했다.
-          </SummaryText>
+          <SummaryText>{issue.content}</SummaryText>
         </SummarySection>
-        <SummarySection>
-          <OriginalLink href="#">
-            <LinkImage src={linkIcon} alt="링크 아이콘" />
-            관심이 있다면 원본 기사 확인하기
-          </OriginalLink>
-        </SummarySection>
+        {issue.siteUrl && (
+          <SummarySection>
+            <OriginalLink href={issue.siteUrl} target="_blank" rel="noopener noreferrer">
+              <LinkImage src={linkIcon} alt="링크 아이콘" />
+              관심이 있다면 원본 기사 확인하기
+            </OriginalLink>
+          </SummarySection>
+        )}
       </ContentWrapper>
 
-       <RecommendWrapper>
+      <RecommendWrapper>
         <Divider />
         <RecommendCardsHeader>
-          <RecommendTitle>추천 활동</RecommendTitle>
-          <MoreLink onClick={() => navigate(`/more-detail?query=${encodeURIComponent(label)}`)}>
-            더보기 &gt;
-        </MoreLink>
-
+          <RecommendTitle>'{issue.keyword}' 관련 추천 활동</RecommendTitle>
         </RecommendCardsHeader>
+        
+        {isActivitiesError && (
+          <ErrorMessage>{activitiesError?.message}</ErrorMessage>
+        )}
+        
         <RecommendCards>
-            {filteredActivities.map((activity) => (
-                <CardWrapper key={activity.id}>
-                <ActivityCard
-                    title={activity.title}
-                    tags={activity.tags}
-                    date={activity.date}
-                    image={activity.image}
-                    bookmarked={activity.bookmarked}
-                    onToggle={() => {}}
-                />
-                </CardWrapper>
-        ))}
+          {activitiesLoading ? (
+            <LoadingText>추천 활동을 불러오는 중...</LoadingText>
+          ) : recommendedActivities && recommendedActivities.length > 0 ? (
+            recommendedActivities.map((activity) => (
+              <ActivityCard
+                key={activity.id}
+                title={activity.title}
+                tags={activity.tags}
+                date={activity.date}
+                image={activity.image}
+                bookmarked={activity.bookmarked}
+                onToggle={() => handleActivityBookmarkToggle(activity.id)}
+                isClosed={activity.isClosed}
+                siteUrl={activity.siteUrl || 'https://naver.com'}
+              />
+            ))
+          ) : (
+            <NoActivitiesText>관련 활동이 없습니다.</NoActivitiesText>
+          )}
         </RecommendCards>
-
       </RecommendWrapper>
       <Footer />
     </PageWrapper>
   );
 }
 
+// 스타일 컴포넌트들
 const PageWrapper = styled.div`
   display: flex;
   flex-direction: column;
@@ -157,13 +203,27 @@ const ContentWrapper = styled.div`
 `;
 
 const RecommendWrapper = styled.div`
+  width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 20px 40px 20px;
+  padding: 0 20px;
+`;
+
+const HeaderWrapper = styled.div`
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+`;
+
+const LabelWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
 `;
 
 const Label = styled.div`
-  color: #1a1a1a;
+  color: #656565;
   font-size: 20px;
   font-weight: 500;
   margin-bottom: 12px;
@@ -175,10 +235,19 @@ const Title = styled.h1`
   margin-bottom: 8px;
 `;
 
-const Date = styled.p`
+const DateText = styled.p`
   font-size: 17px;
   color: #888;
   margin-bottom: 20px;
+`;
+
+const BookmarkIcon = styled.img`
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 50px;
+  height: 50px;
+  cursor: pointer;
 `;
 
 const Divider = styled.hr`
@@ -220,9 +289,18 @@ const OriginalLink = styled.a`
   align-items: center;
   justify-content: center;
   font-size: 20px;
-  color: #235BA9
+  color: #235BA9;
   margin-top: 10px;
   cursor: pointer;
+  text-decoration: none;
+
+  &:hover {
+    color: #FFCD4A;
+  }
+
+  &:visited {
+    color: #235BA9;
+  }
 `;
 
 const LinkImage = styled.img`
@@ -235,59 +313,70 @@ const RecommendCardsHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin: 40px 0 20px;
 `;
 
-const RecommendTitle = styled.h3`
-  font-size: 30px;
-  font-weight: 700;
-  margin-top: 0;
-`;
-
-const MoreLink = styled.a`
-  font-size: 14px;
-  color: #000;
-  cursor: pointer;
-  text-decoration: none;
-  margin-bottom: -70px;
-
-  &:hover {
-    text-decoration: underline;
-  }
+const RecommendTitle = styled.h2`
+  font-size: 24px;
+  font-weight: 600;
+  color: #333;
 `;
 
 const RecommendCards = styled.div`
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 15px;
-  width: 100%;
-`;
-
-const CardWrapper = styled.div`
-  transform: scale(0.9);
-  transform-origin: top left;
-  width: fit-content;
-  zoom: 0.9;
-`;
-
-const LabelWrapper = styled.div`
   display: flex;
-  align-items: center;
-  gap: 8px;
-`;
-
-const HeaderWrapper = styled.div`
-  position: relative;
-  display: flex;
+  flex-wrap: nowrap;
   justify-content: space-between;
-  align-items: flex-start;
+  gap: 20px;
+  margin-top: 20px;
+  margin-bottom: 40px;
+  overflow-x: auto;
 `;
 
-const BookmarkIcon = styled.img`
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 32px;
-  height: 32px;
-  cursor: pointer;
+const LoadingContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  font-size: 18px;
+`;
+
+const ErrorContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  gap: 20px;
+  
+  button {
+    padding: 10px 20px;
+    background-color: #235BA9;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+`;
+
+const LoadingText = styled.div`
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 40px 0;
+  font-size: 16px;
+  color: #666;
+`;
+
+const NoActivitiesText = styled.div`
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 40px 0;
+  font-size: 16px;
+  color: #666;
+`;
+
+const ErrorMessage = styled.div`
+  color: #ff0000;
+  text-align: center;
+  margin: 20px 0;
+  font-size: 16px;
 `;

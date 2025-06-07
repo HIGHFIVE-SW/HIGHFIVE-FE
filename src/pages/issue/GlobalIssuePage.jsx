@@ -5,71 +5,74 @@ import Footer from '../../layout/Footer';
 import { useLocation, useNavigate } from 'react-router-dom';
 import IssueCard from '../../components/issue/IssueCard'; 
 import CategoryFilter from '../../components/common/CategoryFilter';
-import usePagination from '../../hooks/usePagination';
 import Pagination from '../../components/common/Pagination';
-
-import issueCardSample from '../../assets/images/issue/ic_IssueCardSample.png';
-import noImage from '../../assets/images/main/ic_NoImage.png';
-
-const dummyData = [
-  ...Array.from({ length: 4 }, (_, i) => ({
-    id: i + 1,
-    title: '글로벌 ‘관세 전쟁’ 공포 … 국내 증시 ‘털썩’ ',
-    category: '#경제',
-    thumbnailUrl: noImage,
-  })),
-  ...Array.from({ length: 4 }, (_, i) => ({
-    id: i + 5,
-    title: '환경 이슈 ' + (i + 1),
-    category: '#환경',
-    thumbnailUrl: issueCardSample,
-  })),
-  ...Array.from({ length: 4 }, (_, i) => ({
-    id: i + 9,
-    title: '사람과 사회 이슈 ' + (i + 1),
-    category: '#사람과 사회',
-    thumbnailUrl: issueCardSample,
-  })),
-  ...Array.from({ length: 4 }, (_, i) => ({
-    id: i + 13,
-    title: '기술 이슈 ' + (i + 1),
-    category: '#기술',
-    thumbnailUrl: issueCardSample,
-  })),
-];
+import { useIssues, useIssuesByKeyword, useToggleIssueBookmark } from '../../query/useIssues';
 
 export default function GlobalIssuePage() {
   const [activeCategory, setActiveCategory] = useState('전체');
-  const [bookmarkedIds, setBookmarkedIds] = useState([]);
-  const itemsPerPage = 12;
-
+  const [currentPage, setCurrentPage] = useState(0);
+  
   const location = useLocation();
   const query = new URLSearchParams(location.search).get('query');
-
   const navigate = useNavigate();
+
+  // 조건부 API 호출
+  const { data: allIssues, isLoading: allLoading, error: allError } = useIssues(currentPage);
+  const { data: keywordIssues, isLoading: keywordLoading, error: keywordError } = useIssuesByKeyword({
+    keyword: activeCategory,
+    page: currentPage
+  });
+
+  const toggleBookmark = useToggleIssueBookmark();
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0 });
     if (query) setActiveCategory(query);
   }, [query]);
 
-  const toggleBookmark = (id) => {
-    setBookmarkedIds(prev =>
-      prev.includes(id) ? prev.filter(bid => bid !== id) : [...prev, id]
-    );
+  const handleBookmarkToggle = (issueId) => {
+    toggleBookmark.mutate(issueId);
   };
 
-  const filteredData =
-    activeCategory === '전체'
-      ? dummyData
-      : dummyData.filter(item => item.category.includes(activeCategory));
+  const handleCategoryChange = (category) => {
+    setActiveCategory(category);
+    setCurrentPage(0);
+  };
 
-  const {
-    currentPage,
-    totalPages,
-    currentData: paginatedData,
-    goToPage
-  } = usePagination(filteredData, itemsPerPage);
+  const handlePageChange = (page) => {
+    setCurrentPage(page - 1);
+  };
+
+  // 현재 카테고리에 따라 적절한 데이터 선택
+  const isShowingAll = activeCategory === '전체';
+  const currentData = isShowingAll ? allIssues : keywordIssues;
+  const isLoading = isShowingAll ? allLoading : keywordLoading;
+  const error = isShowingAll ? allError : keywordError;
+
+  if (isLoading) {
+    return (
+      <Wrapper>
+        <MainNav />
+        <LoadingContainer>
+          <p>이슈를 불러오는 중...</p>
+        </LoadingContainer>
+        <Footer />
+      </Wrapper>
+    );
+  }
+
+  if (error) {
+    return (
+      <Wrapper>
+        <MainNav />
+        <ErrorContainer>
+          <p>이슈를 불러오는데 실패했습니다: {error.message}</p>
+          <button onClick={() => window.location.reload()}>다시 시도</button>
+        </ErrorContainer>
+        <Footer />
+      </Wrapper>
+    );
+  }
 
   return (
     <Wrapper>
@@ -82,35 +85,70 @@ export default function GlobalIssuePage() {
 
       <CategoryFilter
         selectedCategory={activeCategory}
-        onSelectCategory={(cat) => {
-          setActiveCategory(cat);
-          goToPage(1); 
-        }}
+        onSelectCategory={handleCategoryChange}
       />
 
       <IssueGrid>
-        {paginatedData.map(item => (
+        {currentData?.content?.map(issue => (
           <IssueCard
-            key={item.id}
-            id={item.id}
-            title={item.title}
-            tag={item.category}
-            image={item.thumbnailUrl}
-            bookmarked={bookmarkedIds.includes(item.id)}
-            onToggle={() => toggleBookmark(item.id)}
-            onClick={() => navigate(`/global-issue/${item.id}`, { state: { label: item.category, title: item.title } })} 
+            key={issue.id}
+            id={issue.id}
+            title={issue.title}
+            tag={issue.category}
+            image={issue.thumbnailUrl}
+            bookmarked={issue.bookmarked}
+            onToggle={() => handleBookmarkToggle(issue.id)}
+            onClick={() => navigate(`/global-issue/${issue.id}`, { 
+              state: { label: issue.category, title: issue.title } 
+            })} 
           />
-        ))}
+        )) || []}
       </IssueGrid>
 
-      {activeCategory === '전체' && (
-        <Pagination currentPage={currentPage} totalPages={totalPages} goToPage={goToPage} />
+      {currentData?.totalPages > 1 && (
+        <Pagination 
+          currentPage={currentPage + 1} 
+          totalPages={currentData.totalPages} 
+          goToPage={handlePageChange} 
+        />
       )}
 
       <Footer />
     </Wrapper>
   );
 }
+
+// 스타일 컴포넌트들은 기존과 동일...
+
+
+// 기존 스타일 + 추가 스타일
+const LoadingContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  font-size: 18px;
+`;
+
+const ErrorContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  gap: 20px;
+  
+  button {
+    padding: 10px 20px;
+    background-color: #235BA9;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+`;
+
+
 
 const Wrapper = styled.div`
   display: flex;

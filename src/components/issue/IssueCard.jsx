@@ -20,7 +20,6 @@ export default function IssueCard({ title, tag, image, bookmarked, onToggle, onC
     </Card>
   );
 }
-
 const Card = styled.div`
   width: 330px;
   height: 430px;
@@ -31,22 +30,22 @@ const Card = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  overflow: visible;
 
   .issue-title {
-    font-size: 24px;
+    font-size: 23px;
     font-weight: bold;
-    margin-top: 40px;
+    margin-top: 50px;
     font-family: NotoSansCustom;
     padding: 0 20px;
     word-break: keep-all;
-
-  height: 68px; 
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 2; 
-  -webkit-box-orient: vertical;
+    height: 68px; 
+    overflow: hidden; 
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2; 
+    -webkit-box-orient: vertical;
+    line-height: 1.2em;
+    max-height: 2.4em;
   }
 
   .issue-tag {

@@ -86,6 +86,7 @@ export const setUserProfile = async (userData) => {
     throw error;
   }
 };
+
 export const getRankingByTier = async (tierKey) => {
   try {
     const response = await axiosInstance8080.get(`/users/rankings/${tierKey}`);
@@ -102,3 +103,19 @@ export const getRankingByTier = async (tierKey) => {
   }
 };
 
+export const getPresignedUrl = async (imageName) => {
+  try {
+    const response = await axiosInstance8080.post('/users/presignedurls', {
+      imageName: imageName
+    });
+
+    if (response.data.isSuccess) {
+      return response.data.result.PresignedUrl;
+    } else {
+      throw new Error(response.data.message || 'PresignedUrl 발급에 실패했습니다.');
+    }
+  } catch (error) {
+    console.error('PresignedUrl API 호출 실패:', error);
+    throw error;
+  }
+};
