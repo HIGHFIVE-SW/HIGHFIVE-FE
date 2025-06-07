@@ -1,49 +1,95 @@
-// src/pages/BoardDetailPage.jsx
-
 import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
 import Footer from "../../layout/Footer";
 import BoardNav from "../../layout/board/BoardNav";
-import useLike from "../../hooks/useLike";
 import PROFILE_IMG from "../../assets/images/profile/DefaultProfile.png";
-import SAMPLE_AWARD_IMG from "../../assets/images/board/SampleReviewImg.png";
 import ArrowDownIcon from "../../assets/images/common/ic_ArrowDown.png";
-
-// 더미 데이터 예시
-const post = {
-  boardType: "후기 게시판",
-  title: "국제수면산업박람회 아이디어 공모전 후기!",
-  tags: ["#환경", "#공모전"],
-  author: "나",
-  createAt: "2025.03.25",
-  content: `국제수면산업 박람회에 참가해서 영예의 대상을 수상했어요!
-새롭고 흥미로운 아이디어를 나눌 수 있어서 정말 즐거운 경험이었습니다.
-
-좋은 사람들과 함께한 뜻깊은 시간이었고, 서로의 아이디어를 존중하며 소통할 수 있었던 현장이었어요.
-다양한 분야의 전문가들과 인사이트를 주고받으며, 수면산업의 무한한 가능성을 다시 느낄 수 있었고요.
-
-이번 수상을 통해 저희의 아이디어가 의미 있는 방향으로 나아가고 있다는 확신도 얻게 되었어요.
-
-앞으로도 더 많은 사람들의 삶에 긍정적인 영향을 줄 수 있도록, 꾸준히 연구하고 도전해 나가겠습니다!
-
-다시 한 번, 함께해주신 모든 분들께 감사드려요.✨`,
-  image: SAMPLE_AWARD_IMG,
-  likeCount: 3,
-  isVerified: true,
-  comments: [
-    { id: 1, author: "JUDY", content: "역시 새벽형 주디답네요 👍", createAt: "2025.04.21" },
-    { id: 2, author: "JUDY", content: "감사합니다!", createAt: "2025.04.21" },
-    { id: 3, author: "나", content: "내가 쓴 댓글!", createAt: "2025.04.22" },
-  ],
-};
+import { useParams, useNavigate } from "react-router-dom";
+import { usePost, useTogglePostLike } from "../../query/usePost";
+import { deletePost, getComments, postComment, updateComment, deleteComment } from "../../api/PostApi";
+import { useQueryClient } from '@tanstack/react-query';
+import CommentSection from '../../components/board/CommentSection';
 
 export default function BoardDetailPage() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [comment, setComment] = useState("");
-  const [comments, setComments] = useState(post.comments);
-  const { liked, count: likeCount, toggleLike } = useLike(post.likeCount);
+  const [comments, setComments] = useState([]);
   const [showComments, setShowComments] = useState(true);
   const [showPostMenu, setShowPostMenu] = useState(false);
+  const [profileImageError, setProfileImageError] = useState(false); // 프로필 이미지 에러 상태
   const menuRef = useRef(null);
+
+  // 게시물 데이터 가져오기
+  const { 
+    data: postData, 
+    isLoading, 
+    isError, 
+    error 
+  } = usePost(id);
+
+  // 좋아요 토글 훅
+  const toggleLikeMutation = useTogglePostLike();
+
+  // 좋아요 상태 관리
+  const [liked, setLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
+
+  // 컴포넌트 마운트 시 localStorage에서 하트 상태 불러오기
+  useEffect(() => {
+    if (id) {
+      const savedLikeState = localStorage.getItem(`heart-${id}`);
+      if (savedLikeState) {
+        setLiked(JSON.parse(savedLikeState));
+      }
+    }
+  }, [id]);
+
+  // 하트 상태 변경 시 localStorage에 저장
+  useEffect(() => {
+    if (id) {
+      localStorage.setItem(`heart-${id}`, JSON.stringify(liked));
+    }
+  }, [liked, id]);
+
+  // 게시물 데이터가 로드되면 좋아요 개수만 설정
+  useEffect(() => {
+    if (postData?.result) {
+      setLikeCount(postData.result.likeCount || 0);
+    }
+  }, [postData]);
+
+  // 프로필 이미지 에러 처리 함수
+  const handleProfileImageError = () => {
+    setProfileImageError(true);
+  };
+
+  // 프로필 이미지 URL 결정 함수
+  const getProfileImageSrc = (post) => {
+    if (profileImageError) {
+      return PROFILE_IMG; // 에러 발생 시 기본 이미지
+    }
+    
+    if (!post.profileUrl || post.profileUrl === "기본값" || post.profileUrl === "") {
+      return PROFILE_IMG; // 프로필 URL이 없거나 기본값인 경우
+    }
+    
+    return post.profileUrl; // 유효한 프로필 URL
+  };
+
+  const handleToggleLike = async () => {
+    // 하트 상태만 토글
+    setLiked(!liked);
+
+    try {
+      await toggleLikeMutation.mutateAsync(id);
+      // 좋아요 개수는 서버에서 새로 받아오기
+    } catch (error) {
+      // 실패 시 하트 상태 되돌리기
+      setLiked(liked);
+    }
+  };
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0 });
@@ -53,45 +99,139 @@ export default function BoardDetailPage() {
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
+    // 댓글 불러오기
+    const fetchComments = async () => {
+      try {
+        const commentList = await getComments(id);
+        setComments(commentList);
+      } catch (e) {
+        setComments([]);
+      }
+    };
+    if (id) fetchComments();
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, []);
+  }, [id]);
 
-  const handleCommentSubmit = (e) => {
-    e.preventDefault();
-    if (!comment.trim()) return;
-    setComments([
-      ...comments,
-      {
-        id: Date.now(),
-        author: "나",
-        content: comment,
-        createAt: "2025.04.21",
-      },
-    ]);
-    setComment("");
-  };
+  // 댓글 수정 상태 관리
+  const [editingCommentId, setEditingCommentId] = useState(null);
 
-  const handleDeleteComment = (id) => {
-    setComments(comments.filter((c) => c.id !== id));
-  };
-
-  const handleEditComment = (id) => {
-    const target = comments.find((c) => c.id === id);
+  // 댓글 수정 핸들러
+  const handleEditComment = async (commentId) => {
+    // 이미 수정 중인 댓글이 있으면 무시
+    if (editingCommentId && editingCommentId !== commentId) return;
+    // 수정 모드 진입: 해당 댓글의 내용을 입력창에 세팅
+    const target = comments.find((c) => c.commentId === commentId);
     if (target) {
+      setEditingCommentId(commentId);
       setComment(target.content);
-      setComments(comments.filter((c) => c.id !== id));
     }
   };
+
+  // 댓글 폼 제출 시(수정/등록 분기)
+  const handleCommentSubmit = async (e) => {
+    e.preventDefault();
+    if (!comment.trim()) return;
+    try {
+      if (editingCommentId) {
+        // 수정 모드: PATCH 호출
+        await updateComment(editingCommentId, comment);
+        setEditingCommentId(null);
+      } else {
+        // 등록 모드: POST 호출
+        await postComment(id, comment);
+      }
+      // 등록/수정 후 목록 새로고침
+      const commentList = await getComments(id);
+      setComments(commentList);
+      setComment("");
+    } catch (error) {
+      alert(error.message || '댓글 처리에 실패했습니다.');
+    }
+  };
+
+  const handleDeleteComment = async (commentId) => {
+    if (!window.confirm('댓글을 삭제하시겠습니까?')) return;
+    try {
+      await deleteComment(commentId);
+      // 삭제 후 목록 새로고침
+      const commentList = await getComments(id);
+      setComments(commentList);
+    } catch (error) {
+      alert(error.message || '댓글 삭제에 실패했습니다.');
+    }
+  };
+
+  // 수정된 삭제 함수
+  const handleDeletePost = async () => {
+    if (window.confirm('정말로 이 게시물을 삭제하시겠습니까?')) {
+      try {
+        await deletePost(id);
+        
+        // React Query 캐시 무효화
+        queryClient.invalidateQueries(['posts']);
+        queryClient.invalidateQueries(['post', id]);
+        
+        alert('게시물이 삭제되었습니다.');
+        navigate('/board/free');
+      } catch (error) {
+        console.error('삭제 실패:', error);
+        alert('게시물 삭제에 실패했습니다.');
+      }
+    }
+  };
+
+  // 로딩 중일 때
+  if (isLoading) {
+    return (
+      <>
+        <BoardNav />
+        <Wrapper>
+          <LoadingMessage>게시물을 불러오는 중...</LoadingMessage>
+        </Wrapper>
+        <Footer />
+      </>
+    );
+  }
+
+  // 에러 발생 시
+  if (isError) {
+    return (
+      <>
+        <BoardNav />
+        <Wrapper>
+          <ErrorMessage>
+            게시물을 불러오는데 실패했습니다: {error?.message}
+          </ErrorMessage>
+        </Wrapper>
+        <Footer />
+      </>
+    );
+  }
+
+  // 게시물이 없을 때
+  if (!postData?.result) {
+    return (
+      <>
+        <BoardNav />
+        <Wrapper>
+          <ErrorMessage>게시물을 찾을 수 없습니다.</ErrorMessage>
+        </Wrapper>
+        <Footer />
+      </>
+    );
+  }
+
+  const post = postData.result;
 
   return (
     <>
       <BoardNav />
       <Wrapper>
         <BoardTypeRow>
-          <BoardType>{post.boardType}</BoardType>
-          {post.author === "나" && (
+          <BoardType>자유 게시판</BoardType>
+          {String(post.userId) === String(localStorage.getItem('userId')) && (
             <PostMenuWrapper ref={menuRef}>
               <MenuButton onClick={() => setShowPostMenu((prev) => !prev)}>
                 <MenuDot />
@@ -100,11 +240,17 @@ export default function BoardDetailPage() {
               </MenuButton>
               {showPostMenu && (
                 <DropdownMenu>
-                  <DropdownItem onClick={() => setShowPostMenu(false)}>
+                  <DropdownItem onClick={() => {
+                    setShowPostMenu(false);
+                    navigate(`/board/edit/${id}`);
+                  }}>
                     수정
                   </DropdownItem>
                   <DropdownDivider />
-                  <DropdownItem onClick={() => setShowPostMenu(false)}>
+                  <DropdownItem onClick={() => {
+                    setShowPostMenu(false);
+                    handleDeletePost();
+                  }}>
                     삭제
                   </DropdownItem>
                 </DropdownMenu>
@@ -117,38 +263,37 @@ export default function BoardDetailPage() {
           <Title>{post.title}</Title>
         </TitleRow>
 
-        <TagList>
-          {post.tags.map((tag) => (
-            <Tag key={tag}>{tag}</Tag>
-          ))}
-        </TagList>
-
         <InfoRow>
           <AuthorBox>
-            <ProfileImg src={PROFILE_IMG} alt="프로필" />
-            <Author>{post.author}</Author>
+            <ProfileImg 
+              src={getProfileImageSrc(post)}
+              alt="프로필 이미지"
+              onError={handleProfileImageError}
+            />
+            <Author>{post.nickname}</Author>
           </AuthorBox>
-          <CreateAtText>{post.createAt}</CreateAtText>
+          <CreateAtText>
+            {post.createdAt ? 
+              new Date(post.createdAt).toLocaleDateString('ko-KR', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+              }).replace(/\./g, '.').replace(/\s/g, '') 
+              : ''
+            }
+          </CreateAtText>
         </InfoRow>
-
-        {post.isVerified && (
-          <ConfirmationText>
-            *이 글은 1차 검증이 완료된 글입니다.
-          </ConfirmationText>
-        )}
 
         <Divider />
 
-        <ImageBox>
-          <img src={post.image} alt="수상 사진" />
-        </ImageBox>
-
-        <Content>{post.content}</Content>
+        <Content>
+          <div dangerouslySetInnerHTML={{ __html: post.content }} />
+        </Content>
 
         <Divider />
 
         <ButtonRow>
-          <LikeBtn onClick={toggleLike} $liked={liked}>
+          <LikeBtn onClick={handleToggleLike} $liked={liked} disabled={toggleLikeMutation.isPending}>
             <LikeIcon
               viewBox="0 0 24 24"
               fill={liked ? "#e74c3c" : "none"}
@@ -176,44 +321,17 @@ export default function BoardDetailPage() {
         </ButtonRow>
 
         {showComments && (
-          <CommentSection>
-            <CommentTitle>댓글</CommentTitle>
-            <CommentList>
-              {comments.map((c) => (
-                <CommentItem key={c.id}>
-                  <CommentLeft>
-                    <CommentAuthorBox>
-                      <CommentProfileImg src={PROFILE_IMG} alt="프로필" />
-                      <CommentAuthor>{c.author}</CommentAuthor>
-                    </CommentAuthorBox>
-                    <CommentText>{c.content}</CommentText>
-                  </CommentLeft>
-                  <CommentRight>
-                    {c.author === "나" && (
-                      <CommentActions>
-                        <ActionBtn onClick={() => handleEditComment(c.id)}>
-                          수정
-                        </ActionBtn>
-                        <ActionDivider />
-                        <ActionBtn onClick={() => handleDeleteComment(c.id)}>
-                          삭제
-                        </ActionBtn>
-                      </CommentActions>
-                    )}
-                    <CommentCreateAt>{c.createAt}</CommentCreateAt>
-                  </CommentRight>
-                </CommentItem>
-              ))}
-            </CommentList>
-            <CommentForm onSubmit={handleCommentSubmit}>
-              <CommentInput
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                placeholder="댓글을 입력하세요."
-              />
-              <CommentButton type="submit">등록</CommentButton>
-            </CommentForm>
-          </CommentSection>
+          <CommentSection
+            comments={comments}
+            comment={comment}
+            setComment={setComment}
+            setComments={setComments}
+            handleCommentSubmit={handleCommentSubmit}
+            handleEditComment={handleEditComment}
+            handleDeleteComment={handleDeleteComment}
+            editingCommentId={editingCommentId}
+            setEditingCommentId={setEditingCommentId}
+          />
         )}
       </Wrapper>
       <Footer />
@@ -307,16 +425,6 @@ const DropdownDivider = styled.div`
   background: #d9d9d9;
 `;
 
-const TagList = styled.div`
-  margin-bottom: 12px;
-`;
-
-const Tag = styled.span`
-  color: #235ba9;
-  font-size: 14px;
-  margin-right: 8px;
-`;
-
 const InfoRow = styled.div`
   display: flex;
   justify-content: space-between;
@@ -349,27 +457,10 @@ const CreateAtText = styled.span`
   color: #000;
 `;
 
-const ConfirmationText = styled.div`
-  font-size: 12px;
-  color: #34a853;
-  font-weight: 500;
-  margin-bottom: 12px;
-`;
-
 const Divider = styled.hr`
   border: none;
   border-top: 1.5px solid #d9d9d9;
   margin: 24px 0;
-`;
-
-const ImageBox = styled.div`
-  width: 100%;
-  margin: 24px 0;
-  text-align: center;
-  img {
-    max-width: 100%;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  }
 `;
 
 const Content = styled.div`
@@ -377,6 +468,13 @@ const Content = styled.div`
   line-height: 1.8;
   color: #222;
   white-space: pre-line;
+  
+  img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin: 16px 0;
+  }
 `;
 
 const ButtonRow = styled.div`
@@ -398,8 +496,14 @@ const LikeBtn = styled.button`
   min-width: 70px;
   height: 36px;
   transition: border 0.2s;
-  &:hover {
+  
+  &:hover:not(:disabled) {
     border: 1.5px solid #e74c3c;
+  }
+  
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
   }
 `;
 
@@ -450,122 +554,16 @@ const ArrowIcon = styled.img`
   transition: transform 0.3s ease;
 `;
 
-const CommentSection = styled.div`
-  margin-top: 24px;
+const LoadingMessage = styled.div`
+  text-align: center;
+  padding: 40px;
+  font-size: 16px;
+  color: #666;
 `;
 
-const CommentTitle = styled.h3`
-  font-size: 18px;
-  font-weight: bold;
-  margin-bottom: 12px;
-`;
-
-const CommentList = styled.ul`
-  list-style: none;
-  padding: 0;
-  margin-bottom: 16px;
-`;
-
-const CommentItem = styled.li`
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  margin-bottom: 12px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #f0f0f0;
-`;
-
-const CommentLeft = styled.div`
-  display: flex;
-  flex-direction: column;
-`;
-
-const CommentAuthorBox = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 2px;
-`;
-
-const CommentProfileImg = styled.img`
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 0.1px solid #c4c4c4;
-`;
-
-const CommentAuthor = styled.span`
-  font-weight: 600;
-  color: #000;
-  font-size: 14px;
-`;
-
-const CommentText = styled.span`
-  font-size: 15px;
-  color: #222;
-  margin-left: 32px;
-`;
-
-const CommentRight = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
-`;
-
-const CommentCreateAt = styled.span`
-  font-size: 12px;
-  color: #aaa;
-`;
-
-const CommentActions = styled.div`
-  display: flex;
-  background: #fff;
-  border-radius: 6px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  margin-right: -8px;
-  margin-bottom: 3px;
-`;
-
-const ActionDivider = styled.div`
-  width: 1px;
-  background: #e0e0e0;
-  margin: 4px 0;
-`;
-
-const ActionBtn = styled.button`
-  background: none;
-  border: none;
-  padding: 4px 8px;
-  font-size: 12px;
-  color: #235ba9;
-  cursor: pointer;
-  flex: 1;
-  &:hover {
-    background: #f6f6f6;
-  }
-`;
-
-const CommentForm = styled.form`
-  display: flex;
-  gap: 8px;
-`;
-
-const CommentInput = styled.input`
-  flex: 1;
-  padding: 10px;
-  border: 1.5px solid #235ba9;
-  border-radius: 6px;
-  font-size: 15px;
-`;
-
-const CommentButton = styled.button`
-  background: #235ba9;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  padding: 0 18px;
-  font-size: 15px;
-  cursor: pointer;
+const ErrorMessage = styled.div`
+  text-align: center;
+  padding: 40px;
+  font-size: 16px;
+  color: #ff4444;
 `;

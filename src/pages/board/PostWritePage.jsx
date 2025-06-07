@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import styled from "styled-components";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
@@ -13,8 +13,18 @@ import CustomDropdown from "../../components/common/CustomDropdown";
 import MonthPicker from "../../components/common/CustomMonthPicker";
 import ActivitySearchInput from "../../components/search/ActivitySearchInput";
 import ImageAlertModal from "../../components/board/ImageAlertModal";
+import { useCreatePost, useCreateReview } from "../../query/usePost";
+import { 
+  extractImageUrls, 
+  CATEGORY_MAP, 
+  ACTIVITY_TYPE_MAP, 
+  ACTIVITY_PERIOD_MAP,
+  uploadSingleImage // 추가
+} from "../../api/PostApi";
+import { useNavigate } from "react-router-dom";
 
 export default function PostWritePage() {
+  const navigate = useNavigate();
   const [selectedBoard, setSelectedBoard] = useState("");
   const [title, setTitle] = useState("");
   const [activityName, setActivityName] = useState("");
@@ -22,13 +32,20 @@ export default function PostWritePage() {
   const [activityEndDate, setActivityEndDate] = useState("");
   const [category, setCategory] = useState("");
   const [type, setType] = useState("");
-  const [awardImage, setAwardImage] = useState(null);
   const [awardPreview, setAwardPreview] = useState(null);
+  const [awardImageUrl, setAwardImageUrl] = useState(''); // 추가
+  const [isUploadingAward, setIsUploadingAward] = useState(false); // 추가
   const [errors, setErrors] = useState({});
   const [showImageAlert, setShowImageAlert] = useState(false);
   const [showPostMenu, setShowPostMenu] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCategoryAuto, setIsCategoryAuto] = useState(false);
+  const [isTypeAuto, setIsTypeAuto] = useState(false);
 
   const isReviewBoard = selectedBoard === "후기 게시판";
+
+  const createPostMutation = useCreatePost();
+  const createReviewMutation = useCreateReview();
 
   const editor = useEditor({
     extensions: [
@@ -45,6 +62,15 @@ export default function PostWritePage() {
   const fileInputRef = useRef(null);
   const editorRef = useRef(null);
 
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('로그인이 필요한 서비스입니다.');
+      navigate('/login');
+      return;
+    }
+  }, [navigate]);
+
   const handleCheckbox = (current, setCurrent, value) => {
     setCurrent(current === value ? "" : value);
   };
@@ -52,7 +78,6 @@ export default function PostWritePage() {
   const insertImage = (src) => {
     if (!editor) return;
 
-    // 문서 내 이미지 노드 개수 세기
     let imgCount = 0;
     editor.state.doc.descendants((node) => {
       if (node.type.name === 'image') imgCount += 1;
@@ -67,16 +92,51 @@ export default function PostWritePage() {
       .chain()
       .focus()
       .setImage({ src })
-      .createParagraphNear()  // 이미지 뒤에 빈 단락 생성
+      .createParagraphNear()
       .focus()
       .run();
   };
 
-  const handleAwardImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setAwardImage(file);
-      setAwardPreview(URL.createObjectURL(file));
+const handleAwardImageChange = async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  // 파일 타입 검증
+  if (!file.type.startsWith('image/')) {
+    alert('이미지 파일만 업로드 가능합니다.');
+    return;
+  }
+
+  try {
+    setIsUploadingAward(true);
+    
+    // 미리보기 설정
+    setAwardPreview(URL.createObjectURL(file));
+    
+    // S3에 업로드
+    const uploadedUrl = await uploadSingleImage(file);
+    setAwardImageUrl(uploadedUrl);
+    
+    console.log('수상 기록 이미지 업로드 완료:', uploadedUrl);
+    
+  } catch (error) {
+    console.error('수상 기록 이미지 업로드 실패:', error);
+    alert('이미지 업로드에 실패했습니다: ' + error.message);
+    
+    // 실패 시 미리보기 제거
+    setAwardPreview(null);
+    setAwardImageUrl('');
+  } finally {
+    setIsUploadingAward(false);
+  }
+};
+
+  // 수상 기록 이미지 제거 함수 추가
+  const handleRemoveAwardImage = () => {
+    setAwardPreview(null);
+    setAwardImageUrl('');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
 
@@ -107,7 +167,7 @@ export default function PostWritePage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (isReviewBoard) {
       const hasEditorImage = editor?.getHTML().includes('<img');
       if (!hasEditorImage) {
@@ -116,11 +176,54 @@ export default function PostWritePage() {
       }
     }
 
-    if (validateForm()) {
-      alert("등록 완료!");
-      // 실제 API 호출 로직 삽입
-    } else {
+    if (!validateForm()) {
       window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const htmlContent = editor.getHTML();
+      const imageUrls = extractImageUrls(htmlContent);
+
+      if (isReviewBoard) {
+        // 후기 게시판 데이터 구성 (수상 기록 이미지 URL 추가)
+        const reviewData = {
+          title: title.trim(),
+          keyword: CATEGORY_MAP[category],
+          activityType: ACTIVITY_TYPE_MAP[type],
+          activityPeriod: ACTIVITY_PERIOD_MAP[activityPeriod],
+          activityEndDate: activityEndDate,
+          activityName: activityName.trim(),
+          content: htmlContent,
+          imageUrls: imageUrls,
+          awardImageUrl: awardImageUrl || null // 수상 기록 이미지 URL 추가
+        };
+
+        console.log('후기 게시판 데이터:', reviewData);
+        await createReviewMutation.mutateAsync(reviewData);
+        
+      } else {
+        // 자유 게시판 데이터 구성
+        const postData = {
+          title: title.trim(),
+          content: htmlContent,
+          imageUrls: imageUrls
+        };
+
+        console.log('자유 게시판 데이터:', postData);
+        await createPostMutation.mutateAsync(postData);
+      }
+
+      alert("등록 완료!");
+      navigate('/board/free');
+      
+    } catch (error) {
+      console.error('게시물 작성 실패:', error);
+      alert('게시물 작성에 실패했습니다: ' + error.message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -132,7 +235,7 @@ export default function PostWritePage() {
       <Container>
         <Header>
           <TitleRow>
-            <Title>{title}</Title>
+            <Title>글쓰기</Title>
             {selectedBoard === "나" && (
               <PostMenuWrapper>
                 <MenuButton onClick={() => setShowPostMenu((prev) => !prev)}>
@@ -142,14 +245,19 @@ export default function PostWritePage() {
                 </MenuButton>
                 {showPostMenu && (
                   <DropdownMenu>
-                    <DropdownItem onClick={() => { setShowPostMenu(false); /* 수정 함수 */ }}>수정</DropdownItem>
-                    <DropdownItem onClick={() => { setShowPostMenu(false); /* 삭제 함수 */ }}>삭제</DropdownItem>
+                    <DropdownItem onClick={() => { setShowPostMenu(false); }}>수정</DropdownItem>
+                    <DropdownItem onClick={() => { setShowPostMenu(false); }}>삭제</DropdownItem>
                   </DropdownMenu>
                 )}
               </PostMenuWrapper>
             )}
           </TitleRow>
-          <SubmitButton onClick={handleSubmit}>등록</SubmitButton>
+          <SubmitButton 
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? '등록 중...' : '등록'}
+          </SubmitButton>
         </Header>
 
         <CustomDropdown
@@ -173,7 +281,27 @@ export default function PostWritePage() {
               {errors.activityName && <ErrorText>{errors.activityName}</ErrorText>}
               <Row>
                 <div style={{ flex: 1 }}>
-                  <ActivitySearchInput value={activityName} onChange={setActivityName} />
+                  <ActivitySearchInput
+                    value={activityName}
+                    onChange={(name) => {
+                      setActivityName(name);
+                      if (!name) {
+                        setIsCategoryAuto(false);
+                        setIsTypeAuto(false);
+                      }
+                    }}
+                    onActivitySelect={(activity) => {
+                      if (activity) {
+                        setCategory(activity.keyword);
+                        setType(activity.activityType);
+                        setIsCategoryAuto(true);
+                        setIsTypeAuto(true);
+                      } else {
+                        setIsCategoryAuto(false);
+                        setIsTypeAuto(false);
+                      }
+                    }}
+                  />
                 </div>
                 <DirectInput
                   placeholder="검색 결과가 없을 경우, 직접 입력하세요"
@@ -193,6 +321,7 @@ export default function PostWritePage() {
                         type="checkbox"
                         checked={category === cat}
                         onChange={() => handleCheckbox(category, setCategory, cat)}
+                        disabled={isCategoryAuto}
                       />
                       {cat}
                     </label>
@@ -207,6 +336,7 @@ export default function PostWritePage() {
                         type="checkbox"
                         checked={type === typeItem}
                         onChange={() => handleCheckbox(type, setType, typeItem)}
+                        disabled={isTypeAuto}
                       />
                       {typeItem}
                     </label>
@@ -243,11 +373,38 @@ export default function PostWritePage() {
               <div style={{ flex: 1 }}>
                 <AwardSection>
                   <SubTitle>수상 기록</SubTitle>
-                  <AwardUploadBox onClick={() => fileInputRef.current.click()}>
-                    {awardPreview ? (
-                      <img src={awardPreview} alt="미리보기" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+                  <AwardUploadBox onClick={() => !isUploadingAward && fileInputRef.current.click()}>
+                    {isUploadingAward ? (
+                      <UploadingIndicator>
+                        <div style={{ fontSize: '14px', color: '#235ba9' }}>업로드 중...</div>
+                      </UploadingIndicator>
+                    ) : awardPreview ? (
+                      <ImagePreviewContainer>
+                        <img 
+                          src={awardPreview} 
+                          alt="수상 기록 미리보기" 
+                          style={{ 
+                            width: "100%", 
+                            height: "100%", 
+                            objectFit: "contain" 
+                          }} 
+                        />
+                        <RemoveButton 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRemoveAwardImage();
+                          }}
+                        >
+                          ×
+                        </RemoveButton>
+                      </ImagePreviewContainer>
                     ) : (
-                      <span style={{ fontSize: "48px", color: "#235ba9" }}>+</span>
+                      <UploadPlaceholder>
+                        <span style={{ fontSize: "48px", color: "#235ba9" }}>+</span>
+                        <span style={{ fontSize: "12px", color: "#666", marginTop: "8px" }}>
+                          수상 기록 이미지
+                        </span>
+                      </UploadPlaceholder>
                     )}
                     <input
                       type="file"
@@ -255,6 +412,7 @@ export default function PostWritePage() {
                       style={{ display: "none" }}
                       ref={fileInputRef}
                       onChange={handleAwardImageChange}
+                      disabled={isUploadingAward}
                     />
                   </AwardUploadBox>
                 </AwardSection>
@@ -281,6 +439,7 @@ export default function PostWritePage() {
   );
 }
 
+// 기존 styled-components + 추가 스타일
 const Container = styled.div`
   max-width: 768px;
   margin: 0 auto;
@@ -306,12 +465,17 @@ const Title = styled.h2`
 `;
 
 const SubmitButton = styled.button`
-  background-color: #235ba9;
+  background-color: ${props => props.disabled ? '#ccc' : '#235ba9'};
   color: white;
   padding: 8px 22px;
   border: none;
   border-radius: 8px;
-  cursor: pointer;
+  cursor: ${props => props.disabled ? 'not-allowed' : 'pointer'};
+  transition: background-color 0.2s;
+  
+  &:hover:not(:disabled) {
+    background-color: #1e4a8c;
+  }
 `;
 
 const Input = styled.input`
@@ -397,6 +561,53 @@ const AwardUploadBox = styled.div`
   overflow: hidden;
   border-radius: 8px;
   margin-bottom: 20px;
+  position: relative;
+`;
+
+// 새로 추가된 스타일 컴포넌트들
+const ImagePreviewContainer = styled.div`
+  width: 100%;
+  height: 100%;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
+
+const RemoveButton = styled.button`
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: bold;
+  
+  &:hover {
+    background: rgba(0, 0, 0, 0.9);
+  }
+`;
+
+const UploadingIndicator = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+`;
+
+const UploadPlaceholder = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 `;
 
 const DirectInput = styled(Input)`

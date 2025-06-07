@@ -1,118 +1,107 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import BoardNav from "../../layout/board/BoardNav";
 import BoardSidebar from "../../layout/board/BoardSideNav";
 import Footer from "../../layout/Footer";
-import usePagination from "../../hooks/usePagination";
 import Pagination from "../../components/common/Pagination";
 import CustomDropdown from "../../components/common/CustomDropdown";
 import writeIcon from "../../assets/images/board/ic_Write.png";
 import PostList from "../../components/board/freeboard/FreePostList";
 import { useNavigate } from "react-router-dom";
-
-const dummyPosts = [
-  {
-    post_id: "id-1",
-    post_title: "이번 주말에 공모전 팀 구합니다",
-    authorName: "김지현",
-    created_at: "2025-05-18",
-    post_like_count: 12,
-  },
-  {
-    post_id: "id-2",
-    post_title: "캡스톤 설문조사 부탁드려요!",
-    authorName: "이서정",
-    created_at: "2025-05-17",
-    post_like_count: 8,
-  },
-  {
-    post_id: "id-3",
-    post_title: "리액트 네이티브 질문 있어요",
-    authorName: "홍길동",
-    created_at: "2025-05-16",
-    post_like_count: 5,
-  },
-  {
-    post_id: "id-4",
-    post_title: "도서 추천 받아요 📚",
-    authorName: "박소연",
-    created_at: "2025-05-15",
-    post_like_count: 3,
-  },
-  {
-    post_id: "id-5",
-    post_title: "스터디 같이 하실 분!",
-    authorName: "최민호",
-    created_at: "2025-05-14",
-    post_like_count: 10,
-  },
-  {
-    post_id: "id-6",
-    post_title: "우리 학과 졸업 전시회 후기",
-    authorName: "정유나",
-    created_at: "2025-05-13",
-    post_like_count: 6,
-  },
-  {
-    post_id: "id-7",
-    post_title: "요즘 날씨 너무 좋네요 ☀️",
-    authorName: "한지훈",
-    created_at: "2025-05-12",
-    post_like_count: 2,
-  },
-  {
-    post_id: "id-8",
-    post_title: "다들 포트폴리오 어떻게 만들고 계세요?",
-    authorName: "이수빈",
-    created_at: "2025-05-11",
-    post_like_count: 9,
-  },
-  {
-    post_id: "id-9",
-    post_title: "기획 공모전 추천 좀 해주세요",
-    authorName: "강도윤",
-    created_at: "2025-05-10",
-    post_like_count: 7,
-  },
-  {
-    post_id: "id-10",
-    post_title: "프론트엔드 면접 후기 공유합니다",
-    authorName: "오지훈",
-    created_at: "2025-05-09",
-    post_like_count: 13,
-  },
-  {
-    post_id: "id-11",
-    post_title: "프론트엔드 면접 후기 공유합니다",
-    authorName: "오지훈",
-    created_at: "2025-05-09",
-    post_like_count: 14,
-  },
-];
-
+import { usePosts, usePostsByLikes } from "../../query/usePost";
+import { formatDate } from '../../utils/formatDate';
 
 export default function FreeBoardPage() {
   const [sortOrder, setSortOrder] = useState("최신순");
+  const [currentPage, setCurrentPage] = useState(1);
   const navigate = useNavigate();
-  // 정렬 로직
-  const sortedPosts = [...dummyPosts].sort((a, b) => {
-    if (sortOrder === "최신순") {
-      return new Date(b.created_at) - new Date(a.created_at);
-    } else if (sortOrder === "추천순") {
-      return b.post_like_count - a.post_like_count;
-    }
-    return 0;
+  
+  const itemsPerPage = 10;
+  
+  // 정렬 방식에 따라 다른 API 호출
+  const { 
+    data: latestPostsData, 
+    isLoading: isLatestLoading, 
+    isError: isLatestError, 
+    error: latestError 
+  } = usePosts(currentPage - 1, itemsPerPage, {
+    enabled: sortOrder === "최신순"
   });
 
-  // 페이지네이션 적용
-  const itemsPerPage = 10;
-  const {
-    currentPage,
-    totalPages,
-    currentData: currentPosts,
-    goToPage,
-  } = usePagination(sortedPosts, itemsPerPage);
+  const { 
+    data: likedPostsData, 
+    isLoading: isLikedLoading, 
+    isError: isLikedError, 
+    error: likedError 
+  } = usePostsByLikes(currentPage - 1, itemsPerPage, {
+    enabled: sortOrder === "추천순"
+  });
 
+  // 현재 선택된 정렬에 따른 데이터 선택
+  const isLoading = sortOrder === "최신순" ? isLatestLoading : isLikedLoading;
+  const isError = sortOrder === "최신순" ? isLatestError : isLikedError;
+  const error = sortOrder === "최신순" ? latestError : likedError;
+  const postsData = sortOrder === "최신순" ? latestPostsData : likedPostsData;
+
+  // 로딩 중일 때
+  if (isLoading) {
+    return (
+      <>
+        <BoardNav />
+        <HeaderSection>
+          <Title>자유 게시판</Title>
+          <Subtitle>모두의 이야기, 모두의 공간</Subtitle>
+        </HeaderSection>
+        <MainLayout>
+          <BoardSidebar />
+          <RightContent>
+            <LoadingMessage>게시물을 불러오는 중...</LoadingMessage>
+          </RightContent>
+        </MainLayout>
+        <Footer />
+      </>
+    );
+  }
+
+  // 에러 발생 시
+  if (isError) {
+    return (
+      <>
+        <BoardNav />
+        <HeaderSection>
+          <Title>자유 게시판</Title>
+          <Subtitle>모두의 이야기, 모두의 공간</Subtitle>
+        </HeaderSection>
+        <MainLayout>
+          <BoardSidebar />
+          <RightContent>
+            <ErrorMessage>
+              게시물을 불러오는데 실패했습니다: {error?.message}
+            </ErrorMessage>
+          </RightContent>
+        </MainLayout>
+        <Footer />
+      </>
+    );
+  }
+
+  // API 응답 데이터 구조에 맞게 변환
+  const posts = postsData?.content || [];
+  const totalPages = postsData?.totalPages || 1;
+
+  const handleSortChange = (option) => {
+    setSortOrder(option);
+    setCurrentPage(1); // 정렬 변경 시 첫 페이지로 이동
+  };
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handlePostClick = (postId) => {
+    navigate(`/board/detail/${postId}`);
+  };
 
   return (
     <>
@@ -124,37 +113,70 @@ export default function FreeBoardPage() {
       <MainLayout>
         <BoardSidebar />
         <RightContent>
-        <SortWriteWrapper>
+          <SortWriteWrapper>
             <SortBox>
-            <CustomDropdown
+              <CustomDropdown
                 options={["최신순", "추천순"]}
                 selected={sortOrder}
-                onSelect={setSortOrder}
-            />
+                onSelect={handleSortChange}
+              />
             </SortBox>
             <WriteButton onClick={() => navigate("/board/write")}>
-                <WriteIcon src={writeIcon} alt="글쓰기" /> 글쓰기
+              <WriteIcon src={writeIcon} alt="글쓰기" /> 글쓰기
             </WriteButton>
-        </SortWriteWrapper>
+          </SortWriteWrapper>
 
-        {/* 게시글 리스트 렌더링 */}
-        <PostList
-            posts={currentPosts}
-            currentPage={currentPage}
-            itemsPerPage={itemsPerPage}
-        />
+          {/* 게시글 리스트 렌더링 */}
+          {posts.length === 0 ? (
+            <NoPostsMessage>등록된 게시물이 없습니다.</NoPostsMessage>
+          ) : (
+            <PostList
+              posts={posts.map(post => ({
+                post_id: post.id,
+                post_title: post.title,
+                authorName: post.nickname,
+                created_at: formatDate(post.createdAt),
+                post_like_count: post.likeCount
+              }))}
+              currentPage={currentPage}
+              itemsPerPage={itemsPerPage}
+              onPostClick={handlePostClick}
+            />
+          )}
 
-        <Pagination
+          <Pagination
             currentPage={currentPage}
             totalPages={totalPages}
-            goToPage={goToPage}
-        />
+            goToPage={handlePageChange}
+          />
         </RightContent>
       </MainLayout>
       <Footer />
     </>
   );
 }
+
+// 스타일드 컴포넌트들
+const LoadingMessage = styled.div`
+  text-align: center;
+  padding: 40px;
+  font-size: 16px;
+  color: #666;
+`;
+
+const ErrorMessage = styled.div`
+  text-align: center;
+  padding: 40px;
+  font-size: 16px;
+  color: #ff4444;
+`;
+
+const NoPostsMessage = styled.div`
+  text-align: center;
+  padding: 40px;
+  font-size: 16px;
+  color: #999;
+`;
 
 const HeaderSection = styled.div`
   background-color: #f9fbff;

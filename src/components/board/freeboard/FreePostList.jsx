@@ -1,9 +1,15 @@
 import React from "react";
 import styled from "styled-components";
 import heartIcon from "../../../assets/images/board/ic_heart.png";
-
+import { useNavigate } from "react-router-dom";
 
 export default function FreePostList({ posts, currentPage, itemsPerPage }) {
+  const navigate = useNavigate();
+
+  const handlePostClick = (postId) => {
+    navigate(`/board/detail/${postId}`);
+  };
+
   return (
     <Table>
       <thead>
@@ -14,7 +20,7 @@ export default function FreePostList({ posts, currentPage, itemsPerPage }) {
           <TableHead>날짜</TableHead>
           <TableHead>
             <IconImage src={heartIcon} alt="좋아요" />
-        </TableHead>
+          </TableHead>
         </tr>
       </thead>
       <tbody>
@@ -22,7 +28,9 @@ export default function FreePostList({ posts, currentPage, itemsPerPage }) {
           <PostRow
             key={post.post_id}
             isEven={idx % 2 === 1}
-            isLastRow={idx === posts.length - 1} // 마지막 행 판별
+            isLastRow={idx === posts.length - 1}
+            onClick={() => handlePostClick(post.post_id)}
+            style={{ cursor: 'pointer' }}
           >
             <TableData>{(currentPage - 1) * itemsPerPage + idx + 1}</TableData>
             <TableData>{post.post_title}</TableData>
