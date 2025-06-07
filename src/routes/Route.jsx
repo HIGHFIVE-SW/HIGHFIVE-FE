@@ -22,6 +22,7 @@ import BoardDetailPage from '../pages/board/BoardDetailPage';
 import BoardSearchResultPage from '../pages/board/BoardSearchResultPage';
 import MoreReviewPage from '../pages/board/MoreReviewPage';
 import MoreFreePage from '../pages/board/MoreFreePage';
+import PostEditPage from '../pages/board/PostEditPage';
 
 export default function AppRoutes() {
   return (
@@ -49,6 +50,7 @@ export default function AppRoutes() {
       <Route path="/board/search" element={<BoardSearchResultPage />} />
       <Route path="/more/review" element={<MoreReviewPage />} />
       <Route path="/more/free" element={<MoreFreePage />} />
+      <Route path="/board/edit/:id" element={<PostEditPage />} />
     </Routes>
   );
 }

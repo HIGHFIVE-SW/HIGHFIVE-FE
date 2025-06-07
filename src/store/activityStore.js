@@ -13,7 +13,7 @@ export const useActivityStore = create(
       searchKeyword: '',
       
       // 정렬 옵션
-      sortBy: 'latest', // 'latest', 'deadline', 'popular'
+      sortBy: 'latest',
       
       // 필터 설정 메서드
       setFieldFilter: (filter) => set({ 
