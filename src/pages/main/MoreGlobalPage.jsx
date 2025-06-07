@@ -2,13 +2,14 @@
 
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import MainNav from '../../layout/MainNav';
 import Footer from '../../layout/Footer';
 import IssueCard from '../../components/issue/IssueCard';
 import Pagination from '../../components/common/Pagination';
-import usePagination from '../../hooks/usePagination';
 import { searchAllIssues } from '../../api/MainSearchApi';
+import { useToggleIssueBookmark } from '../../query/useIssues';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function MoreGlobalPage() {
   useEffect(() => {
@@ -16,13 +17,16 @@ export default function MoreGlobalPage() {
   }, []);
 
   const location = useLocation();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const query = new URLSearchParams(location.search).get('query')?.toLowerCase() || '';
 
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(0);
-  const [bookmarkedIds, setBookmarkedIds] = useState([]);
+
+  const toggleIssueBookmark = useToggleIssueBookmark();
 
   useEffect(() => {
     if (query) {
@@ -49,14 +53,22 @@ export default function MoreGlobalPage() {
     }
   };
 
-  const toggleBookmark = (id) => {
-    setBookmarkedIds((prev) =>
-      prev.includes(id) ? prev.filter((bid) => bid !== id) : [...prev, id]
-    );
-  };
-
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
+  const handleGlobalBookmark = (id) => {
+    toggleIssueBookmark.mutate(id, {
+      onSuccess: () => {
+        // 검색 결과 업데이트
+        setSearchResults(prevResults => 
+          prevResults.map(issue => 
+            issue.id === id 
+              ? { ...issue, bookmarked: !issue.bookmarked }
+              : issue
+          )
+        );
+        // 관련 쿼리 무효화
+        queryClient.invalidateQueries(['issues']);
+        queryClient.invalidateQueries(['bookmarkedIssues']);
+      }
+    });
   };
 
   return (
@@ -72,14 +84,17 @@ export default function MoreGlobalPage() {
         ) : (
           <>
             <CardGrid>
-              {searchResults.slice(0, 4).map((item) => (
+              {searchResults.map((item) => (
                 <IssueCard
                   key={item.id}
                   title={item.title}
-                  tag={item.categoryKr || item.keyword || '카테고리 없음'}
-                  image={item.image || require('../../assets/images/issue/ic_IssueCardSample.png')}
+                  tag={`#${item.keyword}` || '#카테고리 없음'}
+                  image={item.imageUrl || ''}
                   bookmarked={item.bookmarked}
-                  onToggle={() => toggleBookmark(item.id)}
+                  onToggle={() => handleGlobalBookmark(item.id)}
+                  onClick={() => navigate(`/global-issue/${item.id}`, {
+                    state: { label: item.keyword, title: item.title }
+                  })}
                 />
               ))}
             </CardGrid>

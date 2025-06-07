@@ -1,36 +1,32 @@
 // src/pages/SearchResultPage.jsx
 import React, { useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
+import { useQueryClient } from '@tanstack/react-query';
 import MainNav from '../../layout/MainNav';
 import Footer from '../../layout/Footer';
 import IssueCard from '../../components/issue/IssueCard';
 import ActivityCard from '../../components/activity/ActivityCard';
-import activityImage from '../../assets/images/activity/ic_ActivityImage.png';
 import { useLocation, useNavigate } from 'react-router-dom';
 import SearchBar from '../../components/search/SearchBar';
-import { searchIssues } from '../../api/MainSearchApi';
-
-
-const dummyActivities = [
-  { id: 1, title: '제 22회 한국 경제 논문 공모전', tags: ['#경제', '#공모전'], date: '2025.04.15~2025.04.20', image: activityImage },
-  { id: 2, title: '환경 인턴십',                tags: ['#환경', '#인턴십'], date: '2025.04.15~2025.04.20', image: activityImage },
-  { id: 3, title: '기술 봉사활동',             tags: ['#기술', '#봉사활동'], date: '2025.04.15~2025.04.20', image: activityImage },
-  { id: 4, title: '제 22회 한국 경제 논문 공모전', tags: ['#경제', '#공모전'], date: '2025.04.15~2025.04.20', image: activityImage },
-  { id: 5, title: '제 22회 한국 경제 논문 공모전', tags: ['#경제', '#공모전'], date: '2025.04.15~2025.04.20', image: activityImage },
-  { id: 6, title: '제 22회 한국 경제 논문 공모전', tags: ['#경제', '#공모전'], date: '2025.04.15~2025.04.20', image: activityImage },
-];
+import { searchIssues, searchActivities } from '../../api/MainSearchApi';
+import { useToggleIssueBookmark } from '../../query/useIssues';
+import { useToggleBookmark } from '../../query/useActivities';
+import { formatDate } from '../../utils/formatDate';
 
 export default function SearchResultPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const inputRef = useRef();
+  const queryClient = useQueryClient();
 
   const [inputValue, setInputValue] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-  const [bookmarkedGlobalIds, setBookmarkedGlobalIds] = useState([]);
-  const [bookmarkedActivityIds, setBookmarkedActivityIds] = useState([]);
   const [searchResults, setSearchResults] = useState([]);
+  const [activityResults, setActivityResults] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  const toggleIssueBookmark = useToggleIssueBookmark();
+  const toggleActivityBookmark = useToggleBookmark();
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -47,9 +43,16 @@ export default function SearchResultPage() {
     
     setLoading(true);
     try {
-      const response = await searchIssues({ keyword: query });
-      if (response.isSuccess) {
-        setSearchResults(response.result.content);
+      const [issuesResponse, activitiesResponse] = await Promise.all([
+        searchIssues({ keyword: query }),
+        searchActivities({ keyword: query, activityType: null })
+      ]);
+      
+      if (issuesResponse.isSuccess) {
+        setSearchResults(issuesResponse.result.content);
+      }
+      if (activitiesResponse.isSuccess) {
+        setActivityResults(activitiesResponse.result.content);
       }
     } catch (error) {
       console.error('검색 결과를 가져오는데 실패했습니다:', error);
@@ -64,24 +67,53 @@ export default function SearchResultPage() {
     }
   };
 
-  const lowerQuery = searchQuery.toLowerCase();
-
-  const filteredActivities = dummyActivities.filter(
-    (item) =>
-      item.title.toLowerCase().includes(lowerQuery) ||
-      item.tags.some((tag) => tag.toLowerCase().includes(lowerQuery))
-  );
-
-  const toggleGlobalBookmark = (id) => {
-    setBookmarkedGlobalIds((prev) =>
-      prev.includes(id) ? prev.filter((bid) => bid !== id) : [...prev, id]
-    );
+  const handleGlobalBookmark = (id) => {
+    toggleIssueBookmark.mutate(id, {
+      onSuccess: () => {
+        // 검색 결과 업데이트
+        setSearchResults(prevResults => 
+          prevResults.map(issue => 
+            issue.id === id 
+              ? { ...issue, bookmarked: !issue.bookmarked }
+              : issue
+          )
+        );
+        // 관련 쿼리 무효화
+        queryClient.invalidateQueries(['issues']);
+        queryClient.invalidateQueries(['bookmarkedIssues']);
+      }
+    });
   };
 
-  const toggleActivityBookmark = (id) => {
-    setBookmarkedActivityIds((prev) =>
-      prev.includes(id) ? prev.filter((bid) => bid !== id) : [...prev, id]
+  // 활동 북마크 토글 함수 수정 (글로벌 이슈 상세페이지 참고)
+  const handleActivityBookmark = async (activityId) => {
+    // 즉시 UI 업데이트 (optimistic update)
+    setActivityResults(prevResults => 
+      prevResults.map(activity => 
+        activity.activityId === activityId 
+          ? { ...activity, bookmarked: !activity.bookmarked }
+          : activity
+      )
     );
+
+    // 서버 요청
+    try {
+      await toggleActivityBookmark.mutateAsync(activityId);
+      
+      // 관련 쿼리 무효화
+      queryClient.invalidateQueries(['activities']);
+      queryClient.invalidateQueries(['bookmarkedActivities']);
+    } catch (error) {
+      // 실패 시 롤백
+      setActivityResults(prevResults => 
+        prevResults.map(activity => 
+          activity.activityId === activityId 
+            ? { ...activity, bookmarked: !activity.bookmarked } // 다시 원래대로
+            : activity
+        )
+      );
+      console.error('북마크 토글 실패:', error);
+    }
   };
 
   return (
@@ -104,7 +136,7 @@ export default function SearchResultPage() {
 
             {loading ? (
               <LoadingMessage>검색 중...</LoadingMessage>
-            ) : searchResults.length === 0 && filteredActivities.length === 0 ? (
+            ) : searchResults.length === 0 && activityResults.length === 0 ? (
               <NoResult>검색 결과가 없습니다.</NoResult>
             ) : (
               <>
@@ -112,9 +144,11 @@ export default function SearchResultPage() {
                   <Section>
                     <SectionHeader>
                       <h3>글로벌 이슈</h3>
-                      <MoreBtn onClick={() => navigate(`/more/global?query=${searchQuery}`)}>
-                        더보기 &gt;
-                      </MoreBtn>
+                      {searchResults.length > 5 && (
+                        <MoreBtn onClick={() => navigate(`/more/global?query=${searchQuery}`)}>
+                          더보기 &gt;
+                        </MoreBtn>
+                      )}
                     </SectionHeader>
                     <CardGrid>
                       {searchResults.slice(0, 4).map((issue) => (
@@ -122,12 +156,12 @@ export default function SearchResultPage() {
                           key={issue.id}
                           id={issue.id}
                           title={issue.title}
-                          tag={issue.categoryKr || issue.category || issue.keyword || '카테고리 없음'}
-                          image={issue.thumbnailUrl || issue.image || ''}
+                          tag={`#${issue.keyword}` || '#카테고리 없음'}
+                          image={issue.imageUrl || ''}
                           bookmarked={issue.bookmarked}
-                          onToggle={() => toggleGlobalBookmark(issue.id)}
+                          onToggle={() => handleGlobalBookmark(issue.id)}
                           onClick={() => navigate(`/global-issue/${issue.id}`, {
-                            state: { label: issue.categoryKr || issue.category, title: issue.title }
+                            state: { label: issue.keyword, title: issue.title }
                           })}
                         />
                       ))}
@@ -135,26 +169,49 @@ export default function SearchResultPage() {
                   </Section>
                 )}
 
-                {filteredActivities.length > 0 && (
+                {activityResults.length > 0 && (
                   <Section>
                     <SectionHeader>
                       <h3>활동</h3>
-                      <MoreBtn onClick={() => navigate(`/more/activity?query=${searchQuery}`)}>
-                        더보기 &gt;
-                      </MoreBtn>
+                      {activityResults.length > 4 && (
+                        <MoreBtn onClick={() => navigate(`/more/activity?query=${searchQuery}`)}>
+                          더보기 &gt;
+                        </MoreBtn>
+                      )}
                     </SectionHeader>
                     <CardGrid>
-                      {filteredActivities.map((item) => (
-                        <ActivityCard
-                          key={item.id}
-                          title={item.title}
-                          tags={item.tags.join(' ')}
-                          image={item.image}
-                          date={item.date}
-                          bookmarked={bookmarkedActivityIds.includes(item.id)}
-                          onToggle={() => toggleActivityBookmark(item.id)}
-                        />
-                      ))}
+                      {activityResults.slice(0, 4).map((activity) => {
+                        // 태그 배열 생성 (키워드와 액티비티 타입 포함)
+                        const tags = [];
+                        if (activity.keyword) {
+                          tags.push(`#${activity.keyword}`);
+                        }
+                        if (activity.activityType) {
+                          // activityType을 한글로 변환
+                          const typeMap = {
+                            'VOLUNTEER': '봉사활동',
+                            'CONTEST': '공모전',
+                            'SUPPORTERS': '서포터즈',
+                            'INTERNSHIP': '인턴십'
+                          };
+                          tags.push(`#${typeMap[activity.activityType] || activity.activityType}`); 
+                        }
+
+                        return (
+                          <ActivityCard
+                            key={activity.activityId}
+                            id={activity.activityId}
+                            title={activity.name}
+                            tags={tags} // 키워드와 액티비티 타입이 포함된 태그 배열
+                            image={activity.imageUrl}
+                            date={`${formatDate(activity.startDate)} ~ ${formatDate(activity.endDate)}`}
+                            bookmarked={activity.bookmarked}
+                            onToggle={() => handleActivityBookmark(activity.activityId)}
+                            isClosed={new Date() > new Date(activity.endDate)} // 마감 여부 확인
+                            siteUrl={activity.siteUrl || 'https://naver.com'}
+                          />
+                        );
+                      })}
                     </CardGrid>
                   </Section>
                 )}

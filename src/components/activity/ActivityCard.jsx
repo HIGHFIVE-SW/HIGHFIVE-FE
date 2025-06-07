@@ -33,9 +33,10 @@ export default function ActivityCard({
           <BookmarkIcon
             src={bookmarked ? BookmarkFilledButton : BookmarkButton}
             alt="북마크"
-            onClick={e => {
+            onClick={(e) => {
               e.preventDefault();
-              onToggle();
+              e.stopPropagation();
+              if (onToggle) onToggle();
             }}
           />
         </ImageWrapper>

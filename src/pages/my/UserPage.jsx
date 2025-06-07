@@ -267,7 +267,7 @@ const CardTitle = styled.h4`
 `;
 
 const LevelImage = styled.img`
-  width: 60px;
+  width: 67px;
   height: 60px;
   margin-bottom: 8px;
 `;
