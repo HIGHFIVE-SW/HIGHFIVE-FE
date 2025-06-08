@@ -371,7 +371,7 @@ export default function BoardDetailPage() {
                 <DropdownMenu>
                   <DropdownItem onClick={() => {
                     setShowPostMenu(false);
-                    navigate(`/board/${isReview ? 'review' : 'edit'}/${id}`);
+                    navigate(`/board/${isReview ? 'review/edit' : 'edit'}/${id}`);
                   }}>
                     수정
                   </DropdownItem>

@@ -7,7 +7,6 @@ import card1 from '../../assets/images/main/Card1Button.png';
 import card2 from '../../assets/images/main/Card2Button.png';
 import card3 from '../../assets/images/main/Card3Button.png';
 import daily from '../../assets/images/main/DailyButton.png';
-import activityImage from '../../assets/images/issue/ic_IssueCardSample.png';
 import { askChatbot, resetChatbot, askChatbotHistoryRecommendation, resetChatbotHistoryRecommendation, askChatbotKeywordRecommendation, resetChatbotKeywordRecommendation, askChatbotOthers, resetChatbotOthers } from '../../api/ChatBotApi';
 
 // 링크를 감지하고 클릭 가능하게 만드는 컴포넌트
@@ -124,10 +123,10 @@ export default function Chatbot() {
     setSelectedApiMode(option);
     
     const modeMessages = {
-      '글로벌 이슈': '웹 검색 기반 글로벌 이슈 추천 모드가 선택되었습니다. 궁금한 이슈나 뉴스를 물어보세요!',
-      '관심사 기반': '관심사 기반 활동 추천 모드가 선택되었습니다. 어떤 활동을 찾고 계신가요?',
-      '분야 기반': '분야 기반 활동 추천 모드가 선택되었습니다. 관심 분야를 알려주세요!',
-      '일상 대화': '일상 대화 모드가 선택되었습니다. 편하게 대화해보세요!',
+      '글로벌 이슈': '웹 검색 기반 글로벌 이슈 추천 모드가 선택되었습니다. \n궁금한 이슈나 뉴스를 물어보세요!',
+      '관심사 기반': '관심사 기반 활동 추천 모드가 선택되었습니다. \n어떤 활동을 찾고 계신가요?',
+      '분야 기반': '분야 기반 활동 추천 모드가 선택되었습니다. \n관심 분야를 알려주세요!',
+      '일상 대화': '일상 대화 모드가 선택되었습니다. \n편하게 대화해보세요!',
     };
     
     // 모드 선택 메시지 추가
@@ -165,7 +164,7 @@ export default function Chatbot() {
       setChatMessages((prev) => [
         ...prev,
         { type: 'user', text: trimmed },
-        { type: 'bot', text: '먼저 위의 카드 중 하나를 선택해주세요! 선택하신 모드에 따라 적절한 답변을 드리겠습니다.' },
+        { type: 'bot', text: '먼저 위의 카드 중 하나를 선택해주세요! \n선택하신 모드에 따라 적절한 답변을 드리겠습니다.' },
       ]);
       setUserInput('');
       return;
@@ -212,7 +211,7 @@ export default function Chatbot() {
       console.error('챗봇 API 호출 실패:', error);
       setChatMessages((prev) => [
         ...prev,
-        { type: 'bot', text: '죄송합니다. 현재 서비스에 문제가 있어 응답할 수 없습니다. 잠시 후 다시 시도해주세요.' },
+        { type: 'bot', text: '죄송합니다. 현재 서비스에 문제가 있어 응답할 수 없습니다. \n잠시 후 다시 시도해주세요.' },
       ]);
     } finally {
       setIsSubmitting(false);
@@ -549,8 +548,8 @@ const CardItem = styled.div`
   }
 
   img {
-    width: 100px;
-    height: 100px;
+    width: 90px;
+    height: 90px;
     object-fit: contain;
     margin-bottom: 6px;
   }

@@ -13,6 +13,10 @@ import CustomDropdown from "../../components/common/CustomDropdown";
 import MonthPicker from "../../components/common/CustomMonthPicker";
 import ActivitySearchInput from "../../components/search/ActivitySearchInput";
 import ImageAlertModal from "../../components/board/ImageAlertModal";
+import PointAlertModal from "../../components/board/PointAlertModal";
+import NotPointAlertModal from "../../components/board/NotPointAlertModal";
+import AwardNotVerifiedModal from "../../components/board/NotAwardModal"; // 실제 export 이름은 NotPointAlertModal
+import AwardAlertModal from "../../components/board/NotAllAlertModal"; // 실제 export 이름은 AwardAlertModal
 import { 
   useCreatePost, 
   useCreateActivityReview, 
@@ -41,11 +45,16 @@ export default function PostWritePage() {
   const [isUploadingAward, setIsUploadingAward] = useState(false);
   const [errors, setErrors] = useState({});
   const [showImageAlert, setShowImageAlert] = useState(false);
+  const [showPointAlert, setShowPointAlert] = useState(false);
+  const [showNotPointAlert, setShowNotPointAlert] = useState(false);
+  const [showNotAwardAlert, setShowNotAwardAlert] = useState(false);
+  const [showNotAllAlert, setShowNotAllAlert] = useState(false);
   const [showPostMenu, setShowPostMenu] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCategoryAuto, setIsCategoryAuto] = useState(false);
   const [isTypeAuto, setIsTypeAuto] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState(null);
+  const [createdReviewId, setCreatedReviewId] = useState(null); // 생성된 리뷰 ID 저장
   
   // 중복 제출 방지를 위한 ref
   const submitLockRef = useRef(false);
@@ -55,6 +64,51 @@ export default function PostWritePage() {
   const createPostMutation = useCreatePost();
   const createActivityReviewMutation = useCreateActivityReview();
   const createNewActivityReviewMutation = useCreateNewActivityReview();
+
+  // 모달 상태 초기화 함수
+  const resetModalStates = () => {
+    setShowImageAlert(false);
+    setShowPointAlert(false);
+    setShowNotPointAlert(false);
+    setShowNotAwardAlert(false);
+    setShowNotAllAlert(false);
+  };
+
+  // 서버 응답에 따른 모달 표시 함수
+  const handleReviewResponse = (result) => {
+    console.log('서버 응답:', result);
+    
+    // 생성된 리뷰 ID 저장 (수정 페이지 이동을 위해)
+    if (result?.id) {
+      setCreatedReviewId(result.id);
+    }
+    
+    // 응답에서 OCR 결과와 수상기록 검증 상태 확인 (실제 서버 응답 필드명 사용)
+    const ocrResult = result?.ocrResult; // 이미지 검증 결과
+    const awardResult = result?.awardOcrResult; // 수상기록 검증 결과
+    
+    console.log('검증 결과:', { ocrResult, awardResult });
+    console.log('전체 서버 응답:', result);
+    
+    // 검증 로직
+    if (awardResult === false && ocrResult === false) {
+      // 수상기록 false & ocrResult false → 모든 자료 검증 실패
+      setShowNotAllAlert(true);
+    } else if (awardResult === false) {
+      // 수상기록이 false → 수상기록 검증 실패
+      setShowNotAwardAlert(true);
+    } else if (ocrResult === false) {
+      // ocrResult가 false → 이미지 검증 실패
+      setShowNotPointAlert(true);
+    } else if ((awardResult === null && ocrResult === true) || (awardResult === true && ocrResult === true)) {
+      // 수상기록 null & ocrResult true → 검증 성공
+      // 수상기록 true & ocrResult true → 검증 성공
+      setShowPointAlert(true);
+    } else {
+      // 기타 경우 기본 성공 처리
+      setShowPointAlert(true);
+    }
+  };
 
   const editor = useEditor({
     extensions: [
@@ -281,6 +335,12 @@ export default function PostWritePage() {
           });
           
           console.log('기존 활동 리뷰 생성 완료:', result);
+          
+          // 성공 즉시 락 해제
+          submitLockRef.current = false;
+          
+          // 서버 응답에 따른 모달 표시
+          handleReviewResponse(result);
         } else {
           // 새 활동 리뷰 생성
           const mappedKeyword = CATEGORY_MAP[category];
@@ -343,13 +403,13 @@ export default function PostWritePage() {
           console.log('새 활동 리뷰 API 호출 시작');
           const result = await createNewActivityReviewMutation.mutateAsync(newActivityReviewData);
           console.log('새 활동 리뷰 생성 완료:', result);
+          
+          // 성공 즉시 락 해제
+          submitLockRef.current = false;
+          
+          // 서버 응답에 따른 모달 표시
+          handleReviewResponse(result);
         }
-        
-        // 성공 즉시 락 해제 및 페이지 이동
-        submitLockRef.current = false;
-        alert("후기 게시물이 등록되었습니다!");
-        // 즉시 페이지 이동하여 추가 클릭 방지
-        navigate('/board/review', { replace: true });
       } else {
         // 자유 게시판 처리
         const postData = {
@@ -397,10 +457,48 @@ export default function PostWritePage() {
     }
   };
 
+  // 다시 제출하기 핸들러 - 수정 페이지로 이동
+  const handleResubmit = () => {
+    resetModalStates();
+    
+    if (createdReviewId) {
+      // 생성된 리뷰의 수정 페이지로 이동
+      navigate(`/board/review/edit/${createdReviewId}`, { replace: true });
+    } else {
+      // 리뷰 ID가 없는 경우 현재 페이지에서 다시 작성
+      console.warn('생성된 리뷰 ID가 없습니다.');
+    }
+  };
+
+  // 모달 확인 버튼 핸들러 (성공 시 페이지 이동)
+  const handleModalConfirm = () => {
+    resetModalStates();
+    navigate('/board/review', { replace: true });
+  };
+
   return (
     <>
       <BoardNav />
       {showImageAlert && <ImageAlertModal onClose={() => setShowImageAlert(false)} />}
+      {showPointAlert && <PointAlertModal onClose={handleModalConfirm} />}
+      {showNotPointAlert && (
+        <NotPointAlertModal 
+          onClose={handleModalConfirm} 
+          onResubmit={handleResubmit} 
+        />
+      )}
+      {showNotAwardAlert && (
+        <AwardNotVerifiedModal 
+          onClose={handleModalConfirm} 
+          onResubmit={handleResubmit} 
+        />
+      )}
+      {showNotAllAlert && (
+        <AwardAlertModal 
+          onClose={handleModalConfirm} 
+          onResubmit={handleResubmit} 
+        />
+      )}
 
       <Container>
         <Header>

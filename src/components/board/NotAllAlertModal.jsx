@@ -8,7 +8,7 @@ export default function AwardAlertModal({ onClose, onResubmit }) {
       <AlertBox>
         <IconImage src={warningIcon} alt="경고 아이콘" />
         <AlertMessage>
-          아쉽게도 제출하신 수상 기록이 검증되지 않아 <br />
+          아쉽게도 제출하신 수상,활동 기록이 검증되지 않아 <br />
           포인트 지급이 완료되지 않았습니다.
         </AlertMessage>
         <ButtonGroup>

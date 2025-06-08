@@ -65,6 +65,9 @@ export default function OnboardingPage() {
         localStorage.setItem('token', token);
         console.log('토큰 저장 완료:', token);
 
+        // URL에서 토큰 제거 (보안을 위해)
+        window.history.replaceState({}, document.title, window.location.pathname);
+
         // 프로필 조회
         const { data } = await axiosInstance.get('/users/profile');
         const { result } = data;
