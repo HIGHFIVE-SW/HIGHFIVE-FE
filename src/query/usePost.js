@@ -4,7 +4,7 @@ import { getPosts, createPost,
     deletePost, togglePostLike, getPostsByLikes,
     createActivityReview, createNewActivityReview,
     getReview, toggleReviewLike, getUserReviews, getUserPosts,
-    getMyReviews, getMyPosts, getMyKeywordStats, getMyActivityTypeStats, getUserKeywordStats, getUserActivityTypeStats, searchReviews, searchPosts } from '../api/PostApi';
+    getMyReviews, getMyPosts, getMyKeywordStats, getMyActivityTypeStats, getMyMonthlyStats, getUserKeywordStats, getUserActivityTypeStats, getUserMonthlyStats, searchReviews, searchPosts } from '../api/PostApi';
 
 // 자유 게시판 게시물 목록 조회
 export const usePosts = (page = 0, size = 10) => {
@@ -262,6 +262,16 @@ export const useMyActivityTypeStats = () => {
   });
 };
 
+// 월별 내 활동 통계 조회
+export const useMyMonthlyStats = () => {
+  return useQuery({
+    queryKey: ['myMonthlyStats'],
+    queryFn: getMyMonthlyStats,
+    staleTime: 10 * 60 * 1000, // 10분
+    cacheTime: 30 * 60 * 1000, // 30분
+  });
+};
+
 // 특정 사용자의 키워드별 활동 통계 조회
 export const useUserKeywordStats = (userId) => {
   return useQuery({
@@ -278,6 +288,17 @@ export const useUserActivityTypeStats = (userId) => {
   return useQuery({
     queryKey: ['userActivityTypeStats', userId],
     queryFn: () => getUserActivityTypeStats(userId),
+    enabled: !!userId, // userId가 있을 때만 쿼리 실행
+    staleTime: 10 * 60 * 1000, // 10분
+    cacheTime: 30 * 60 * 1000, // 30분
+  });
+};
+
+// 특정 사용자의 월별 활동 통계 조회
+export const useUserMonthlyStats = (userId) => {
+  return useQuery({
+    queryKey: ['userMonthlyStats', userId],
+    queryFn: () => getUserMonthlyStats(userId),
     enabled: !!userId, // userId가 있을 때만 쿼리 실행
     staleTime: 10 * 60 * 1000, // 10분
     cacheTime: 30 * 60 * 1000, // 30분

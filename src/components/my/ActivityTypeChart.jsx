@@ -42,6 +42,8 @@ export default function ActivityTypeSwitcherChart({ userId }) {
   
   // 분야별 데이터 처리
   const dataByField = useMemo(() => {
+    console.log('키워드 통계 데이터:', keywordStats);
+    
     if (!keywordStats || keywordStats.length === 0) {
       return [{ name: '전체', value: 0 }];
     }
@@ -63,6 +65,8 @@ export default function ActivityTypeSwitcherChart({ userId }) {
 
   // 유형별 데이터 처리
   const dataByType = useMemo(() => {
+    console.log('활동 유형 통계 데이터:', activityTypeStats);
+    
     if (!activityTypeStats || activityTypeStats.length === 0) {
       return [{ name: '전체', value: 0 }];
     }

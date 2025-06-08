@@ -8,66 +8,216 @@ import card2 from '../../assets/images/main/Card2Button.png';
 import card3 from '../../assets/images/main/Card3Button.png';
 import daily from '../../assets/images/main/DailyButton.png';
 import activityImage from '../../assets/images/issue/ic_IssueCardSample.png';
+import { askChatbot, resetChatbot, askChatbotHistoryRecommendation, resetChatbotHistoryRecommendation, askChatbotKeywordRecommendation, resetChatbotKeywordRecommendation, askChatbotOthers, resetChatbotOthers } from '../../api/ChatBotApi';
+
+// 링크를 감지하고 클릭 가능하게 만드는 컴포넌트
+const LinkifiedText = ({ text }) => {
+  if (typeof text !== 'string') {
+    return text;
+  }
+
+  // ** 제거 (Source 옆의 ** 등)
+  let processedText = text.replace(/\*\*/g, '');
+
+  // 마크다운 링크 형식 [텍스트](URL) 처리
+  const markdownLinkRegex = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
+  processedText = processedText.replace(markdownLinkRegex, (match, linkText, url) => {
+    return `__MARKDOWN_LINK__${linkText}__SEPARATOR__${url}__END_LINK__`;
+  });
+
+  // 일반 URL 패턴
+  const urlRegex = /(https?:\/\/[^\s<>"\[\]]+)/g;
+  
+  // 먼저 마크다운 링크를 분리
+  const parts = processedText.split(/(__MARKDOWN_LINK__.*?__END_LINK__)/);
+  
+  return parts.map((part, index) => {
+    // 마크다운 링크 처리
+    if (part.startsWith('__MARKDOWN_LINK__')) {
+      const [, linkText, url] = part.match(/__MARKDOWN_LINK__(.*?)__SEPARATOR__(.*?)__END_LINK__/);
+      return (
+        <ChatLink 
+          key={index} 
+          href={url} 
+          target="_blank" 
+          rel="noopener noreferrer"
+        >
+          {linkText}
+        </ChatLink>
+      );
+    }
+    
+    // Source 굵게 처리 (간단한 방법)
+    const sourceRegex = /(Source\s*:?|출처\s*:?)/gi;
+    if (sourceRegex.test(part)) {
+      const sourceParts = part.split(/(Source\s*:?|출처\s*:?)/gi);
+      return sourceParts.map((sourcePart, sourceIndex) => {
+        if (/(Source\s*:?|출처\s*:?)/gi.test(sourcePart)) {
+          return (
+            <BoldText key={`${index}-source-${sourceIndex}`}>
+              {sourcePart}
+            </BoldText>
+          );
+        }
+        
+        // 일반 URL 처리
+        const urlParts = sourcePart.split(urlRegex);
+        return urlParts.map((urlPart, urlIndex) => {
+          if (urlRegex.test(urlPart)) {
+            return (
+              <ChatLink 
+                key={`${index}-${sourceIndex}-${urlIndex}`} 
+                href={urlPart} 
+                target="_blank" 
+                rel="noopener noreferrer"
+              >
+                {urlPart}
+              </ChatLink>
+            );
+          }
+          return urlPart;
+        });
+      });
+    }
+    
+    // 일반 URL 처리
+    const urlParts = part.split(urlRegex);
+    return urlParts.map((urlPart, urlIndex) => {
+      if (urlRegex.test(urlPart)) {
+        return (
+          <ChatLink 
+            key={`${index}-${urlIndex}`} 
+            href={urlPart} 
+            target="_blank" 
+            rel="noopener noreferrer"
+          >
+            {urlPart}
+          </ChatLink>
+        );
+      }
+      return urlPart;
+    });
+  });
+};
 
 export default function Chatbot() {
   const [showChatbot, setShowChatbot] = useState(false);
   const [chatMessages, setChatMessages] = useState([]);
   const [userInput, setUserInput] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [selectedApiMode, setSelectedApiMode] = useState(null); // 선택된 API 모드
   const messageEndRef = useRef(null);
 
-  const handleCardClick = (option) => {
-    const newBotMessage = {
-      '글로벌 이슈': '요즘 뜨는 글로벌 이슈는 “관세 전쟁”, “경제 불확실성” 등이 있습니다.',
-      '관심사 기반': '당신이 좋아할 만한 활동은 공모전, 서포터즈 등이 있습니다.',
-      '분야 기반': '환경, 기술, 사회 분야에 맞춘 활동이 있어요.',
-      '일상 대화': '안녕하세요! 좋은 하루 보내고 계신가요?',
-    }[option];
-
-    setChatMessages((prev) => [
-      ...prev,
-      { type: 'user', text: `${option} 추천해줘` },
-      { type: 'bot', text: newBotMessage },
-    ]);
+  // 사용자 ID 가져오기 (localStorage에서 또는 테스트용 UUID 사용)
+  const getUserId = () => {
+    const storedUserId = localStorage.getItem('userId');
+    if (storedUserId) {
+      return storedUserId;
+    }
+    // 테스트용 UUID 반환
+    return '418ac62d-1fb8-4957-adb9-4b1779ef2504';
   };
 
-  const handleUserSubmit = () => {
-    if (isSubmitting) return;
+  const handleCardClick = async (option) => {
+    // API 모드 선택
+    setSelectedApiMode(option);
+    
+    const modeMessages = {
+      '글로벌 이슈': '웹 검색 기반 글로벌 이슈 추천 모드가 선택되었습니다. 궁금한 이슈나 뉴스를 물어보세요!',
+      '관심사 기반': '관심사 기반 활동 추천 모드가 선택되었습니다. 어떤 활동을 찾고 계신가요?',
+      '분야 기반': '분야 기반 활동 추천 모드가 선택되었습니다. 관심 분야를 알려주세요!',
+      '일상 대화': '일상 대화 모드가 선택되었습니다. 편하게 대화해보세요!',
+    };
+    
+    // 모드 선택 메시지 추가
+    setChatMessages((prev) => [
+      ...prev,
+      { type: 'bot', text: modeMessages[option] },
+    ]);
+
+    // 선택된 모드에 따라 해당 챗봇 초기화
+    try {
+      if (option === '글로벌 이슈') {
+        await resetChatbot(getUserId());
+      } else if (option === '관심사 기반') {
+        await resetChatbotHistoryRecommendation(getUserId());
+      } else if (option === '분야 기반') {
+        await resetChatbotKeywordRecommendation(getUserId());
+      } else if (option === '일상 대화') {
+        await resetChatbotOthers(getUserId());
+      } else {
+        // 기본값은 웹 검색 챗봇으로 초기화
+        await resetChatbot(getUserId());
+      }
+    } catch (error) {
+      console.error('챗봇 모드 초기화 실패:', error);
+    }
+  };
+
+  const handleUserSubmit = async () => {
+    if (isSubmitting || isLoading) return;
     const trimmed = userInput.trim();
     if (!trimmed) return;
 
-    setIsSubmitting(true);
-
-    let botResponse;
-
-    if (trimmed.includes('나에게 맞는 활동을 추천해줘')) {
-      botResponse = (
-        <div>
-          <p>이런 활동은 어떠세요?<br />관심사에 맞는 활동들을 아래에서 확인해보세요!</p>
-          <ActivityBlock>
-            <h4>1. 청년 마음돌봄 서포터즈 모집</h4>
-            <p><strong>• 활동 내용 :</strong> 국민건강보험공단에서 정신건강에 관심 많은 대학생 모집</p>
-            <img src={activityImage} alt="서포터즈" />
-          </ActivityBlock>
-          <ActivityBlock>
-            <h4>2. HFN 환자 지원 기부 캠페인</h4>
-            <p><strong>• 활동 내용 :</strong> 환자들에게 필요한 지원을 위한 기부 활동</p>
-            <img src={activityImage} alt="기부 캠페인" />
-          </ActivityBlock>
-        </div>
-      );
-    } else {
-      botResponse = '추천활동 4가지를 선택해주세요';
+    // API 모드가 선택되지 않은 경우 선택 요청
+    if (!selectedApiMode) {
+      setChatMessages((prev) => [
+        ...prev,
+        { type: 'user', text: trimmed },
+        { type: 'bot', text: '먼저 위의 카드 중 하나를 선택해주세요! 선택하신 모드에 따라 적절한 답변을 드리겠습니다.' },
+      ]);
+      setUserInput('');
+      return;
     }
 
+    setIsSubmitting(true);
+    setIsLoading(true);
+
+    // 사용자 메시지 추가
     setChatMessages((prev) => [
       ...prev,
       { type: 'user', text: trimmed },
-      { type: 'bot', text: botResponse },
     ]);
 
     setUserInput('');
-    setTimeout(() => setIsSubmitting(false), 300);
+
+    try {
+      let botResponse;
+      const userId = getUserId();
+      console.log('사용자 ID:', userId, '모드:', selectedApiMode);
+      
+      if (selectedApiMode === '글로벌 이슈') {
+        // 웹 검색 기반 질문 응답 API 사용
+        botResponse = await askChatbot(userId, trimmed);
+      } else if (selectedApiMode === '관심사 기반') {
+        // 관심사 기반 활동 추천 API 사용
+        botResponse = await askChatbotHistoryRecommendation(userId, trimmed);
+      } else if (selectedApiMode === '분야 기반') {
+        // 분야 기반(키워드) 활동 추천 API 사용
+        botResponse = await askChatbotKeywordRecommendation(userId, trimmed);
+      } else if (selectedApiMode === '일상 대화') {
+        // 일상 대화(기타 질문) API 사용
+        botResponse = await askChatbotOthers(userId, trimmed);
+      } else {
+        // 기본값은 웹 검색 API 사용
+        botResponse = await askChatbot(userId, trimmed);
+      }
+      
+      setChatMessages((prev) => [
+        ...prev,
+        { type: 'bot', text: botResponse },
+      ]);
+    } catch (error) {
+      console.error('챗봇 API 호출 실패:', error);
+      setChatMessages((prev) => [
+        ...prev,
+        { type: 'bot', text: '죄송합니다. 현재 서비스에 문제가 있어 응답할 수 없습니다. 잠시 후 다시 시도해주세요.' },
+      ]);
+    } finally {
+      setIsSubmitting(false);
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -76,9 +226,36 @@ export default function Chatbot() {
     }
   }, [chatMessages]);
 
+  // 챗봇 열림/닫힘에 따라 배경 스크롤 제어
+  useEffect(() => {
+    if (showChatbot) {
+      // 챗봇이 열릴 때 배경 스크롤 막기
+      document.body.style.overflow = 'hidden';
+    } else {
+      // 챗봇이 닫힐 때 배경 스크롤 복원
+      document.body.style.overflow = 'unset';
+    }
+
+    // 컴포넌트 언마운트 시 스크롤 복원
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [showChatbot]);
+
   return (
     <>
-      <ChatbotButton onClick={() => setShowChatbot((prev) => !prev)}>
+      <ChatbotButton onClick={() => {
+        setShowChatbot((prev) => {
+          if (!prev) {
+            // 챗봇을 열 때 대화 및 모드 초기화
+            setChatMessages([]);
+            setSelectedApiMode(null);
+            // 웹 검색 기반 챗봇으로 초기화 (기본값)
+            resetChatbot(getUserId()).catch(console.error);
+          }
+          return !prev;
+        });
+      }}>
         <img
           src={showChatbot ? closeIcon : chatbotIcon}
           alt="챗봇 버튼"
@@ -87,7 +264,9 @@ export default function Chatbot() {
       </ChatbotButton>
 
       {showChatbot && (
-        <ChatbotPanel>
+        <>
+          <ChatbotOverlay onClick={() => setShowChatbot(false)} />
+          <ChatbotPanel>
           <ChatHeader>
             <img src={chatbotIcon} alt="챗봇" />
             <h3>챗봇 Trendy</h3>
@@ -100,53 +279,95 @@ export default function Chatbot() {
 
             <ScrollCardWrapper>
               <ScrollCardRow>
-                <CardItem onClick={() => handleCardClick('글로벌 이슈')}>
+                <CardItem 
+                  onClick={() => handleCardClick('글로벌 이슈')}
+                  selected={selectedApiMode === '글로벌 이슈'}
+                >
                   <img src={card1} alt="글로벌 이슈 추천" />
-                  <CardTitle>요즘 뜨는 글로벌 이슈 추천</CardTitle>
-                  <CardDesc>“태풍관련 뉴스 알려줘”</CardDesc>
+                  <CardTitle>웹 검색 기반 글로벌 이슈</CardTitle>
+                  <CardDesc>"태풍관련 뉴스 알려줘"</CardDesc>
                 </CardItem>
-                <CardItem onClick={() => handleCardClick('관심사 기반')}>
+                <CardItem 
+                  onClick={() => handleCardClick('관심사 기반')}
+                  selected={selectedApiMode === '관심사 기반'}
+                >
                   <img src={card2} alt="관심사 활동 추천" />
                   <CardTitle>관심사 기반 활동 추천</CardTitle>
-                  <CardDesc>“내가 좋아할 만한 활동 알려줘”</CardDesc>
+                  <CardDesc>"내가 좋아할 만한 활동 알려줘"</CardDesc>
                 </CardItem>
-                <CardItem onClick={() => handleCardClick('분야 기반')}>
+                <CardItem 
+                  onClick={() => handleCardClick('분야 기반')}
+                  selected={selectedApiMode === '분야 기반'}
+                >
                   <img src={card3} alt="분야 활동 추천" />
                   <CardTitle>분야 기반 활동 추천</CardTitle>
-                  <CardDesc>“환경 관련 활동 뭐 있을까?”</CardDesc>
+                  <CardDesc>"환경 관련 활동 뭐 있을까?"</CardDesc>
                 </CardItem>
-                <CardItem onClick={() => handleCardClick('일상 대화')}>
+                <CardItem 
+                  onClick={() => handleCardClick('일상 대화')}
+                  selected={selectedApiMode === '일상 대화'}
+                >
                   <img src={daily} alt="일상 대화" />
                   <CardTitle>일상 대화</CardTitle>
-                  <CardDesc>“안녕! 좋은 아침이야”</CardDesc>
+                  <CardDesc>"안녕! 좋은 아침이야"</CardDesc>
                 </CardItem>
               </ScrollCardRow>
             </ScrollCardWrapper>
 
             {chatMessages.map((msg, i) => (
               <ChatBubble key={i} type={msg.type}>
-                {typeof msg.text === 'string' ? msg.text : msg.text}
+                <LinkifiedText text={msg.text} />
               </ChatBubble>
             ))}
+            
+            {isLoading && (
+              <ChatBubble type="bot">
+                {selectedApiMode === '관심사 기반' 
+                  ? '개인화된 활동을 추천하고 있습니다...'
+                  : selectedApiMode === '분야 기반'
+                  ? '해당 분야의 활동을 찾고 있습니다...'
+                  : '답변을 생성하고 있습니다...'
+                }
+              </ChatBubble>
+            )}
+            
             <div ref={messageEndRef} />
           </ChatContentArea>
 
           <ChatInputWrapper>
             <ChatInput
-              placeholder="텍스트를 입력하세요."
+              placeholder={
+                isLoading 
+                  ? "답변을 기다리는 중..." 
+                  : selectedApiMode 
+                    ? `${selectedApiMode} 관련 질문을 입력하세요.`
+                    : "위의 카드 중 하나를 선택 후 질문해주세요."
+              }
               value={userInput}
               onChange={(e) => setUserInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleUserSubmit()}
+              onKeyDown={(e) => e.key === 'Enter' && !isLoading && handleUserSubmit()}
+              disabled={isLoading}
             />
-            <SendButton onClick={handleUserSubmit}>
+            <SendButton onClick={handleUserSubmit} disabled={isLoading}>
               <img src={sendIcon} alt="전송" />
             </SendButton>
           </ChatInputWrapper>
         </ChatbotPanel>
+        </>
       )}
     </>
   );
 }
+
+const ChatbotOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.3);
+  z-index: 9999;
+`;
 
 const ChatbotButton = styled.button`
   position: fixed;
@@ -234,13 +455,17 @@ const ChatInput = styled.input`
   outline: none;
   font-size: 16px;
   padding: 6px;
+  background-color: ${({ disabled }) => (disabled ? '#f5f5f5' : 'white')};
+  color: ${({ disabled }) => (disabled ? '#999' : '#000')};
+  cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'text')};
 `;
 
 const SendButton = styled.button`
   background: none;
   border: none;
   padding: 4px;
-  cursor: pointer;
+  cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'pointer')};
+  opacity: ${({ disabled }) => (disabled ? 0.5 : 1)};
 
   img {
     width: 24px;
@@ -257,14 +482,17 @@ const ChatBubble = styled.div`
     font-size: 14px;
     font-weight: 500;
     color: #000;
-    display: inline-block;         /* 텍스트 크기에 맞는 블록 */
-    width: fit-content;            /* 내용에 맞춰 폭 조절 */
-    max-width: 80%;                /* 너무 길면 최대 80% 까지만 */
+    display: block;                
+    width: ${({ type }) => (type === 'bot' ? '100%' : 'fit-content')}; /* 봇은 전체, 사용자는 내용에 맞춤 */
+    max-width: 95%;                
+    box-sizing: border-box;        
     box-shadow: ${({ type }) =>
       type === 'user' ? '0px 4px 10px rgba(0, 0, 0, 0.1)' : 'none'};
     border: ${({ type }) => (type === 'user' ? '2px solid #D9EAFF' : 'none')};
-    word-break: keep-all;
-  white-space: pre-wrap;
+    word-break: break-word;        
+    white-space: pre-wrap;         
+    overflow-wrap: break-word;     
+    line-height: 1.4;             
 
   img {
     margin-top: 10px;
@@ -306,11 +534,19 @@ const ScrollCardRow = styled.div`
 const CardItem = styled.div`
   width: 150px;
   height: 160px;
-  background: #f5f5f5;
+  background: ${({ selected }) => (selected ? '#e6f3ff' : '#f5f5f5')};
+  border: ${({ selected }) => (selected ? '2px solid #235BA9' : '2px solid transparent')};
   border-radius: 12px;
   text-align: center;
   padding: 12px 8px;
   box-sizing: border-box;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+
+  &:hover {
+    background: ${({ selected }) => (selected ? '#d6ebff' : '#e8e8e8')};
+  }
 
   img {
     width: 100px;
@@ -353,4 +589,35 @@ const ActivityBlock = styled.div`
     border-radius: 0;
     display: block;
   }
+`;
+
+const SelectedBadge = styled.div`
+  background-color: #235BA9;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  margin-top: 4px;
+`;
+
+const ChatLink = styled.a`
+  color: #235BA9;
+  text-decoration: underline;
+  cursor: pointer;
+  word-break: break-all;
+  
+  &:hover {
+    color: #1a4480;
+    text-decoration: none;
+  }
+  
+  &:visited {
+    color: #6b46c1;
+  }
+`;
+
+const BoldText = styled.strong`
+  font-weight: 700;
+  color: #000;
+  font-size: inherit;
 `;

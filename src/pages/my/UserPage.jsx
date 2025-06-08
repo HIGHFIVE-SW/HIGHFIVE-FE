@@ -151,7 +151,7 @@ const UserPage = () => {
             <ContentSection>
               {activeTab === 'statistics' && (
                 <GraphSection>
-                  <ActivityTrendChart />
+                  <ActivityTrendChart userId={user.userId || user.id} />
                   <ActivityTypeChart userId={user.userId || user.id} />
                 </GraphSection>
               )}

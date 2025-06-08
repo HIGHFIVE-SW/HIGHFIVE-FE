@@ -827,6 +827,33 @@ export const getMyActivityTypeStats = async () => {
   }
 };
 
+// 월별 내 활동 통계 조회
+export const getMyMonthlyStats = async () => {
+  try {
+    console.log('월별 활동 통계 조회 요청');
+    
+    const response = await axiosInstance.get('/profile/reviews/mine/month/count');
+    
+    console.log('월별 활동 통계 조회 응답:', response.data);
+    
+    if (response.data.isSuccess) {
+      return response.data.result;
+    } else {
+      throw new Error(response.data.message || '월별 활동 통계 조회에 실패했습니다.');
+    }
+  } catch (error) {
+    console.error('월별 활동 통계 조회 API 호출 실패:', error);
+    
+    if (error.response) {
+      throw new Error(error.response.data.message || `서버 오류 (${error.response.status})`);
+    } else if (error.request) {
+      throw new Error('서버에 연결할 수 없습니다. 네트워크 연결을 확인해주세요.');
+    } else {
+      throw new Error('요청 처리 중 오류가 발생했습니다.');
+    }
+  }
+};
+
 // 특정 사용자의 키워드별 통계 조회
 export const getUserKeywordStats = async (userId) => {
   try {
@@ -870,6 +897,33 @@ export const getUserActivityTypeStats = async (userId) => {
     }
   } catch (error) {
     console.error('사용자 활동 종류별 통계 조회 API 호출 실패:', error);
+    
+    if (error.response) {
+      throw new Error(error.response.data.message || `서버 오류 (${error.response.status})`);
+    } else if (error.request) {
+      throw new Error('서버에 연결할 수 없습니다. 네트워크 연결을 확인해주세요.');
+    } else {
+      throw new Error('요청 처리 중 오류가 발생했습니다.');
+    }
+  }
+};
+
+// 특정 사용자의 월별 활동 통계 조회
+export const getUserMonthlyStats = async (userId) => {
+  try {
+    console.log('사용자 월별 활동 통계 조회 요청:', userId);
+    
+    const response = await axiosInstance.get(`/profile/reviews/${userId}/month/count`);
+    
+    console.log('사용자 월별 활동 통계 조회 응답:', response.data);
+    
+    if (response.data.isSuccess) {
+      return response.data.result;
+    } else {
+      throw new Error(response.data.message || '월별 활동 통계 조회에 실패했습니다.');
+    }
+  } catch (error) {
+    console.error('사용자 월별 활동 통계 조회 API 호출 실패:', error);
     
     if (error.response) {
       throw new Error(error.response.data.message || `서버 오류 (${error.response.status})`);
