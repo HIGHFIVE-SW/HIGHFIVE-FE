@@ -1,16 +1,20 @@
 import React from "react";
 import styled from "styled-components";
-import checkIcon from "../../assets/images/board/ic_check.png";
+import warningIcon from "../../assets/images/board/ic_warning.png";
 
-export default function PointAlertModal({ onClose }) {
+export default function NotPointAlertModal({ onClose, onResubmit }) {
   return (
     <AlertOverlay>
       <AlertBox>
-        <IconImage src={checkIcon} alt="확인 아이콘" />
+        <IconImage src={warningIcon} alt="경고 아이콘" />
         <AlertMessage>
-          제출해주신 자료는 정상적으로 확인되었습니다. <br /> 포인트와 랭킹은 6시간마다 반영됩니다.
+          아쉽게도 제출하신 수상기록이 검증되지 않아 <br />
+          포인트 지급이 완료되지 않았습니다.
         </AlertMessage>
-        <ConfirmButton onClick={onClose}>확인</ConfirmButton>
+        <ButtonGroup>
+          <GrayButton onClick={onClose}>확인</GrayButton>
+          <BlueButton onClick={onResubmit}>다시 제출하기</BlueButton>
+        </ButtonGroup>
       </AlertBox>
     </AlertOverlay>
   );
@@ -49,11 +53,27 @@ const AlertMessage = styled.p`
   line-height: 1.5;
 `;
 
-const ConfirmButton = styled.button`
+const ButtonGroup = styled.div`
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+`;
+
+const GrayButton = styled.button`
+  background-color: #c4c4c4;
+  color: white;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+`;
+
+const BlueButton = styled.button`
   background-color: #235ba9;
   color: white;
   border: none;
-  padding: 8px 25px;
+  padding: 8px 20px;
   border-radius: 8px;
   font-size: 14px;
   cursor: pointer;

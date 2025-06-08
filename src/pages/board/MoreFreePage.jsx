@@ -7,38 +7,37 @@ import MainNav from '../../layout/board/BoardNav';
 import Footer from '../../layout/Footer';
 import FreePostList from '../../components/board/freeboard/FreePostList';
 import Pagination from '../../components/common/Pagination';
-import usePagination from '../../hooks/usePagination';
-
-const dummyFreePosts = Array.from({ length: 50 }, (_, idx) => ({
-  post_id: idx + 1,
-  post_title: `공모전 공모 대회의 공모전 나갈 사람? ${idx + 1}`,
-  authorName: idx % 3 === 0 ? '이서현' : idx % 3 === 1 ? '김민수' : '박영희',
-  created_at: '2025-04-14T10:00:00',
-  post_like_count: Math.floor(Math.random() * 50) + 1
-}));
+import { useSearchPosts } from '../../query/usePost';
 
 export default function MoreFreePage() {
   useEffect(() => {
-        window.scrollTo({ top: 0, left: 0 });}, []);
+    window.scrollTo({ top: 0, left: 0 });
+  }, []);
+  
   const location = useLocation();
   const query = new URLSearchParams(location.search).get('query') || '';
+  const [currentPage, setCurrentPage] = useState(0);
 
-  const finalPosts = query
-    ? dummyFreePosts.filter(
-        (item) =>
-          item.post_title.toLowerCase().includes(query.toLowerCase()) ||
-          item.authorName.toLowerCase().includes(query.toLowerCase())
-      )
-    : dummyFreePosts;
+  // 검색 API 호출 (10개씩)
+  const { data: postsData, isLoading, isError } = useSearchPosts(query, currentPage);
 
-  const itemsPerPage = 10;
+  // 페이지 변경 핸들러
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, left: 0 });
+  };
 
-  const {
-    currentPage,
-    totalPages,
-    currentData: paginatedPosts,
-    goToPage,
-  } = usePagination(finalPosts, itemsPerPage);
+  // 자유게시판 데이터를 FreePostList 형식에 맞게 변환
+  const transformedPosts = postsData?.content?.map(post => ({
+    post_id: post.id,
+    post_title: post.title,
+    authorName: post.nickname,
+    created_at: post.createdAt,
+    post_like_count: post.likeCount || 0
+  })) || [];
+
+  const totalPages = postsData?.totalPages || 0;
+  const totalElements = postsData?.totalElements || 0;
 
   return (
     <Wrapper>
@@ -52,23 +51,30 @@ export default function MoreFreePage() {
           )}
           <Subtitle>자유 게시판</Subtitle>
           
-          {finalPosts.length === 0 ? (
-            <NoResultsMessage>
-              '{query}'에 대한 검색 결과가 없습니다.
-            </NoResultsMessage>
+          {isLoading ? (
+            <LoadingMessage>검색 중...</LoadingMessage>
+          ) : isError ? (
+            <ErrorMessage>검색 중 오류가 발생했습니다.</ErrorMessage>
           ) : (
             <>
-              <FreePostList 
-                posts={finalPosts.length <= itemsPerPage ? finalPosts : paginatedPosts}
-                currentPage={currentPage}
-                itemsPerPage={itemsPerPage}
-              />
-              {finalPosts.length > itemsPerPage && (
+              {transformedPosts.length === 0 ? (
+                <NoResultsMessage>
+                  '{query}'에 대한 검색 결과가 없습니다.
+                </NoResultsMessage>
+              ) : (
+                <FreePostList 
+                  posts={transformedPosts}
+                  currentPage={currentPage + 1} // UI에서는 1부터 시작
+                  itemsPerPage={10}
+                />
+              )}
+              
+              {totalPages > 1 && (
                 <PaginationWrapper>
                   <Pagination
-                    currentPage={currentPage}
+                    currentPage={currentPage + 1} // UI에서는 1부터 시작
                     totalPages={totalPages}
-                    goToPage={goToPage}
+                    goToPage={(page) => handlePageChange(page - 1)} // API는 0부터 시작
                   />
                 </PaginationWrapper>
               )}
@@ -124,4 +130,18 @@ const PaginationWrapper = styled.div`
   display: flex;
   justify-content: center;
   margin-top: 40px;
+`;
+
+const LoadingMessage = styled.div`
+  text-align: center;
+  padding: 40px;
+  color: #666;
+  font-size: 16px;
+`;
+
+const ErrorMessage = styled.div`
+  text-align: center;
+  padding: 40px;
+  color: #e74c3c;
+  font-size: 16px;
 `;

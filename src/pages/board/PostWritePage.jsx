@@ -13,13 +13,17 @@ import CustomDropdown from "../../components/common/CustomDropdown";
 import MonthPicker from "../../components/common/CustomMonthPicker";
 import ActivitySearchInput from "../../components/search/ActivitySearchInput";
 import ImageAlertModal from "../../components/board/ImageAlertModal";
-import { useCreatePost, useCreateReview } from "../../query/usePost";
+import { 
+  useCreatePost, 
+  useCreateActivityReview, 
+  useCreateNewActivityReview 
+} from "../../query/usePost";
 import { 
   extractImageUrls, 
   CATEGORY_MAP, 
   ACTIVITY_TYPE_MAP, 
   ACTIVITY_PERIOD_MAP,
-  uploadSingleImage // 추가
+  uploadSingleImage
 } from "../../api/PostApi";
 import { useNavigate } from "react-router-dom";
 
@@ -33,19 +37,24 @@ export default function PostWritePage() {
   const [category, setCategory] = useState("");
   const [type, setType] = useState("");
   const [awardPreview, setAwardPreview] = useState(null);
-  const [awardImageUrl, setAwardImageUrl] = useState(''); // 추가
-  const [isUploadingAward, setIsUploadingAward] = useState(false); // 추가
+  const [awardImageUrl, setAwardImageUrl] = useState('');
+  const [isUploadingAward, setIsUploadingAward] = useState(false);
   const [errors, setErrors] = useState({});
   const [showImageAlert, setShowImageAlert] = useState(false);
   const [showPostMenu, setShowPostMenu] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCategoryAuto, setIsCategoryAuto] = useState(false);
   const [isTypeAuto, setIsTypeAuto] = useState(false);
+  const [selectedActivity, setSelectedActivity] = useState(null);
+  
+  // 중복 제출 방지를 위한 ref
+  const submitLockRef = useRef(false);
 
   const isReviewBoard = selectedBoard === "후기 게시판";
 
   const createPostMutation = useCreatePost();
-  const createReviewMutation = useCreateReview();
+  const createActivityReviewMutation = useCreateActivityReview();
+  const createNewActivityReviewMutation = useCreateNewActivityReview();
 
   const editor = useEditor({
     extensions: [
@@ -97,41 +106,31 @@ export default function PostWritePage() {
       .run();
   };
 
-const handleAwardImageChange = async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
+  const handleAwardImageChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
-  // 파일 타입 검증
-  if (!file.type.startsWith('image/')) {
-    alert('이미지 파일만 업로드 가능합니다.');
-    return;
-  }
+    if (!file.type.startsWith('image/')) {
+      alert('이미지 파일만 업로드 가능합니다.');
+      return;
+    }
 
-  try {
-    setIsUploadingAward(true);
-    
-    // 미리보기 설정
-    setAwardPreview(URL.createObjectURL(file));
-    
-    // S3에 업로드
-    const uploadedUrl = await uploadSingleImage(file);
-    setAwardImageUrl(uploadedUrl);
-    
-    console.log('수상 기록 이미지 업로드 완료:', uploadedUrl);
-    
-  } catch (error) {
-    console.error('수상 기록 이미지 업로드 실패:', error);
-    alert('이미지 업로드에 실패했습니다: ' + error.message);
-    
-    // 실패 시 미리보기 제거
-    setAwardPreview(null);
-    setAwardImageUrl('');
-  } finally {
-    setIsUploadingAward(false);
-  }
-};
+    try {
+      setIsUploadingAward(true);
+      setAwardPreview(URL.createObjectURL(file));
+      const uploadedUrl = await uploadSingleImage(file);
+      setAwardImageUrl(uploadedUrl);
+      console.log('수상 기록 이미지 업로드 완료:', uploadedUrl);
+    } catch (error) {
+      console.error('수상 기록 이미지 업로드 실패:', error);
+      alert('이미지 업로드에 실패했습니다: ' + error.message);
+      setAwardPreview(null);
+      setAwardImageUrl('');
+    } finally {
+      setIsUploadingAward(false);
+    }
+  };
 
-  // 수상 기록 이미지 제거 함수 추가
   const handleRemoveAwardImage = () => {
     setAwardPreview(null);
     setAwardImageUrl('');
@@ -140,23 +139,68 @@ const handleAwardImageChange = async (e) => {
     }
   };
 
+  const handleActivitySelect = (activity) => {
+    setSelectedActivity(activity);
+    
+    if (activity) {
+      setCategory(activity.keyword);
+      setType(activity.activityType);
+      setIsCategoryAuto(true);
+      setIsTypeAuto(true);
+    } else {
+      setSelectedActivity(null);
+      setIsCategoryAuto(false);
+      setIsTypeAuto(false);
+    }
+  };
+
   const validateForm = () => {
     const newErrors = {};
+    
     if (!selectedBoard) newErrors.selectedBoard = "게시판을 선택해주세요.";
+    
     if (isReviewBoard) {
       if (!activityName.trim()) newErrors.activityName = "대외활동 이름을 입력해주세요.";
       if (!category) newErrors.category = "분야 카테고리를 선택해주세요.";
       if (!type) newErrors.type = "유형 카테고리를 선택해주세요.";
       if (!activityPeriod) newErrors.activityPeriod = "활동 기간을 선택해주세요.";
-      if (!activityEndDate) newErrors.activityEndDate = "활동 종료일을 선택해주세요.";
+      
+      // 선택된 활동이 없는 경우에만 활동 종료일 필수
+      if (!selectedActivity && !activityEndDate) {
+        newErrors.activityEndDate = "활동 종료일을 선택해주세요.";
+      }
+      
+      // 매핑 검증 추가
+      if (category && !CATEGORY_MAP[category]) {
+        newErrors.category = "유효하지 않은 카테고리입니다.";
+      }
+      if (type && !ACTIVITY_TYPE_MAP[type]) {
+        newErrors.type = "유효하지 않은 활동 유형입니다.";
+      }
+      if (activityPeriod && !ACTIVITY_PERIOD_MAP[activityPeriod]) {
+        newErrors.activityPeriod = "유효하지 않은 활동 기간입니다.";
+      }
+      
+      // 활동 종료일 형식 검증
+      if (!selectedActivity && activityEndDate) {
+        const datePattern = /^\d{4}\.\d{1,2}$|^\d{4}-\d{2}-\d{2}$/;
+        if (!datePattern.test(activityEndDate)) {
+          newErrors.activityEndDate = "올바른 날짜 형식이 아닙니다. (예: 2025.06)";
+        }
+      }
     }
+    
     if (!title.trim()) newErrors.title = "제목을 입력해주세요.";
     if (!editor?.getText().trim()) newErrors.content = "본문을 입력해주세요.";
 
     setErrors(newErrors);
+    
+    // 디버깅용 로그
+    if (Object.keys(newErrors).length > 0) {
+      console.log('유효성 검사 실패:', newErrors);
+    }
 
-    const isOnlyContentError =
-      Object.keys(newErrors).length === 1 && newErrors.content;
+    const isOnlyContentError = Object.keys(newErrors).length === 1 && newErrors.content;
 
     if (isOnlyContentError && editorRef.current) {
       setTimeout(() => {
@@ -168,62 +212,188 @@ const handleAwardImageChange = async (e) => {
   };
 
   const handleSubmit = async () => {
+    // 1차 방어: submitLock ref로 중복 실행 방지
+    if (submitLockRef.current) {
+      console.log('이미 제출 중입니다. (submitLock)');
+      return;
+    }
+
+    // 2차 방어: isSubmitting 상태로 중복 실행 방지
+    if (isSubmitting) {
+      console.log('이미 제출 중입니다. (isSubmitting)');
+      return;
+    }
+
+    console.log('제출 시작 - isSubmitting:', isSubmitting);
+
+    // 즉시 락 설정
+    submitLockRef.current = true;
+
     if (isReviewBoard) {
       const hasEditorImage = editor?.getHTML().includes('<img');
       if (!hasEditorImage) {
+        submitLockRef.current = false; // 락 해제
         setShowImageAlert(true);
         return;
       }
     }
 
     if (!validateForm()) {
+      submitLockRef.current = false; // 락 해제
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
 
+    // 제출 상태를 즉시 true로 설정하여 중복 방지
     setIsSubmitting(true);
+    console.log('제출 상태 설정 완료 - isSubmitting:', true);
 
     try {
       const htmlContent = editor.getHTML();
       const imageUrls = extractImageUrls(htmlContent);
 
       if (isReviewBoard) {
-        // 후기 게시판 데이터 구성 (수상 기록 이미지 URL 추가)
-        const reviewData = {
-          title: title.trim(),
-          keyword: CATEGORY_MAP[category],
-          activityType: ACTIVITY_TYPE_MAP[type],
-          activityPeriod: ACTIVITY_PERIOD_MAP[activityPeriod],
-          activityEndDate: activityEndDate,
-          activityName: activityName.trim(),
-          content: htmlContent,
-          imageUrls: imageUrls,
-          awardImageUrl: awardImageUrl || null // 수상 기록 이미지 URL 추가
-        };
+        if (selectedActivity) {
+          // 기존 활동 리뷰 생성
+          const activityReviewData = {
+            title: title.trim(),
+            activityPeriod: ACTIVITY_PERIOD_MAP[activityPeriod],
+            content: htmlContent,
+            awardImageUrl: awardImageUrl || null,
+            imageUrls: imageUrls || []
+          };
 
-        console.log('후기 게시판 데이터:', reviewData);
-        await createReviewMutation.mutateAsync(reviewData);
+          console.log('기존 활동 리뷰 데이터:', activityReviewData);
+          console.log('선택된 활동 ID:', selectedActivity.id);
+          
+          // 3차 방어: mutation이 이미 진행 중이면 중단
+          if (createActivityReviewMutation.isPending) {
+            console.log('기존 활동 리뷰 mutation이 이미 진행 중입니다.');
+            submitLockRef.current = false;
+            setIsSubmitting(false);
+            return;
+          }
+          
+          console.log('기존 활동 리뷰 API 호출 시작');
+          const result = await createActivityReviewMutation.mutateAsync({
+            activityId: selectedActivity.id,
+            reviewData: activityReviewData
+          });
+          
+          console.log('기존 활동 리뷰 생성 완료:', result);
+        } else {
+          // 새 활동 리뷰 생성
+          const mappedKeyword = CATEGORY_MAP[category];
+          const mappedActivityType = ACTIVITY_TYPE_MAP[type];
+          const mappedActivityPeriod = ACTIVITY_PERIOD_MAP[activityPeriod];
+          
+          if (!mappedKeyword || !mappedActivityType || !mappedActivityPeriod) {
+            throw new Error('매핑되지 않은 카테고리나 유형이 있습니다.');
+          }
+          
+          // 개선된 날짜 형식 변환
+          const formatActivityEndDate = (dateString) => {
+            if (!dateString || dateString.trim() === '') {
+              return null;
+            }
+            
+            if (dateString.includes('.')) {
+              const parts = dateString.split('.');
+              if (parts.length === 2) {
+                const year = parts[0].trim();
+                const month = parts[1].trim().padStart(2, '0');
+                
+                if (year.length === 4 && month.length === 2 && 
+                    !isNaN(year) && !isNaN(month) && 
+                    parseInt(month) >= 1 && parseInt(month) <= 12) {
+                  return `${year}-${month}-01`;
+                }
+              }
+            }
+            
+            if (dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+              return dateString;
+            }
+            
+            return null;
+          };
+
+          const newActivityReviewData = {
+            title: title.trim(),
+            keyword: mappedKeyword,
+            activityType: mappedActivityType,
+            activityPeriod: mappedActivityPeriod,
+            activityEndDate: formatActivityEndDate(activityEndDate),
+            activityName: activityName.trim(),
+            content: htmlContent,
+            awardImageUrl: awardImageUrl || null,
+            imageUrls: imageUrls || []
+          };
+
+          console.log('새 활동 리뷰 데이터:', newActivityReviewData);
+          
+          // 3차 방어: mutation이 이미 진행 중이면 중단
+          if (createNewActivityReviewMutation.isPending) {
+            console.log('새 활동 리뷰 mutation이 이미 진행 중입니다.');
+            submitLockRef.current = false;
+            setIsSubmitting(false);
+            return;
+          }
+          
+          console.log('새 활동 리뷰 API 호출 시작');
+          const result = await createNewActivityReviewMutation.mutateAsync(newActivityReviewData);
+          console.log('새 활동 리뷰 생성 완료:', result);
+        }
         
+        // 성공 즉시 락 해제 및 페이지 이동
+        submitLockRef.current = false;
+        alert("후기 게시물이 등록되었습니다!");
+        // 즉시 페이지 이동하여 추가 클릭 방지
+        navigate('/board/review', { replace: true });
       } else {
-        // 자유 게시판 데이터 구성
+        // 자유 게시판 처리
         const postData = {
           title: title.trim(),
           content: htmlContent,
-          imageUrls: imageUrls
+          imageUrls: imageUrls || []
         };
 
         console.log('자유 게시판 데이터:', postData);
-        await createPostMutation.mutateAsync(postData);
+        
+        const result = await createPostMutation.mutateAsync(postData);
+        console.log('자유 게시판 게시물 생성 완료:', result);
+        
+        submitLockRef.current = false;
+        alert("게시물이 등록되었습니다!");
+        navigate('/board/free');
       }
-
-      alert("등록 완료!");
-      navigate('/board/free');
-      
+        
     } catch (error) {
       console.error('게시물 작성 실패:', error);
-      alert('게시물 작성에 실패했습니다: ' + error.message);
+      
+      let errorMessage = '게시물 작성에 실패했습니다.';
+      
+      if (error.response?.data) {
+        const serverError = error.response.data;
+        if (serverError.detail) {
+          errorMessage += `\n상세: ${serverError.detail}`;
+        }
+        if (serverError.title) {
+          errorMessage += `\n오류: ${serverError.title}`;
+        }
+      } else if (error.message) {
+        errorMessage += `\n${error.message}`;
+      }
+      
+      alert(errorMessage);
     } finally {
-      setIsSubmitting(false);
+      // 에러 발생 시에도 락 해제
+      submitLockRef.current = false;
+      // 상태 정리를 지연시켜 중복 클릭 방지
+      setTimeout(() => {
+        setIsSubmitting(false);
+        console.log('제출 상태 해제 완료');
+      }, 500);
     }
   };
 
@@ -254,9 +424,18 @@ const handleAwardImageChange = async (e) => {
           </TitleRow>
           <SubmitButton 
             onClick={handleSubmit}
-            disabled={isSubmitting}
+            disabled={
+              isSubmitting || 
+              createActivityReviewMutation.isPending || 
+              createNewActivityReviewMutation.isPending ||
+              createPostMutation.isPending
+            }
+            type="button"
           >
-            {isSubmitting ? '등록 중...' : '등록'}
+            {(isSubmitting || 
+              createActivityReviewMutation.isPending || 
+              createNewActivityReviewMutation.isPending ||
+              createPostMutation.isPending) ? '등록 중...' : '등록'}
           </SubmitButton>
         </Header>
 
@@ -286,21 +465,12 @@ const handleAwardImageChange = async (e) => {
                     onChange={(name) => {
                       setActivityName(name);
                       if (!name) {
+                        setSelectedActivity(null);
                         setIsCategoryAuto(false);
                         setIsTypeAuto(false);
                       }
                     }}
-                    onActivitySelect={(activity) => {
-                      if (activity) {
-                        setCategory(activity.keyword);
-                        setType(activity.activityType);
-                        setIsCategoryAuto(true);
-                        setIsTypeAuto(true);
-                      } else {
-                        setIsCategoryAuto(false);
-                        setIsTypeAuto(false);
-                      }
-                    }}
+                    onActivitySelect={handleActivitySelect}
                   />
                 </div>
                 <DirectInput
@@ -310,6 +480,7 @@ const handleAwardImageChange = async (e) => {
                 />
               </Row>
             </ActivityNameSection>
+            
             <Row>
               <div style={{ flex: 2, marginRight: 24 }}>
                 <SubTitle>분야 카테고리 선택 <span style={{ color: "red" }}>*</span></SubTitle>
@@ -327,10 +498,11 @@ const handleAwardImageChange = async (e) => {
                     </label>
                   ))}
                 </CheckboxGroup>
+                
                 <SubTitle>유형 카테고리 선택 <span style={{ color: "red" }}>*</span></SubTitle>
                 {errors.type && <ErrorText>{errors.type}</ErrorText>}
                 <CheckboxGroup>
-                  {"공모전 봉사 인턴십 서포터즈".split(" ").map((typeItem) => (
+                  {["공모전", "봉사활동", "인턴십", "서포터즈"].map((typeItem) => (
                     <label key={typeItem}>
                       <input
                         type="checkbox"
@@ -342,6 +514,7 @@ const handleAwardImageChange = async (e) => {
                     </label>
                   ))}
                 </CheckboxGroup>
+                
                 <Row style={{ alignItems: "flex-start" }}>
                   <div style={{ flex: 1 }}>
                     <SubTitle>활동 기간 선택 <span style={{ color: "red" }}>*</span></SubTitle>
@@ -356,6 +529,7 @@ const handleAwardImageChange = async (e) => {
                     />
                     {errors.activityPeriod && <ErrorText>{errors.activityPeriod}</ErrorText>}
                   </div>
+                  
                   <div style={{ flex: 1, marginRight: 230 }}>
                     <SubTitle>활동 종료일 선택 <span style={{ color: "red" }}>*</span></SubTitle>
                     <MonthPicker
@@ -370,6 +544,7 @@ const handleAwardImageChange = async (e) => {
                   </div>
                 </Row>
               </div>
+              
               <div style={{ flex: 1 }}>
                 <AwardSection>
                   <SubTitle>수상 기록</SubTitle>
@@ -439,7 +614,7 @@ const handleAwardImageChange = async (e) => {
   );
 }
 
-// 기존 styled-components + 추가 스타일
+// Styled Components
 const Container = styled.div`
   max-width: 768px;
   margin: 0 auto;
@@ -564,7 +739,6 @@ const AwardUploadBox = styled.div`
   position: relative;
 `;
 
-// 새로 추가된 스타일 컴포넌트들
 const ImagePreviewContainer = styled.div`
   width: 100%;
   height: 100%;
