@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: trendist-frontend-config
+data:
+  REACT_APP_API_BASE_URL: "http://k8s-trendis-gateway-55272f9955-9df8d864228042f1945c5a7d6a1bcde2.ke.kr-central-2.kakaocloud.com/"
+  REACT_APP_FALLBACK_API_URL: "http://210.109.80.174"
+  NODE_ENV: "production" 

@@ -11,7 +11,7 @@ export const TIER_LABEL_MAP = {
 
 // 8080 포트의 axios 인스턴스 생성
 const axiosInstance8080 = axios.create({
-  baseURL: 'http://61.109.236.137:8080',
+  baseURL: 'http://k8s-trendis-gateway-55272f9955-9df8d864228042f1945c5a7d6a1bcde2.ke.kr-central-2.kakaocloud.com/',
   timeout: 10000,
   headers: { 
     'Content-Type': 'application/json',

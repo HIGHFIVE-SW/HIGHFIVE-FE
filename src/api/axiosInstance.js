@@ -2,20 +2,25 @@ import axios from 'axios';
 
 const getBaseURL = () => {
   const path = window.location.pathname;
+  
+  // 환경변수에서 API URL 가져오기
+  const apiBaseUrl = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080';
+  const fallbackUrl = process.env.REACT_APP_FALLBACK_API_URL || 'http://localhost:8080';
+  
   if (
     path === '/' ||
     path.startsWith('/interest') ||
     path.startsWith('/oauth2') ||
     path.startsWith('/login')
   ) {
-    return 'url';
+    return apiBaseUrl;
   }
-  return 'url';
+  return fallbackUrl;
 };
 
 const axiosInstance = axios.create({
   baseURL: getBaseURL(),
-  timeout: 10000,
+  timeout: 30000, // 30초로 증가
   headers: { 
     'Content-Type': 'application/json',
     'Accept': 'application/json'
