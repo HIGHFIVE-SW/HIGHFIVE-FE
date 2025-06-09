@@ -10,6 +10,7 @@ import FreePostList from '../../components/board/freeboard/FreePostList';
 import { useSearchReviews, useSearchPosts } from '../../query/usePost';
 import { formatDate } from '../../utils/formatDate';
 import SampleReviewImg from "../../assets/images/board/SampleReviewImg.png";
+import { getReviews, getPosts } from '../../api/PostApi';
 
 
 // 키워드 매핑 (API 영어 → UI 한국어)
@@ -27,6 +28,12 @@ export default function BoardSearchResultPage() {
 
   const [inputValue, setInputValue] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [reviewsData, setReviewsData] = useState(null);
+  const [postsData, setPostsData] = useState(null);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [postsLoading, setPostsLoading] = useState(false);
+  const [reviewsError, setReviewsError] = useState(false);
+  const [postsError, setPostsError] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -37,9 +44,53 @@ export default function BoardSearchResultPage() {
     }
   }, [location.search]);
 
-  // 검색 API 호출 (페이지 0으로 고정, 각각 3개씩 가져올 예정)
-  const { data: reviewsData, isLoading: reviewsLoading, isError: reviewsError } = useSearchReviews(searchQuery, 0);
-  const { data: postsData, isLoading: postsLoading, isError: postsError } = useSearchPosts(searchQuery, 0);
+  // 리뷰 검색 (클라이언트 필터링)
+  useEffect(() => {
+    const fetchReviews = async () => {
+      if (!searchQuery) return;
+      
+      setReviewsLoading(true);
+      setReviewsError(false);
+      
+      try {
+        const result = await getReviews(0, null, null, 'RECENT');
+        
+        if (searchQuery) {
+          const filteredContent = result.content.filter(review => 
+            review.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            review.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            review.nickname.toLowerCase().includes(searchQuery.toLowerCase())
+          );
+          
+          setReviewsData({
+            content: filteredContent,
+            totalPages: Math.ceil(filteredContent.length / 10),
+            totalElements: filteredContent.length
+          });
+        } else {
+          setReviewsData(result);
+        }
+        
+      } catch (error) {
+        console.error('리뷰 검색 실패:', error);
+        setReviewsError(true);
+      } finally {
+        setReviewsLoading(false);
+      }
+    };
+
+    fetchReviews();
+  }, [searchQuery]);
+
+  // 자유게시판 검색은 기존 API 사용 (이미지가 없으므로 문제없음)
+  const { data: postsDataOriginal, isLoading: postsLoadingOriginal, isError: postsErrorOriginal } = useSearchPosts(searchQuery, 0);
+
+  // 자유게시판 데이터 설정
+  useEffect(() => {
+    setPostsData(postsDataOriginal);
+    setPostsLoading(postsLoadingOriginal);
+    setPostsError(postsErrorOriginal);
+  }, [postsDataOriginal, postsLoadingOriginal, postsErrorOriginal]);
 
   const handleSearch = () => {
     if (inputValue.trim()) {
