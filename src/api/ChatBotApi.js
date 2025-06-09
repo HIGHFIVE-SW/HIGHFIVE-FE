@@ -2,8 +2,8 @@ import axios from 'axios';
 
 // 챗봇 전용 axios 인스턴스 생성
 const chatbotInstance = axios.create({
-  baseURL: 'url',
-  timeout: 15000, // 챗봇 응답은 시간이 좀 걸릴 수 있어서 15초로 설정
+  baseURL: 'http://central-01.tcp.tunnel.elice.io:50643',
+  timeout: 30000, // 챗봇 응답은 시간이 좀 걸릴 수 있어서 15초로 설정
   headers: { 
     'Content-Type': 'application/json',
     'Accept': 'application/json'
