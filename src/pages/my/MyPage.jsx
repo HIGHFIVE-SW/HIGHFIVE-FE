@@ -156,12 +156,13 @@ export default function MyPage() {
     }
   }, [location.state]);
 
-  const dummyTypeStats = [
-    { activityType: 'CONTEST', count: 4 },
-    { activityType: 'VOLUNTEER', count: 2 },
-    { activityType: 'INTERNSHIP', count: 1 },
-    { activityType: 'SUPPORTERS', count: 0 },
-  ];
+  // ActivityTypeChart 컴포넌트에서 직접 API를 호출하므로 더이상 필요하지 않음
+  // const dummyTypeStats = [
+  //   { activityType: 'CONTEST', count: 4 },
+  //   { activityType: 'VOLUNTEER', count: 2 },
+  //   { activityType: 'INTERNSHIP', count: 1 },
+  //   { activityType: 'SUPPORTERS', count: 0 },
+  // ];
 
   const handleTabClick = (tabName) => {
     console.log('탭 클릭됨:', tabName);
@@ -271,7 +272,7 @@ export default function MyPage() {
               {activeTab === 'statistics' && (
                 <GraphSection>
                   <ActivityTrendChart />
-                  <ActivityTypeChart data={dummyTypeStats} />
+                  <ActivityTypeChart />
                 </GraphSection>
               )}
               {activeTab === 'bookmark' && <BookmarkList />}

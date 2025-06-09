@@ -16,7 +16,7 @@ const BoardNav = () => {
   return (
     <>
       <NavBar>
-        <IconButton onClick={() => navigate("/board/review")}>
+        <IconButton onClick={() => navigate(-1)}>
           <IconImg src={backIcon} alt="뒤로가기" />
         </IconButton>
 

@@ -155,6 +155,39 @@ export const setUserProfile = async (userData) => {
   }
 };
 
+// 사용자 프로필 수정
+export const updateUserProfile = async (userData) => {
+  try {
+    console.log('프로필 수정 API 요청 데이터:', userData);
+
+    const requestData = {
+      nickname: userData.nickname,
+      keyword: userData.keyword,
+      profileUrl: userData.profileUrl
+    };
+
+    const response = await axiosInstance8080.patch('/users/profile/update', requestData);
+
+    console.log('프로필 수정 서버 응답:', response.data);
+
+    if (response.data.isSuccess) {
+      return response.data.result;
+    } else {
+      throw new Error(response.data.message || '프로필 수정에 실패했습니다.');
+    }
+  } catch (error) {
+    console.error('프로필 수정 API 호출 실패:', error);
+    
+    if (error.response) {
+      throw new Error(error.response.data.message || `서버 오류 (${error.response.status})`);
+    } else if (error.request) {
+      throw new Error('서버에 연결할 수 없습니다. 네트워크 연결을 확인해주세요.');
+    } else {
+      throw new Error('프로필 수정 요청 처리 중 오류가 발생했습니다.');
+    }
+  }
+};
+
 export const getRankingByTier = async (tierKey) => {
   try {
     const response = await axiosInstance8080.get(`/users/rankings/${tierKey}`);
@@ -184,6 +217,48 @@ export const getPresignedUrl = async (imageName) => {
     }
   } catch (error) {
     console.error('PresignedUrl API 호출 실패:', error);
+    throw error;
+  }
+};
+
+// 프로필 이미지를 S3에 업로드
+export const uploadProfileImage = async (file) => {
+  try {
+    // 파일명 생성
+    const timestamp = Date.now();
+    const randomString = Math.random().toString(36).substring(2, 8);
+    const extension = file.name.split('.').pop();
+    const imageName = `profile-${timestamp}-${randomString}.${extension}`;
+
+    console.log('프로필 이미지 업로드 시작:', imageName);
+
+    // Presigned URL 가져오기
+    const presignedUrl = await getPresignedUrl(imageName);
+    
+    console.log('Presigned URL 발급 완료:', presignedUrl);
+
+    // S3에 업로드
+    const response = await fetch(presignedUrl, {
+      method: 'PUT',
+      body: file,
+      headers: {
+        'Content-Type': file.type,
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`이미지 업로드 실패: ${response.status}`);
+    }
+
+    // 업로드된 이미지 URL 반환 (쿼리 파라미터 제거)
+    const imageUrl = presignedUrl.split('?')[0];
+    
+    console.log('프로필 이미지 업로드 완료:', imageUrl);
+    
+    return imageUrl;
+
+  } catch (error) {
+    console.error('프로필 이미지 업로드 실패:', error);
     throw error;
   }
 };

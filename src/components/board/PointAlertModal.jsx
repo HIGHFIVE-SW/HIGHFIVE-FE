@@ -8,7 +8,7 @@ export default function PointAlertModal({ onClose }) {
       <AlertBox>
         <IconImage src={checkIcon} alt="확인 아이콘" />
         <AlertMessage>
-          제출해주신 자료는 정상적으로 확인되었습니다. <br /> 포인트는 매일 자정에 반영됩니다.
+          제출해주신 자료는 정상적으로 확인되었습니다. <br /> 포인트와 랭킹은 6시간마다 반영됩니다.
         </AlertMessage>
         <ConfirmButton onClick={onClose}>확인</ConfirmButton>
       </AlertBox>

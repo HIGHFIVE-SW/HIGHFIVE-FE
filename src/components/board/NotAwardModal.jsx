@@ -2,13 +2,13 @@ import React from "react";
 import styled from "styled-components";
 import warningIcon from "../../assets/images/board/ic_warning.png";
 
-export default function AwardAlertModal({ onClose, onResubmit }) {
+export default function NotPointAlertModal({ onClose, onResubmit }) {
   return (
     <AlertOverlay>
       <AlertBox>
         <IconImage src={warningIcon} alt="경고 아이콘" />
         <AlertMessage>
-          아쉽게도 제출하신 수상 기록이 검증되지 않아 <br />
+          아쉽게도 제출하신 수상기록이 검증되지 않아 <br />
           포인트 지급이 완료되지 않았습니다.
         </AlertMessage>
         <ButtonGroup>

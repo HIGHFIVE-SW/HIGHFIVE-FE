@@ -23,6 +23,7 @@ import BoardSearchResultPage from '../pages/board/BoardSearchResultPage';
 import MoreReviewPage from '../pages/board/MoreReviewPage';
 import MoreFreePage from '../pages/board/MoreFreePage';
 import PostEditPage from '../pages/board/PostEditPage';
+import ReviewEditPage from '../pages/board/ReviewEditPage';
 
 export default function AppRoutes() {
   return (
@@ -47,10 +48,12 @@ export default function AppRoutes() {
       <Route path="/user" element={<UserPage />} />
       <Route path="/board/write" element={<PostWritePage />} />
       <Route path="/board/detail/:id" element={<BoardDetailPage />} />
+      <Route path="/board/review/:id" element={<BoardDetailPage />} />
       <Route path="/board/search" element={<BoardSearchResultPage />} />
       <Route path="/more/review" element={<MoreReviewPage />} />
       <Route path="/more/free" element={<MoreFreePage />} />
       <Route path="/board/edit/:id" element={<PostEditPage />} />
+      <Route path="/board/review/edit/:id" element={<ReviewEditPage />} />
     </Routes>
   );
 }

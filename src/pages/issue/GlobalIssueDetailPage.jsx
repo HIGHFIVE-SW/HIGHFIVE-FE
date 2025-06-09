@@ -9,7 +9,7 @@ import BookmarkButtonIcon from '../../assets/images/common/BookmarkButton.png';
 import BookmarkFilledIcon from '../../assets/images/common/BookmarkFilledButton.png';
 import { useIssueDetail, useToggleIssueBookmark } from '../../query/useIssues';
 import { useActivitiesByKeywordLimited, useToggleBookmark } from '../../query/useActivities';
-import ActivityCard from '../../components/activity/ActivityCard';
+import ActivityCard from '../../components/activity/SmallActivityCard';
 import { formatDate } from '../../utils/formatDate';
 
 export default function GlobalIssueDetailPage() {
@@ -155,7 +155,7 @@ const handleActivityBookmarkToggle = async (activityId) => {
       <RecommendWrapper>
         <Divider />
         <RecommendCardsHeader>
-          <RecommendTitle>'{issue.keyword}' 관련 추천 활동</RecommendTitle>
+          <RecommendTitle>추천 활동</RecommendTitle>
         </RecommendCardsHeader>
         
         {isActivitiesError && (
@@ -318,7 +318,7 @@ const RecommendCardsHeader = styled.div`
 
 const RecommendTitle = styled.h2`
   font-size: 24px;
-  font-weight: 600;
+  font-weight: 700;
   color: #333;
 `;
 
