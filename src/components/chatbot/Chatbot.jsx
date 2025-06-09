@@ -108,17 +108,54 @@ export default function Chatbot() {
   const [selectedApiMode, setSelectedApiMode] = useState(null); // 선택된 API 모드
   const messageEndRef = useRef(null);
 
-  // 사용자 ID 가져오기 (localStorage에서 또는 테스트용 UUID 사용)
+  // 현재 로그인한 사용자 ID 가져오기
   const getUserId = () => {
+    // 1. localStorage에서 직접 userId 확인
     const storedUserId = localStorage.getItem('userId');
     if (storedUserId) {
       return storedUserId;
     }
-    // 테스트용 UUID 반환
-    return '418ac62d-1fb8-4957-adb9-4b1779ef2504';
+
+    // 2. localStorage에서 user 객체 확인
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      try {
+        const userObj = JSON.parse(storedUser);
+        if (userObj.id) return userObj.id;
+        if (userObj.userId) return userObj.userId;
+      } catch (error) {
+        console.error('사용자 정보 파싱 실패:', error);
+      }
+    }
+
+    // 3. localStorage에서 userInfo 객체 확인
+    const storedUserInfo = localStorage.getItem('userInfo');
+    if (storedUserInfo) {
+      try {
+        const userInfoObj = JSON.parse(storedUserInfo);
+        if (userInfoObj.id) return userInfoObj.id;
+        if (userInfoObj.userId) return userInfoObj.userId;
+      } catch (error) {
+        console.error('사용자 정보 파싱 실패:', error);
+      }
+    }
+
+    // 4. 로그인되지 않은 경우 null 반환 (또는 로그인 페이지로 리다이렉트)
+    console.warn('로그인된 사용자 ID를 찾을 수 없습니다.');
+    return null;
   };
 
   const handleCardClick = async (option) => {
+    // 로그인 확인
+    const userId = getUserId();
+    if (!userId) {
+      setChatMessages((prev) => [
+        ...prev,
+        { type: 'bot', text: '챗봇을 사용하려면 로그인이 필요합니다. \n로그인 후 다시 이용해주세요.' },
+      ]);
+      return;
+    }
+
     // API 모드 선택
     setSelectedApiMode(option);
     
@@ -138,16 +175,16 @@ export default function Chatbot() {
     // 선택된 모드에 따라 해당 챗봇 초기화
     try {
       if (option === '글로벌 이슈') {
-        await resetChatbot(getUserId());
+        await resetChatbot(userId);
       } else if (option === '관심사 기반') {
-        await resetChatbotHistoryRecommendation(getUserId());
+        await resetChatbotHistoryRecommendation(userId);
       } else if (option === '분야 기반') {
-        await resetChatbotKeywordRecommendation(getUserId());
+        await resetChatbotKeywordRecommendation(userId);
       } else if (option === '일상 대화') {
-        await resetChatbotOthers(getUserId());
+        await resetChatbotOthers(userId);
       } else {
         // 기본값은 웹 검색 챗봇으로 초기화
-        await resetChatbot(getUserId());
+        await resetChatbot(userId);
       }
     } catch (error) {
       console.error('챗봇 모드 초기화 실패:', error);
@@ -158,6 +195,18 @@ export default function Chatbot() {
     if (isSubmitting || isLoading) return;
     const trimmed = userInput.trim();
     if (!trimmed) return;
+
+    // 로그인 확인
+    const userId = getUserId();
+    if (!userId) {
+      setChatMessages((prev) => [
+        ...prev,
+        { type: 'user', text: trimmed },
+        { type: 'bot', text: '챗봇을 사용하려면 로그인이 필요합니다. \n로그인 후 다시 이용해주세요.' },
+      ]);
+      setUserInput('');
+      return;
+    }
 
     // API 모드가 선택되지 않은 경우 선택 요청
     if (!selectedApiMode) {
@@ -183,7 +232,6 @@ export default function Chatbot() {
 
     try {
       let botResponse;
-      const userId = getUserId();
       console.log('사용자 ID:', userId, '모드:', selectedApiMode);
       
       if (selectedApiMode === '글로벌 이슈') {
@@ -249,8 +297,11 @@ export default function Chatbot() {
             // 챗봇을 열 때 대화 및 모드 초기화
             setChatMessages([]);
             setSelectedApiMode(null);
-            // 웹 검색 기반 챗봇으로 초기화 (기본값)
-            resetChatbot(getUserId()).catch(console.error);
+            // 로그인한 사용자가 있는 경우에만 웹 검색 기반 챗봇으로 초기화
+            const userId = getUserId();
+            if (userId) {
+              resetChatbot(userId).catch(console.error);
+            }
           }
           return !prev;
         });
