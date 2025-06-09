@@ -2,10 +2,12 @@
 
 import React, { useState } from 'react';
 import styled from 'styled-components';
+import { useNavigate } from 'react-router-dom';
 import Pagination from '../common/Pagination';
 import { useUserReviews, useUserPosts, useMyReviews, useMyPosts } from '../../query/usePost';
 
 const MyPostsList = ({ userId }) => {
+  const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   
   // userId가 없으면 내 마이페이지 (내 게시물 조회)
@@ -102,6 +104,13 @@ const MyPostsList = ({ userId }) => {
     setCurrentPage(page);
   };
 
+  const handlePostClick = (post) => {
+    const path = post.boardType === '후기 게시판' 
+      ? `/board/review/${post.id}`
+      : `/board/detail/${post.id}`;
+    navigate(path);
+  };
+
   // 날짜 포맷팅 함수
   const formatDate = (dateString) => {
     if (!dateString) return '';
@@ -158,7 +167,11 @@ const MyPostsList = ({ userId }) => {
                       {post.boardType}
                     </BoardTag>
                   </td>
-                  <td>{post.title}</td>
+                  <td>
+                    <PostTitle onClick={() => handlePostClick(post)}>
+                      {post.title}
+                    </PostTitle>
+                  </td>
                   <td>{formatDate(post.updatedAt)}</td>
                 </tr>
               ))}
@@ -264,5 +277,13 @@ const PaginationWrapper = styled.div`
   justify-content: center;
   width: 100%;
   max-width: 1000px;
+`;
+
+const PostTitle = styled.div`
+  cursor: pointer;
+  &:hover {
+    color: #235ba9;
+    text-decoration: underline;
+  }
 `;
 
