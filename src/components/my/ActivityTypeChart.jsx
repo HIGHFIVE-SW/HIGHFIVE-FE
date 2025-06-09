@@ -144,7 +144,7 @@ export default function ActivityTypeSwitcherChart({ userId }) {
       </ChartHeader>
 
       <ResponsiveContainer width="100%" height={300}>
-        <BarChart data={chartData} margin={{ top: 10, right: 30, left: 10, bottom: 10 }}>
+        <BarChart data={chartData} margin={{ top: 40, right: 30, left: 10, bottom: 10 }}>
           <CartesianGrid strokeDasharray="3 3" vertical={false}/>
           <XAxis dataKey="name" stroke="#888" />
           <YAxis stroke="#888" allowDecimals={false} />

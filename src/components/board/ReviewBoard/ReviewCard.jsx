@@ -13,6 +13,7 @@ const ReviewCard = ({ id, category, image, title, content, date, writer, likeCou
   const toggleReviewLikeMutation = useToggleReviewLike();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [imageError, setImageError] = React.useState(false);
 
   // HTML 태그 제거 함수
   const stripHtml = (html) => {
@@ -40,6 +41,10 @@ const ReviewCard = ({ id, category, image, title, content, date, writer, likeCou
 
   const handleCardClick = () => {
     navigate(`/board/review/${id}`);
+  };
+
+  const handleImageError = () => {
+    setImageError(true);
   };
 
   // 후기 전용 좋아요 버튼 클릭 핸들러
@@ -132,6 +137,15 @@ const ReviewCard = ({ id, category, image, title, content, date, writer, likeCou
 
   const plainContent = stripHtml(content);
 
+  // 디버깅용 로그
+  console.log('ReviewCard 렌더링:', {
+    id,
+    title,
+    image,
+    imageError,
+    hasImage: !!image
+  });
+
   return (
     <Card onClick={handleCardClick}>
       <HoverOverlay>
@@ -158,7 +172,17 @@ const ReviewCard = ({ id, category, image, title, content, date, writer, likeCou
       </HoverOverlay>
 
       <ImageContainer>
-        <StyledImage src={image} alt={title} />
+        {image && !imageError ? (
+          <StyledImage 
+            src={image} 
+            alt={title} 
+            onError={handleImageError}
+          />
+        ) : (
+          <NoImagePlaceholder>
+            <NoImageText>이미지 없음</NoImageText>
+          </NoImagePlaceholder>
+        )}
         <CategoryTag category={category} />
         <OverlayTitle>{title}</OverlayTitle>
       </ImageContainer>
@@ -307,4 +331,20 @@ const HoverWriter = styled.div`
 const HoverMore = styled.div`
   font-size: 16px;
   color: #fff;
+`;
+
+const NoImagePlaceholder = styled.div`
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 20px;
+`;
+
+const NoImageText = styled.div`
+  color: #666;
+  font-size: 16px;
+  font-weight: 500;
 `;

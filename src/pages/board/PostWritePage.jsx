@@ -76,7 +76,9 @@ export default function PostWritePage() {
 
   // 서버 응답에 따른 모달 표시 함수
   const handleReviewResponse = (result) => {
-    console.log('서버 응답:', result);
+    console.log('🔍 [handleReviewResponse] 서버 응답 전체:', result);
+    console.log('🔍 [handleReviewResponse] 서버 응답 타입:', typeof result);
+    console.log('🔍 [handleReviewResponse] 서버 응답 키들:', Object.keys(result || {}));
     
     // 생성된 리뷰 ID 저장 (수정 페이지 이동을 위해)
     if (result?.id) {
@@ -87,26 +89,29 @@ export default function PostWritePage() {
     const ocrResult = result?.ocrResult; // 이미지 검증 결과
     const awardResult = result?.awardOcrResult; // 수상기록 검증 결과
     
-    console.log('검증 결과:', { ocrResult, awardResult });
-    console.log('전체 서버 응답:', result);
+    console.log('🔍 [handleReviewResponse] ocrResult 원본:', result?.ocrResult, '타입:', typeof result?.ocrResult);
+    console.log('🔍 [handleReviewResponse] awardOcrResult 원본:', result?.awardOcrResult, '타입:', typeof result?.awardOcrResult);
+    console.log('🔍 [handleReviewResponse] 추출된 검증 결과:', { ocrResult, awardResult });
     
-    // 검증 로직
-    if (awardResult === false && ocrResult === false) {
+    // 명확한 검증 로직
+    if (ocrResult === false && awardResult === false) {
       // 수상기록 false & ocrResult false → 모든 자료 검증 실패
       setShowNotAllAlert(true);
-    } else if (awardResult === false) {
-      // 수상기록이 false → 수상기록 검증 실패
-      setShowNotAwardAlert(true);
     } else if (ocrResult === false) {
       // ocrResult가 false → 이미지 검증 실패
       setShowNotPointAlert(true);
-    } else if ((awardResult === null && ocrResult === true) || (awardResult === true && ocrResult === true)) {
+    } else if (awardResult === false) {
+      // 수상기록이 false → 수상기록 검증 실패
+      setShowNotAwardAlert(true);
+    } else if (ocrResult === true && awardResult === null) {
       // 수상기록 null & ocrResult true → 검증 성공
+      setShowPointAlert(true);
+    } else if (ocrResult === true && awardResult === true) {
       // 수상기록 true & ocrResult true → 검증 성공
       setShowPointAlert(true);
     } else {
-      // 기타 경우 기본 성공 처리
-      setShowPointAlert(true);
+      // 기타 경우는 실패로 처리
+      setShowNotPointAlert(true);
     }
   };
 
@@ -328,13 +333,16 @@ export default function PostWritePage() {
             return;
           }
           
-          console.log('기존 활동 리뷰 API 호출 시작');
+          console.log('🚀 [handleSubmit] 기존 활동 리뷰 API 호출 시작');
           const result = await createActivityReviewMutation.mutateAsync({
             activityId: selectedActivity.id,
             reviewData: activityReviewData
           });
           
-          console.log('기존 활동 리뷰 생성 완료:', result);
+          console.log('✅ [handleSubmit] 기존 활동 리뷰 생성 완료:', result);
+          console.log('✅ [handleSubmit] result 타입:', typeof result);
+          console.log('✅ [handleSubmit] result.ocrResult:', result?.ocrResult);
+          console.log('✅ [handleSubmit] result.awardOcrResult:', result?.awardOcrResult);
           
           // 성공 즉시 락 해제
           submitLockRef.current = false;
@@ -400,9 +408,12 @@ export default function PostWritePage() {
             return;
           }
           
-          console.log('새 활동 리뷰 API 호출 시작');
+          console.log('🚀 [handleSubmit] 새 활동 리뷰 API 호출 시작');
           const result = await createNewActivityReviewMutation.mutateAsync(newActivityReviewData);
-          console.log('새 활동 리뷰 생성 완료:', result);
+          console.log('✅ [handleSubmit] 새 활동 리뷰 생성 완료:', result);
+          console.log('✅ [handleSubmit] result 타입:', typeof result);
+          console.log('✅ [handleSubmit] result.ocrResult:', result?.ocrResult);
+          console.log('✅ [handleSubmit] result.awardOcrResult:', result?.awardOcrResult);
           
           // 성공 즉시 락 해제
           submitLockRef.current = false;

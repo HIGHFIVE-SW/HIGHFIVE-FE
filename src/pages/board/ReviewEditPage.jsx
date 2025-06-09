@@ -87,33 +87,65 @@ export default function ReviewEditPage() {
 
   // 서버 응답에 따른 모달 표시 함수
   const handleReviewResponse = (result) => {
-    console.log('후기 수정 서버 응답:', result);
+    console.log('=== 후기 수정 서버 응답 분석 시작 ===');
+    console.log('전체 서버 응답:', result);
+    console.log('result.result 존재 여부:', !!result?.result);
+    
+    // 서버 응답 구조 확인 (result.result에 실제 데이터가 있을 수 있음)
+    const actualData = result?.result || result;
+    console.log('실제 데이터:', actualData);
     
     // 응답에서 OCR 결과와 수상기록 검증 상태 확인 (실제 서버 응답 필드명 사용)
-    const ocrResult = result?.ocrResult; // 이미지 검증 결과
-    const awardResult = result?.awardOcrResult; // 수상기록 검증 결과
+    const ocrResult = actualData?.ocrResult; // 이미지 검증 결과
+    const awardResult = actualData?.awardOcrResult; // 수상기록 검증 결과
     
     console.log('검증 결과:', { ocrResult, awardResult });
-    console.log('전체 서버 응답:', result);
+    console.log('ocrResult - 타입:', typeof ocrResult, '값:', ocrResult, '엄격 비교 true:', ocrResult === true);
+    console.log('awardResult - 타입:', typeof awardResult, '값:', awardResult, '엄격 비교 true:', awardResult === true, '엄격 비교 null:', awardResult === null);
     
-    // 검증 로직
-    if (awardResult === false && ocrResult === false) {
+    // 명확한 검증 로직
+    console.log('=== 조건 검사 시작 ===');
+    
+    const condition1 = ocrResult === false && awardResult === false;
+    const condition2 = ocrResult === false && awardResult !== false; // 이미지만 실패
+    const condition3 = awardResult === false && ocrResult !== false; // 수상기록만 실패
+    const condition4 = ocrResult === true && awardResult === null;
+    const condition5 = ocrResult === true && awardResult === true;
+    
+    console.log('조건 1 (모든 자료 실패):', condition1);
+    console.log('조건 2 (이미지 실패):', condition2);
+    console.log('조건 3 (수상기록 실패):', condition3);
+    console.log('조건 4 (성공 - null):', condition4);
+    console.log('조건 5 (성공 - true):', condition5);
+    
+    if (condition1) {
       // 수상기록 false & ocrResult false → 모든 자료 검증 실패
+      console.log('✅ 조건 1 실행: 모든 자료 검증 실패');
       setShowNotAllAlert(true);
-    } else if (awardResult === false) {
-      // 수상기록이 false → 수상기록 검증 실패
-      setShowNotAwardAlert(true);
-    } else if (ocrResult === false) {
+    } else if (condition2) {
       // ocrResult가 false → 이미지 검증 실패
+      console.log('✅ 조건 2 실행: 이미지 검증 실패');
       setShowNotPointAlert(true);
-    } else if ((awardResult === null && ocrResult === true) || (awardResult === true && ocrResult === true)) {
+    } else if (condition3) {
+      // 수상기록이 false → 수상기록 검증 실패
+      console.log('✅ 조건 3 실행: 수상기록 검증 실패');
+      setShowNotAwardAlert(true);
+    } else if (condition4) {
       // 수상기록 null & ocrResult true → 검증 성공
+      console.log('✅ 조건 4 실행: 검증 성공 (ocrResult: true, awardResult: null)');
+      setShowPointAlert(true);
+    } else if (condition5) {
       // 수상기록 true & ocrResult true → 검증 성공
+      console.log('✅ 조건 5 실행: 검증 성공 (ocrResult: true, awardResult: true)');
       setShowPointAlert(true);
     } else {
-      // 기타 경우 기본 성공 처리
-      setShowPointAlert(true);
+      // 기타 경우는 실패로 처리
+      console.log('✅ 조건 6 실행: 기타 경우 - 실패로 처리');
+      console.log('ocrResult:', ocrResult, 'awardResult:', awardResult);
+      setShowNotPointAlert(true);
     }
+    
+    console.log('=== 조건 검사 완료 ===');
   };
 
   // 수정 API 호출을 위한 mutation
@@ -304,26 +336,40 @@ export default function ReviewEditPage() {
   };
 
   const handleSubmit = async () => {
-    // 중복 제출 방지
-    if (submitLockRef.current || isSubmitting) {
-      console.log('이미 제출 중입니다.');
+    // 1차 방어: submitLock ref로 중복 실행 방지
+    if (submitLockRef.current) {
+      console.log('이미 제출 중입니다. (submitLock)');
       return;
     }
+
+    // 2차 방어: isSubmitting 상태로 중복 실행 방지
+    if (isSubmitting) {
+      console.log('이미 제출 중입니다. (isSubmitting)');
+      return;
+    }
+
+    console.log('수정 시작 - isSubmitting:', isSubmitting);
+
+    // 즉시 락 설정
+    submitLockRef.current = true;
 
     // 이미지 검증
     const hasEditorImage = editor?.getHTML().includes('<img');
     if (!hasEditorImage) {
+      submitLockRef.current = false; // 락 해제
       setShowImageAlert(true);
       return;
     }
 
     if (!validateForm()) {
+      submitLockRef.current = false; // 락 해제
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
 
-    submitLockRef.current = true;
+    // 제출 상태를 즉시 true로 설정하여 중복 방지
     setIsSubmitting(true);
+    console.log('수정 상태 설정 완료 - isSubmitting:', true);
 
     try {
       const htmlContent = editor.getHTML();
@@ -338,22 +384,39 @@ export default function ReviewEditPage() {
 
       console.log('리뷰 수정 데이터:', reviewData);
       
+      // 3차 방어: mutation이 이미 진행 중이면 중단
+      if (updateReviewMutation.isPending) {
+        console.log('리뷰 수정 mutation이 이미 진행 중입니다.');
+        submitLockRef.current = false;
+        setIsSubmitting(false);
+        return;
+      }
+      
+      console.log('리뷰 수정 API 호출 시작');
       await updateReviewMutation.mutateAsync({
         reviewId: id,
         reviewData: reviewData
       });
       
+      console.log('리뷰 수정 완료');
+      
+      // 성공 즉시 락 해제
+      submitLockRef.current = false;
+      
     } catch (error) {
       console.error('게시물 수정 실패:', error);
     } finally {
+      // 에러 발생 시에도 락 해제
       submitLockRef.current = false;
+      // 상태 정리를 지연시켜 중복 클릭 방지
       setTimeout(() => {
         setIsSubmitting(false);
+        console.log('수정 상태 해제 완료');
       }, 500);
     }
   };
 
-  // 다시 제출하기 핸들러 - 현재 페이지에서 다시 수정
+  // 다시 제출하기 핸들러 - 수정 페이지에서 계속 수정
   const handleResubmit = () => {
     resetModalStates();
     // 수정 페이지이므로 모달만 닫고 현재 페이지에서 계속 수정 가능

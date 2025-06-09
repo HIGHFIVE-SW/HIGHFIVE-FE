@@ -239,9 +239,9 @@ const BoardTag = styled.div`
 
 const EmptyMessage = styled.div`
   padding: 60px;
-  text-align: center;
   color: #888;
   font-size: 15px;
+  margin-right : 350px;
 `;
 
 const LoadingMessage = styled.div`

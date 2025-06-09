@@ -8,6 +8,9 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import ReviewCard from '../../components/board/reviewboard/ReviewCard';
 import FreePostList from '../../components/board/freeboard/FreePostList';
 import { useSearchReviews, useSearchPosts } from '../../query/usePost';
+import { formatDate } from '../../utils/formatDate';
+import SampleReviewImg from "../../assets/images/board/SampleReviewImg.png";
+
 
 // 키워드 매핑 (API 영어 → UI 한국어)
 const KEYWORD_MAP = {
@@ -59,24 +62,44 @@ export default function BoardSearchResultPage() {
   const reviewResults = reviewsData?.content?.slice(0, 3) || [];
   const postResults = postsData?.content?.slice(0, 3) || [];
 
-  // 리뷰 데이터를 ReviewCard 형식에 맞게 변환
+    // 리뷰 데이터를 ReviewCard 형식에 맞게 변환 (일반 게시판과 동일한 방식)
   const transformedReviews = reviewResults.map(review => ({
     id: review.id,
     category: KEYWORD_MAP[review.keyword] || review.keyword || '일반',
     title: review.title,
     content: review.content,
-    image: review.reviewImageUrls?.[0] || null,
-    date: review.createdAt ? new Date(review.createdAt).toLocaleDateString('ko-KR').replace(/\./g, '.').replace(/ /g, '') : '',
+    image: review.imageUrls?.[0] || review.reviewImageUrls?.[0] || review.imageUrl || review.image || SampleReviewImg,
+    date: formatDate(review.createdAt),
     writer: review.nickname,
     likeCount: review.likeCount || 0
   }));
+
+  // 디버깅용 로그 추가
+  console.log('BoardSearchResultPage 검색 결과:', {
+    searchQuery,
+    reviewResults: reviewResults.length,
+    rawReviewData: reviewResults.map(r => ({
+      id: r.id,
+      title: r.title,
+      reviewImageUrls: r.reviewImageUrls,
+      imageUrl: r.imageUrl,
+      image: r.image,
+      imageUrls: r.imageUrls, // 일반 게시판에서 사용하는 필드
+    })),
+    transformedReviews: transformedReviews.map(r => ({
+      id: r.id,
+      title: r.title,
+      image: r.image,
+      hasImage: !!r.image
+    }))
+  });
 
   // 자유게시판 데이터를 FreePostList 형식에 맞게 변환
   const transformedPosts = postResults.map(post => ({
     post_id: post.id,
     post_title: post.title,
     authorName: post.nickname,
-    created_at: post.createdAt,
+    created_at: formatDate(post.createdAt),
     post_like_count: post.likeCount || 0
   }));
 
@@ -168,7 +191,7 @@ const Wrapper = styled.div`
 const Container = styled.div`
   display: flex;
   flex: 1;
-  max-width: 1200px;
+  width: 1200px;
   margin: 0 auto;
   padding: 20px;
   gap: 30px;
@@ -224,9 +247,10 @@ const MoreButton = styled.button`
 
 const PopularCardsGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(353px, 1fr));
   gap: 15px;
   margin-bottom: 30px;
+  justify-items: center;
 `;
 
 const LoadingMessage = styled.div`

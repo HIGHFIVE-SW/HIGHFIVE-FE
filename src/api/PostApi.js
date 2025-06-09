@@ -610,12 +610,10 @@ export const getReview = async (reviewId) => {
     
     if (response.data.isSuccess) {
       const result = response.data.result;
-      console.log('API 응답 데이터:', result);
-      
-      // ocr_result, ocrResult, awardOcrResult 등 다양한 필드명을 ocrResult로 통일
-      result.ocrResult = result.ocrResult ?? result.ocr_result ?? result.awardOcrResult ?? false;
-      delete result.ocr_result;
-      delete result.awardOcrResult;
+      console.log('API 응답 데이터 (원본):', result);
+      console.log('ocrResult 필드:', result.ocrResult);
+      console.log('ocr_result 필드:', result.ocr_result);
+      console.log('awardOcrResult 필드:', result.awardOcrResult);
       
       // 키워드를 한국어로 변환
       result.keyword = REVERSE_CATEGORY_MAP[result.keyword] || result.keyword;
@@ -625,6 +623,8 @@ export const getReview = async (reviewId) => {
       result.activityPeriod = Object.entries(ACTIVITY_PERIOD_MAP).find(([key, value]) => value === result.activityPeriod)?.[0] || result.activityPeriod;
       
       console.log('변환 후 데이터:', result);
+      console.log('최종 ocrResult:', result.ocrResult);
+      console.log('최종 awardOcrResult:', result.awardOcrResult);
       return result;
     } else {
       throw new Error(response.data.message || '리뷰 조회에 실패했습니다.');
