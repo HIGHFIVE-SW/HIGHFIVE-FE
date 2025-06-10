@@ -16,7 +16,8 @@ spec:
     spec:
       containers:
       - name: trendist-frontend
-        image: your-registry/trendist-frontend:latest  # 실제 이미지 레지스트리 주소로 변경
+        image: leeseojung/trendist-frontend:v1.1.21
+        imagePullPolicy: Always
         ports:
         - containerPort: 80
         resources:
@@ -31,4 +32,12 @@ spec:
           value: "production"
         envFrom:
         - configMapRef:
-            name: trendist-frontend-config 
+            name: trendist-frontend-config
+        volumeMounts:
+        - name: nginx-config
+          mountPath: /etc/nginx/conf.d/
+          readOnly: true
+      volumes:
+      - name: nginx-config
+        configMap:
+          name: trendist-frontend-config 

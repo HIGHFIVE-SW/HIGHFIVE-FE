@@ -61,8 +61,8 @@ export default function OnboardingPage() {
       if (!token) return;
 
       try {
-        // 토큰 저장 (axiosInstance 인터셉터가 자동으로 헤더에 추가)
-        localStorage.setItem('token', token);
+        // 토큰 저장 - axiosInstance에서 Token(대문자)로 조회하므로 대문자로 저장
+        localStorage.setItem('Token', token);
         console.log('토큰 저장 완료:', token);
 
         // URL에서 토큰 제거 (보안을 위해)
@@ -108,7 +108,7 @@ export default function OnboardingPage() {
 
   // 구글 로그인 연동
   const handleGoogleLoginClick = () => {
-    window.location.href = "http://k8s-trendis-gateway-55272f9955-9df8d864228042f1945c5a7d6a1bcde2.ke.kr-central-2.kakaocloud.com/oauth2/authorization/google";
+    window.location.href = "/oauth2/authorization/google";
   };
 
   const handleModalClose = () => {
