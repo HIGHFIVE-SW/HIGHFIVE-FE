@@ -12,6 +12,10 @@ RUN npm ci --only=production
 # Copy source code
 COPY . .
 
+# Set environment variables for build
+ENV REACT_APP_API_BASE_URL=http://trendist.site
+ENV REACT_APP_FALLBACK_API_URL=http://trendist.site
+
 # Build the app
 RUN npm run build
 

@@ -19,7 +19,7 @@ const getBaseURL = () => {
 };
 
 const axiosInstance = axios.create({
-  baseURL: getBaseURL(),
+  baseURL: getBaseURL() + '/api',
   timeout: 30000, // 30초로 증가
   headers: { 
     'Content-Type': 'application/json',
@@ -38,8 +38,8 @@ const axiosInstance = axios.create({
 });
 
 axiosInstance.interceptors.request.use(config => {
-  config.baseURL = getBaseURL();
-  const token = localStorage.getItem('token');
+  config.baseURL = getBaseURL() + '/api';
+  const token = localStorage.getItem('Token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -55,7 +55,7 @@ axiosInstance.interceptors.response.use(
     if (error.response) {
       console.error('서버 응답 오류:', error.response.data);
       if (error.response.status === 401) {
-        localStorage.removeItem('token');
+        localStorage.removeItem('Token');
         window.location.href = '/login';
       }
     } else if (error.request) {
