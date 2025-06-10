@@ -27,6 +27,7 @@ jobs:
       run: npm run test -- --coverage --watchAll=false --passWithNoTests
       
     - name: Build application
+      CI: false    
       run: npm run build
       
     - name: Set up Docker Buildx
