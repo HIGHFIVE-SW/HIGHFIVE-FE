@@ -61,17 +61,37 @@ export default function OnboardingPage() {
       if (!token) return;
 
       try {
-        // 토큰 저장 (axiosInstance 인터셉터가 자동으로 헤더에 추가)
-        localStorage.setItem('token', token);
+        // 토큰 저장 - axiosInstance에서 Token(대문자)로 조회하므로 대문자로 저장
+        localStorage.setItem('Token', token);
+        console.log('토큰 저장 완료:', token);
+
+        // URL에서 토큰 제거 (보안을 위해)
+        window.history.replaceState({}, document.title, window.location.pathname);
 
         // 프로필 조회
         const { data } = await axiosInstance.get('/users/profile');
         const { result } = data;
         
+        console.log('프로필 조회 응답:', data);
+        console.log('result 객체:', result);
+        
+        // **API 문서에 따라 id를 userId로 저장 (오타 수정)**
+        if (result && result.id) {
+          localStorage.setItem('userId', result.id); // result.Id → result.id로 수정
+          localStorage.setItem('nickname', result.nickname || '');
+          localStorage.setItem('email', result.email || '');
+          console.log('저장된 userId (from id):', result.id);
+          console.log('저장된 nickname:', result.nickname);
+        } else {
+          console.warn('id가 응답에 포함되지 않음:', result);
+        }
+        
         // 프로필 미완료 시 모달 표시
         if (!result || !result.nickname || !result.keyword) {
+          console.log('프로필 미완료, 모달 표시');
           setShowModal(true);
         } else {
+          console.log('프로필 완료, 메인으로 이동');
           navigate('/main');
         }
       } catch (error) {
@@ -88,7 +108,13 @@ export default function OnboardingPage() {
 
   // 구글 로그인 연동
   const handleGoogleLoginClick = () => {
-    window.location.href = "http://61.109.236.137:8080/oauth2/authorization/google";
+    window.location.href = "/oauth2/authorization/google";
+  };
+
+  const handleModalClose = () => {
+    setShowModal(false);
+    // 모달 닫힌 후 메인으로 이동
+    navigate('/main');
   };
 
   return (
@@ -120,12 +146,12 @@ export default function OnboardingPage() {
           </RightGroup>
         </RightSection>
       </Container>
-      {showModal && <ProfileModal onClose={() => setShowModal(false)} />}
+      {showModal && <ProfileModal onClose={handleModalClose} />}
     </Wrapper>
   );
 }
 
-// 스타일 컴포넌트들은 기존 코드와 동일
+// Styled Components
 const Wrapper = styled.div`
   width: 100%;
   max-width: 100vw;
@@ -229,6 +255,12 @@ const GoogleButton = styled.button`
   font-size: 30px;
   box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
   cursor: pointer;
+  
+  &:hover {
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.3);
+    transform: translateY(-2px);
+    transition: all 0.2s ease;
+  }
 `;
 
 const GoogleIcon = styled.img`

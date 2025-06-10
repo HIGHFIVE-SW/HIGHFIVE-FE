@@ -9,6 +9,26 @@ import activeSociety from '../../assets/images/interestmodal/ic_SocietyInterest_
 import activeEconomy from '../../assets/images/interestmodal/ic_EconomyInterest_active.png';
 import activeTech from '../../assets/images/interestmodal/ic_TechInterest_active.png';
 
+// API 키워드와 UI ID 매핑
+const KEYWORD_TO_ID_MAP = {
+  'Environment': 'environment',
+  'PeopleAndSociety': 'society', 
+  'Economy': 'economy',
+  'Technology': 'tech',
+  // 한국어도 지원
+  '환경': 'environment',
+  '사람과 사회': 'society',
+  '경제': 'economy', 
+  '기술': 'tech'
+};
+
+const ID_TO_KEYWORD_MAP = {
+  'environment': 'Environment',
+  'society': 'PeopleAndSociety',
+  'economy': 'Economy',
+  'tech': 'Technology'
+};
+
 const interestItems = [
   { id: 'environment', label: '환경', image: envCard, activeImage: activeEnv },
   { id: 'society', label: '사람과 사회', image: societyCard, activeImage: activeSociety },
@@ -17,20 +37,29 @@ const interestItems = [
 ];
 
 export default function InterestSelect({ selected, onSelect }) {
+  // API 키워드를 UI ID로 변환
+  const selectedId = KEYWORD_TO_ID_MAP[selected] || selected;
+  
+  const handleSelect = (id) => {
+    // UI ID를 API 키워드로 변환하여 전달
+    const keyword = ID_TO_KEYWORD_MAP[id] || id;
+    onSelect(keyword);
+  };
+
   return (
     <Grid>
       {interestItems.map((item) => (
         <InterestCard
           key={item.id}
-          selected={selected === item.id}
-          onClick={() => onSelect(item.id)}
+          selected={selectedId === item.id}
+          onClick={() => handleSelect(item.id)}
         >
           <CardInner>
             <CardImage
-              src={selected === item.id ? item.activeImage : item.image}
+              src={selectedId === item.id ? item.activeImage : item.image}
               alt={item.label}
             />
-            <LabelText selected={selected === item.id}>{item.label}</LabelText>
+            <LabelText selected={selectedId === item.id}>{item.label}</LabelText>
           </CardInner>
         </InterestCard>
       ))}

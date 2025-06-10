@@ -3,7 +3,7 @@ import api from './axiosInstance';
 // 키워드 및 타입 매핑
 const KEYWORD_MAP = {
   '환경': 'Environment',
-  '사람과사회': 'PeopleAndSociety',
+  '사람과 사회': 'PeopleAndSociety',
   '경제': 'Economy',
   '기술': 'Technology'
 };
@@ -17,7 +17,7 @@ const ACTIVITY_TYPE_MAP = {
 
 const REVERSE_KEYWORD_MAP = {
   'Environment': '환경',
-  'PeopleAndSociety': '사람과사회',
+  'PeopleAndSociety': '사람과 사회',
   'Economy': '경제',
   'Technology': '기술'
 };
@@ -30,14 +30,14 @@ const REVERSE_TYPE_MAP = {
 };
 
 class ActivitiesApi {
-  // 전체/필터 활동 목록 조회 (기존)
+  // 전체/필터 활동 목록 조회 (다중 필터 지원)
   async getActivities(params = {}) {
     try {
       const { page = 0, fieldFilter, typeFilter } = params;
       const queryParams = new URLSearchParams();
       queryParams.append('page', page.toString());
 
-      // 키워드 필터 추가
+      // 키워드 필터 추가 (전체가 아닌 경우)
       if (fieldFilter && fieldFilter !== '전체') {
         const mappedKeyword = KEYWORD_MAP[fieldFilter];
         if (mappedKeyword) {
@@ -45,7 +45,7 @@ class ActivitiesApi {
         }
       }
 
-      // 활동 타입 필터 추가 (쿼리 방식)
+      // 활동 타입 필터 추가 (전체가 아닌 경우)
       if (typeFilter && typeFilter !== '전체') {
         const mappedType = ACTIVITY_TYPE_MAP[typeFilter];
         if (mappedType) {
@@ -122,6 +122,27 @@ class ActivitiesApi {
     }
   }
 
+  // 키워드별 활동 4개 조회 (마감 기한 내)
+async getActivitiesByKeywordLimited(keyword) {
+  try {
+    const mappedKeyword = KEYWORD_MAP[keyword] || keyword;
+    
+    const response = await api.get(`/activities/keyword/${mappedKeyword}`);
+    if (!response.data.isSuccess) {
+      throw new Error(response.data.message || '키워드별 활동 조회에 실패했습니다.');
+    }
+
+    const activities = response.data.result;
+    const transformedActivities = activities.map(this.transformActivity);
+    
+    return transformedActivities;
+  } catch (error) {
+    console.error('키워드별 활동 4개 조회 실패:', error);
+    throw this.handleApiError(error);
+  }
+}
+
+
   // 북마크 토글
   async toggleBookmark(activityId) {
     try {
@@ -143,7 +164,14 @@ class ActivitiesApi {
       if (!response.data.isSuccess) {
         throw new Error(response.data.message || '북마크한 활동글 조회에 실패했습니다.');
       }
-      return response.data.result;
+      
+      const result = response.data.result;
+      const transformedContent = result.content.map(this.transformActivity);
+      
+      return {
+        ...result,
+        content: transformedContent
+      };
     } catch (error) {
       console.error('북마크한 활동글 조회 실패:', error);
       throw this.handleApiError(error);
@@ -154,10 +182,12 @@ class ActivitiesApi {
   transformActivity = (activity) => {
     const koreanKeyword = REVERSE_KEYWORD_MAP[activity.keyword] || activity.keyword;
     const koreanType = REVERSE_TYPE_MAP[activity.activityType] || activity.activityType;
+    
     const formatDate = (dateString) => {
       if (!dateString) return '';
       return dateString.split('T')[0].replace(/-/g, '.');
     };
+
     const now = new Date();
     const endDate = new Date(activity.endDate);
     const isClosed = endDate < now;
@@ -181,6 +211,7 @@ class ActivitiesApi {
     };
   };
 
+  // API 에러 처리
   handleApiError = (error) => {
     if (error.response) {
       const status = error.response.status;
@@ -203,3 +234,4 @@ class ActivitiesApi {
 
 const activitiesApi = new ActivitiesApi();
 export default activitiesApi;
+export { KEYWORD_MAP, ACTIVITY_TYPE_MAP, REVERSE_KEYWORD_MAP, REVERSE_TYPE_MAP };

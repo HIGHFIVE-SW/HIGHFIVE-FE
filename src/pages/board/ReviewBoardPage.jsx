@@ -9,114 +9,12 @@ import BoardNav from "../../layout/board/BoardNav";
 import BoardSidebar from "../../layout/board/BoardSideNav";
 import ReviewBoardGuide from "../../components/board/reviewboard/ReviewBoardGuide";
 import Footer from "../../layout/Footer";
-import usePagination from "../../hooks/usePagination";
 import Pagination from "../../components/common/Pagination";
 import CustomDropdown from "../../components/common/CustomDropdown";
 import { useNavigate } from "react-router-dom";
-
-export const reviews = [
-  {
-    id: 1,
-    category: "환경",
-    image: SampleReviewImg,
-    title: "국제수면산업박람회 아이디어 공모전 시상식 후기!",
-    content: "국제수면산업 박람회에 참가해서 영예의 대상을 수상했어요! 새롭고 흥미로운 아이디어를 나눌 수 있어서 정말 즐거운 경험이었답니다. 좋은 사람들과 함께한 뜻깊은 시간이었고 서로의 아이디어를 존중하며 소통할 수 있었던 현장이었어요. 다양한 분야의 전문가들과 인사이트를 주고받으며 수면 산업의 무한한 가능성을 다시금 느낄 수 있었고요.",
-    date: "2025.04.11",
-    writer: "이서정",
-    likeCount: 20,
-  },
-  {
-    id: 2,
-    category: "경제",
-    image: SampleReviewImg,
-    title: "창업 공모전 참가 후기",
-    content:
-      "국제수면산업 박람회에 참가해서 영예의 대상을 수상했어요! 새롭고 흥미로운 아이디어를 나눌 수 있어서 정말 즐거운 경험이었습니다. 좋은 사람들과 함께한 뜻깊은 자리였어요.",
-    date: "2025.04.10",
-    writer: "김지민",
-    likeCount: 12,
-  },
-  {
-    id: 3,
-    category: "사람과 사회",
-    image: SampleReviewImg,
-    title: "봉사활동 후기",
-    content: "지역 아동센터에서 봉사한 뜻깊은 경험을 나눕니다.",
-    date: "2025.04.08",
-    writer: "박은서",
-    likeCount: 8,
-  },
-  {
-    id: 4,
-    category: "기술",
-    image: SampleReviewImg,
-    title: "기술공모전 참가 후기",
-    content: "사물인터넷 아이디어로 본선 진출한 후기를 공유합니다.",
-    date: "2025.04.06",
-    writer: "최현우",
-    likeCount: 17,
-  },
-  {
-    id: 5,
-    category: "환경",
-    image: SampleReviewImg,
-    title: "플로깅 캠페인 참여 후기",
-    content: "쓰레기를 줍는 재미와 성취감을 느꼈던 하루였습니다.",
-    date: "2025.04.05",
-    writer: "이수진",
-    likeCount: 6,
-  },
-  {
-    id: 6,
-    category: "경제",
-    image: SampleReviewImg,
-    title: "스타트업 투자 피칭 후기",
-    content: "투자자 앞에서 발표했던 경험을 자세히 적었습니다.",
-    date: "2025.04.04",
-    writer: "홍진호",
-    likeCount: 11,
-  },
-  {
-    id: 7,
-    category: "사람과 사회",
-    image: SampleReviewImg,
-    title: "지역 사회 자원봉사 후기",
-    content: "노인복지회관에서 활동한 따뜻한 이야기를 담았습니다.",
-    date: "2025.04.02",
-    writer: "유지연",
-    likeCount: 9,
-  },
-  {
-    id: 8,
-    category: "기술",
-    image: SampleReviewImg,
-    title: "AI 해커톤 참가 후기",
-    content: "챗봇을 개발한 경험을 정리한 후기를 공유합니다.",
-    date: "2025.04.01",
-    writer: "정우진",
-    likeCount: 14,
-  },
-  {
-    id: 9,
-    category: "환경",
-    image: SampleReviewImg,
-    title: "제로웨이스트 캠페인 체험기",
-    content: "일회용품 없이 생활해본 도전기를 작성했습니다.",
-    date: "2025.03.30",
-    writer: "박채원",
-    likeCount: 7,
-  },
-  {
-    id: 10,
-    category: "경제",
-    image: SampleReviewImg,
-    title: "청년 창업 페어 부스 운영 후기",
-    content: "부스 운영을 통해 고객과 직접 소통한 생생한 이야기입니다.",
-    date: "2025.03.28",
-    writer: "정하늘",
-    likeCount: 13,
-  },
-];
+import { getReviews } from "../../api/PostApi";
+import { CATEGORY_MAP, ACTIVITY_TYPE_MAP } from "../../api/PostApi";
+import { useReviewLikeStore } from "../../store/reviewLikeStore"; // 추가
 
 export default function ReviewBoardPage() {
   const TypeCategories = ["전체", "공모전", "봉사활동", "서포터즈", "인턴십"];
@@ -124,7 +22,13 @@ export default function ReviewBoardPage() {
   const [selectedTypeCategory, setSelectedTypeCategory] = useState("전체");
   const [sortOrder, setSortOrder] = useState("최신순");
   const [isGuideOpen, setIsGuideOpen] = useState(false);
+  const [reviews, setReviews] = useState([]);
+  const [totalPages, setTotalPages] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
   const navigate = useNavigate();
+
+  // Zustand 스토어에서 좋아요 상태 관리 함수들 가져오기
+  const { setBulkLikes } = useReviewLikeStore();
 
   // HelpWrapper 전체를 감싸는 ref
   const helpWrapperRef = useRef(null);
@@ -140,23 +44,69 @@ export default function ReviewBoardPage() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // 필터링·정렬·페이지네이션
-  const filteredReviews =
-    selectedCategory === "전체"
-      ? reviews
-      : reviews.filter((r) => r.category === selectedCategory);
+  // 리뷰 데이터 가져오기
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        const keyword = selectedCategory === "전체" ? null : CATEGORY_MAP[selectedCategory];
+        const activityType = selectedTypeCategory === "전체" ? null : ACTIVITY_TYPE_MAP[selectedTypeCategory];
+        const sort = sortOrder === "최신순" ? "RECENT" : "LIKES";
+        
+        console.log('정렬 기준:', {
+          sortOrder,
+          sort
+        });
+        
+        // API는 0부터 시작하므로 currentPage - 1을 전달
+        const result = await getReviews(currentPage - 1, keyword, activityType, sort);
+        
+        // 리뷰 데이터 설정
+        setReviews(result.content);
+        setTotalPages(result.totalPages);
+        
+        // Zustand 스토어에 좋아요 상태 일괄 설정
+        if (result.content && result.content.length > 0) {  
+          console.log('리뷰 리스트 좋아요 상태 일괄 설정:', result.content.map(review => ({
+            id: review.id,
+            liked: review.liked || false,
+            likeCount: review.likeCount || 0
+          })));
+          
+          setBulkLikes(result.content.map(review => ({
+            id: review.id,
+            liked: review.liked || false,
+            likeCount: review.likeCount || 0
+          })));
+        }
+        
+      } catch (error) {
+        console.error('리뷰 조회 실패:', error);
+        setReviews([]);
+      }
+    };
 
-  const sortedReviews = [...filteredReviews].sort((a, b) => {
-    if (sortOrder === "최신순") return new Date(b.date) - new Date(a.date);
-    if (sortOrder === "추천순") return b.likeCount - a.likeCount;
-    return 0;
-  });
+    fetchReviews();
+  }, [selectedCategory, selectedTypeCategory, sortOrder, currentPage, setBulkLikes]);
 
-  const itemsPerPage = 9;
-  const { currentPage, totalPages, currentData, goToPage } = usePagination(
-    sortedReviews,
-    itemsPerPage
-  );
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  const handleTypeCategoryChange = (type) => {
+    setSelectedTypeCategory(type);
+    setCurrentPage(1);
+  };
+
+  const handleCategoryChange = (category) => {
+    setSelectedCategory(category);
+    setCurrentPage(1);
+  };
+
+  const handleSortChange = (sort) => {
+    console.log('정렬 변경:', sort);
+    setSortOrder(sort);
+    setCurrentPage(1);
+  };
 
   return (
     <>
@@ -182,7 +132,7 @@ export default function ReviewBoardPage() {
 
       <CategoryFilter
         selectedCategory={selectedCategory}
-        onSelectCategory={setSelectedCategory}
+        onSelectCategory={handleCategoryChange}
       />
 
       <MainLayout>
@@ -193,12 +143,12 @@ export default function ReviewBoardPage() {
               <CustomDropdown
                 options={["최신순", "추천순"]}
                 selected={sortOrder}
-                onSelect={setSortOrder}
+                onSelect={handleSortChange}
               />
               <CustomDropdown
                 options={TypeCategories}
                 selected={selectedTypeCategory}
-                onSelect={setSelectedTypeCategory}
+                onSelect={handleTypeCategoryChange}
               />
             </SortBox>
             <WriteButton onClick={() => navigate("/board/write")}>
@@ -207,24 +157,43 @@ export default function ReviewBoardPage() {
           </SortWriteWrapper>
 
           <CardGrid>
-            {currentData.map((review) => (
-              <ReviewCard key={review.id} id={review.id} {...review} />
-            ))}
+            {reviews.length > 0 ? (
+              reviews.map((review) => (
+                <ReviewCard
+                  key={review.id}
+                  id={review.id}
+                  category={review.keyword}
+                  image={review.imageUrls?.[0] || SampleReviewImg}
+                  title={review.title}
+                  content={review.content}
+                  date={new Date(review.createAt || review.createdAt).toLocaleDateString()}
+                  writer={review.nickname}
+                  likeCount={review.likeCount || 0}
+                  liked={review.liked || false}
+                />
+              ))
+            ) : (
+              <NoReviewsMessage>
+                등록된 후기가 없습니다.
+              </NoReviewsMessage>
+            )}
           </CardGrid>
         </RightContent>
       </MainLayout>
 
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        goToPage={goToPage}
-      />
+      {totalPages > 0 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          goToPage={handlePageChange}
+        />
+      )}
       <Footer />
     </>
   );
 }
 
-// styled-components (변경 없음)
+// styled-components
 const HeaderSection = styled.div`
   background-color: #f9fbff;
   text-align: center;
@@ -300,6 +269,10 @@ const WriteButton = styled.button`
   align-items: center;
   gap: 8px;
   cursor: pointer;
+  
+  &:hover {
+    background-color: #1a4a8a;
+  }
 `;
 
 const WriteIcon = styled.img`
@@ -312,4 +285,16 @@ const CardGrid = styled.div`
   grid-template-columns: repeat(3, 1fr);
   gap: 24px;
   padding: 24px 0;
+  min-height: 400px;
+`;
+
+const NoReviewsMessage = styled.div`
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 60px 20px;
+  font-size: 18px;
+  color: #666;
+  background-color: #f8f9fa;
+  border-radius: 12px;
+  margin: 20px 0;
 `;

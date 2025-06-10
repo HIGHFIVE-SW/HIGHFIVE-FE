@@ -7,64 +7,19 @@ import SearchBar from '../../components/search/SearchBar';
 import { useLocation, useNavigate } from 'react-router-dom';
 import ReviewCard from '../../components/board/reviewboard/ReviewCard';
 import FreePostList from '../../components/board/freeboard/FreePostList';
-import SampleReviewImg from '../../assets/images/board/SampleReviewImg.png';
+import { useSearchReviews, useSearchPosts } from '../../query/usePost';
+import { formatDate } from '../../utils/formatDate';
+import SampleReviewImg from "../../assets/images/board/SampleReviewImg.png";
+import { getReviews, getPosts } from '../../api/PostApi';
 
-const dummyRecentPosts = [
-  { 
-    post_id: 1, 
-    post_title: '공모전 공모 대회의 공모전 나갈 사람?', 
-    authorName: '이서현', 
-    created_at: '2025-04-14T10:00:00', 
-    post_like_count: 14 
-  },
-  { 
-    post_id: 2, 
-    post_title: '공모전 공모 대회의 공모전 나갈 사람?', 
-    authorName: '이서현', 
-    created_at: '2025-04-14T10:00:00', 
-    post_like_count: 14 
-  },
-  { 
-    post_id: 3, 
-    post_title: '공모전 공모 대회의 공모전 나갈 사람?', 
-    authorName: '이서현', 
-    created_at: '2025-04-14T10:00:00', 
-    post_like_count: 14 
-  },
-];
 
-const dummyPopularPosts = [
-  { 
-    id: 1, 
-    category: '환경', 
-    title: '국제수산업발달협회 아이디어 공모전 후기', 
-    image: SampleReviewImg,
-    content: '공모전에 참여한 후기를 공유합니다. 이번 공모전을 통해 많은 것을 배웠고, 특히 팀워크의 중요성을 깨달았습니다.',
-    date: '2025.04.14',
-    writer: '김철수',
-    likeCount: 25
-  },
-  { 
-    id: 2, 
-    category: '사람과 사회', 
-    title: '국제수산업발달협회 아이디어 공모전 후기', 
-    image: SampleReviewImg,
-    content: '취업 준비하면서 참여한 공모전 경험을 공유합니다. 실무 경험을 쌓을 수 있는 좋은 기회였습니다.',
-    date: '2025.04.13',
-    writer: '이영희',
-    likeCount: 18
-  },
-  { 
-    id: 3, 
-    category: '기술', 
-    title: '국제수산업발달협회 아이디어 공모전 후기', 
-    image: SampleReviewImg,
-    content: '공모전 준비 과정과 결과에 대한 이야기를 나누고 싶습니다. 처음 참여해본 공모전이었지만 많은 것을 얻었습니다.',
-    date: '2025.04.12',
-    writer: '박민수',
-    likeCount: 32
-  },
-];
+// 키워드 매핑 (API 영어 → UI 한국어)
+const KEYWORD_MAP = {
+  'Environment': '환경',
+  'PeopleAndSociety': '사람과 사회',
+  'Economy': '경제',
+  'Technology': '기술'
+};
 
 export default function BoardSearchResultPage() {
   const location = useLocation();
@@ -73,6 +28,12 @@ export default function BoardSearchResultPage() {
 
   const [inputValue, setInputValue] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [reviewsData, setReviewsData] = useState(null);
+  const [postsData, setPostsData] = useState(null);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [postsLoading, setPostsLoading] = useState(false);
+  const [reviewsError, setReviewsError] = useState(false);
+  const [postsError, setPostsError] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -82,6 +43,54 @@ export default function BoardSearchResultPage() {
       setSearchQuery(queryFromURL);
     }
   }, [location.search]);
+
+  // 리뷰 검색 (클라이언트 필터링)
+  useEffect(() => {
+    const fetchReviews = async () => {
+      if (!searchQuery) return;
+      
+      setReviewsLoading(true);
+      setReviewsError(false);
+      
+      try {
+        const result = await getReviews(0, null, null, 'RECENT');
+        
+        if (searchQuery) {
+          const filteredContent = result.content.filter(review => 
+            review.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            review.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            review.nickname.toLowerCase().includes(searchQuery.toLowerCase())
+          );
+          
+          setReviewsData({
+            content: filteredContent,
+            totalPages: Math.ceil(filteredContent.length / 10),
+            totalElements: filteredContent.length
+          });
+        } else {
+          setReviewsData(result);
+        }
+        
+      } catch (error) {
+        console.error('리뷰 검색 실패:', error);
+        setReviewsError(true);
+      } finally {
+        setReviewsLoading(false);
+      }
+    };
+
+    fetchReviews();
+  }, [searchQuery]);
+
+  // 자유게시판 검색은 기존 API 사용 (이미지가 없으므로 문제없음)
+  const { data: postsDataOriginal, isLoading: postsLoadingOriginal, isError: postsErrorOriginal } = useSearchPosts(searchQuery, 0);
+
+  // 자유게시판 데이터 설정
+  useEffect(() => {
+    setPostsData(postsDataOriginal);
+    setPostsLoading(postsLoadingOriginal);
+    setPostsError(postsErrorOriginal);
+  }, [postsDataOriginal, postsLoadingOriginal, postsErrorOriginal]);
 
   const handleSearch = () => {
     if (inputValue.trim()) {
@@ -99,6 +108,51 @@ export default function BoardSearchResultPage() {
     // MoreFreePage로 이동
     navigate(`/more/free?query=${encodeURIComponent(searchQuery)}`);
   };
+
+  // 검색 결과 데이터 가공 (3개로 제한)
+  const reviewResults = reviewsData?.content?.slice(0, 3) || [];
+  const postResults = postsData?.content?.slice(0, 3) || [];
+
+    // 리뷰 데이터를 ReviewCard 형식에 맞게 변환 (일반 게시판과 동일한 방식)
+  const transformedReviews = reviewResults.map(review => ({
+    id: review.id,
+    category: KEYWORD_MAP[review.keyword] || review.keyword || '일반',
+    title: review.title,
+    content: review.content,
+    image: review.imageUrls?.[0] || review.reviewImageUrls?.[0] || review.imageUrl || review.image || SampleReviewImg,
+    date: formatDate(review.createdAt),
+    writer: review.nickname,
+    likeCount: review.likeCount || 0
+  }));
+
+  // 디버깅용 로그 추가
+  console.log('BoardSearchResultPage 검색 결과:', {
+    searchQuery,
+    reviewResults: reviewResults.length,
+    rawReviewData: reviewResults.map(r => ({
+      id: r.id,
+      title: r.title,
+      reviewImageUrls: r.reviewImageUrls,
+      imageUrl: r.imageUrl,
+      image: r.image,
+      imageUrls: r.imageUrls, // 일반 게시판에서 사용하는 필드
+    })),
+    transformedReviews: transformedReviews.map(r => ({
+      id: r.id,
+      title: r.title,
+      image: r.image,
+      hasImage: !!r.image
+    }))
+  });
+
+  // 자유게시판 데이터를 FreePostList 형식에 맞게 변환
+  const transformedPosts = postResults.map(post => ({
+    post_id: post.id,
+    post_title: post.title,
+    authorName: post.nickname,
+    created_at: formatDate(post.createdAt),
+    post_like_count: post.likeCount || 0
+  }));
 
   return (
     <Wrapper>
@@ -120,35 +174,57 @@ export default function BoardSearchResultPage() {
           <Section>
             <SectionHeader>
               <SectionTitle>후기 게시판</SectionTitle>
-              <MoreButton onClick={handleReviewMoreClick}>더보기 &gt;</MoreButton>
+              {reviewsData?.content?.length > 3 && (
+                <MoreButton onClick={handleReviewMoreClick}>더보기 &gt;</MoreButton>
+              )}
             </SectionHeader>
-            <PopularCardsGrid>
-              {dummyPopularPosts.map((post) => (
-                <ReviewCard
-                  key={post.id}
-                  id={post.id}
-                  category={post.category}
-                  image={post.image}
-                  title={post.title}
-                  content={post.content}
-                  date={post.date}
-                  writer={post.writer}
-                  likeCount={post.likeCount}
-                />
-              ))}
-            </PopularCardsGrid>
+            
+            {reviewsLoading ? (
+              <LoadingMessage>검색 중...</LoadingMessage>
+            ) : reviewsError ? (
+              <ErrorMessage>검색 중 오류가 발생했습니다.</ErrorMessage>
+            ) : transformedReviews.length === 0 ? (
+              <NoResultsMessage>검색 결과가 없습니다.</NoResultsMessage>
+            ) : (
+              <PopularCardsGrid>
+                {transformedReviews.map((post) => (
+                  <ReviewCard
+                    key={post.id}
+                    id={post.id}
+                    category={post.category}
+                    image={post.image}
+                    title={post.title}
+                    content={post.content}
+                    date={post.date}
+                    writer={post.writer}
+                    likeCount={post.likeCount}
+                  />
+                ))}
+              </PopularCardsGrid>
+            )}
           </Section>
 
           <Section>
             <SectionHeader>
               <SectionTitle>자유 게시판</SectionTitle>
-              <MoreButton onClick={handleFreeMoreClick}>더보기 &gt;</MoreButton>
+              {postsData?.content?.length > 3 && (
+                <MoreButton onClick={handleFreeMoreClick}>더보기 &gt;</MoreButton>
+              )}
             </SectionHeader>
-            <FreePostList 
-              posts={dummyRecentPosts}
-              currentPage={1}
-              itemsPerPage={10}
-            />
+            
+            {postsLoading ? (
+              <LoadingMessage>검색 중...</LoadingMessage>
+            ) : postsError ? (
+              <ErrorMessage>검색 중 오류가 발생했습니다.</ErrorMessage>
+            ) : transformedPosts.length === 0 ? (
+              <NoResultsMessage>검색 결과가 없습니다.</NoResultsMessage>
+            ) : (
+              <FreePostList 
+                posts={transformedPosts}
+                currentPage={1}
+                itemsPerPage={10}
+              />
+            )}
           </Section>
         </MainContent>
       </Container>
@@ -166,7 +242,7 @@ const Wrapper = styled.div`
 const Container = styled.div`
   display: flex;
   flex: 1;
-  max-width: 1200px;
+  width: 1200px;
   margin: 0 auto;
   padding: 20px;
   gap: 30px;
@@ -222,7 +298,29 @@ const MoreButton = styled.button`
 
 const PopularCardsGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(353px, 1fr));
   gap: 15px;
   margin-bottom: 30px;
+  justify-items: center;
+`;
+
+const LoadingMessage = styled.div`
+  text-align: center;
+  padding: 40px;
+  color: #666;
+  font-size: 16px;
+`;
+
+const ErrorMessage = styled.div`
+  text-align: center;
+  padding: 40px;
+  color: #e74c3c;
+  font-size: 16px;
+`;
+
+const NoResultsMessage = styled.div`
+  text-align: center;
+  padding: 40px;
+  color: #666;
+  font-size: 16px;
 `;

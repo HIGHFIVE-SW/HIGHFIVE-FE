@@ -1,27 +1,25 @@
-import React, { useState } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import MainNav from '../../layout/MainNav';
 import Footer from '../../layout/Footer';
 import IssueCard from '../../components/issue/IssueCard';
 import Chatbot from '../../components/chatbot/Chatbot';
+import { useIssues, useToggleIssueBookmark } from '../../query/useIssues';
 
-import globalIssueImage from '../../assets/images/main/ic_GlobalIssue.png';
-import issueCardSample from '../../assets/images/issue/ic_IssueCardSample.png';
 import environmentButton from '../../assets/images/main/EnvironmentButton.png';
 import peopleButton from '../../assets/images/main/PeopleButton.png';
 import economyButton from '../../assets/images/main/EconomyButton.png';
 import techButton from '../../assets/images/main/TechButton.png';
+import mainBanner from '../../assets/images/main/mainbanner.png'
 
 export default function MainPage() {
-  const [bookmarked, setBookmarked] = useState(new Array(3).fill(false));
   const navigate = useNavigate();
+  const toggleBookmark = useToggleIssueBookmark();
 
-  const dummyIssues = [
-    { title: "글로벌 '관세 전쟁' 공포 ... 국내 증시 '타격'", tag: '#정치' },
-    { title: "글로벌 '관세 전쟁' 공포 ... 국내 증시 '타격'", tag: '#경제' },
-    { title: "글로벌 '관세 전쟁' 공포 ... 국내 증시 '타격'", tag: '#사회' },
-  ];
+  // 최신 이슈 3개 조회
+  const { data: issuesData, isLoading } = useIssues(0);
+  const latestIssues = issuesData?.content?.slice(0, 3) || [];
 
   const categories = [
     { title: '환경', img: environmentButton },
@@ -30,27 +28,17 @@ export default function MainPage() {
     { title: '기술', img: techButton },
   ];
 
-  const toggleBookmark = (idx) => {
-    const updated = [...bookmarked];
-    updated[idx] = !updated[idx];
-    setBookmarked(updated);
+  const handleBookmarkToggle = (issueId) => {
+    toggleBookmark.mutate(issueId);
   };
 
   return (
     <PageWrapper>
       <MainNav />
       <MainContent>
-        <HeroSection>
-          <HeroInner>
-            <HeroLeft>
-              <HeroTitle>최신 글로벌 이슈를 알아보자</HeroTitle>
-              <HeroLink onClick={() => navigate('/global-issue')}>알아보기 &gt;</HeroLink>
-            </HeroLeft>
-            <HeroRight>
-              <HeroImage src={globalIssueImage} alt="Global Issue" />
-            </HeroRight>
-          </HeroInner>
-        </HeroSection>
+      <HeroSection>
+        <BannerImage src={mainBanner} alt="Trendist Main Banner" />
+      </HeroSection>
 
         <Wrapper>
           <Title>글로벌 이슈</Title>
@@ -75,16 +63,22 @@ export default function MainPage() {
           </Header>
           <MoreLink onClick={() => navigate('/global-issue')}>더보기 &gt;</MoreLink>
           <IssueGrid>
-            {dummyIssues.map((item, idx) => (
-              <IssueCard
-                key={idx}
-                title={item.title}
-                tag={item.tag}
-                image={issueCardSample}
-                bookmarked={bookmarked[idx]}
-                onToggle={() => toggleBookmark(idx)}
-              />
-            ))}
+            {isLoading ? (
+              <LoadingText>로딩 중...</LoadingText>
+            ) : latestIssues.length > 0 ? (
+              latestIssues.map((issue) => (
+                <IssueCard
+                  key={issue.id}
+                  title={issue.title}
+                  tag={issue.category}
+                  image={issue.thumbnailUrl}
+                  bookmarked={issue.bookmarked}
+                  onToggle={() => handleBookmarkToggle(issue.id)}
+                />
+              ))
+            ) : (
+              <NoIssuesText>최신 이슈가 없습니다.</NoIssuesText>
+            )}
           </IssueGrid>
         </Wrapper>
 
@@ -108,42 +102,15 @@ const MainContent = styled.main`
 `;
 
 const HeroSection = styled.section`
-  width: 104%;
+  width: 100%;
   background-color: #F6FAFF;
   display: flex;
   justify-content: center;
-  margin-left: -50px;
 `;
 
-const HeroInner = styled.div`
+const BannerImage = styled.img`
   width: 100%;
-  height: 530px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-`;
-
-const HeroLeft = styled.div`
-  margin-left: 100px;
-  font-family: 'NotoSansKR-VariableFont_wght';
-`;
-
-const HeroRight = styled.div``;
-
-const HeroTitle = styled.h2`
-  font-size: 60px;
-  font-weight: 700;
-  margin-bottom: 16px;
-`;
-
-const HeroLink = styled.p`
-  cursor: pointer;
-  font-size: 40px;
-`;
-
-const HeroImage = styled.img`
-  width: 578px;
-  height: 578px;
+  height: auto;
 `;
 
 const Wrapper = styled.section`
@@ -205,13 +172,29 @@ const MoreLink = styled.span`
   color: #000;
   text-align: right;
   margin-bottom: 16px;
-  padding-right: 105px;
+  padding-right: 180px;
 `;
 
 const IssueGrid = styled.div`
   display: flex;
   justify-content: center;
-  gap: 150px;
+  gap: 70px;
   flex-wrap: wrap;
   margin-bottom: 150px;
+`;
+
+const LoadingText = styled.div`
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 40px 0;
+  font-size: 16px;
+  color: #666;
+`;
+
+const NoIssuesText = styled.div`
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 40px 0;
+  font-size: 16px;
+  color: #666;
 `;

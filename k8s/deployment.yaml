@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trendist-frontend
+  labels:
+    app: trendist-frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: trendist-frontend
+  template:
+    metadata:
+      labels:
+        app: trendist-frontend
+    spec:
+      containers:
+      - name: trendist-frontend
+        image: leeseojung/trendist-frontend:v1.1.21
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "250m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        env:
+        - name: NODE_ENV
+          value: "production"
+        envFrom:
+        - configMapRef:
+            name: trendist-frontend-config
+        volumeMounts:
+        - name: nginx-config
+          mountPath: /etc/nginx/conf.d/
+          readOnly: true
+      volumes:
+      - name: nginx-config
+        configMap:
+          name: trendist-frontend-config 

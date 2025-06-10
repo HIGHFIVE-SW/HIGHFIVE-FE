@@ -3,7 +3,6 @@ import styled from 'styled-components';
 import BookmarkFilledButton from '../../assets/images/common/BookmarkFilledButton.png';
 import BookmarkButton from '../../assets/images/common/BookmarkButton.png';
 
-
 export default function ActivityCard({
   title,
   tags,
@@ -67,23 +66,23 @@ const CardLink = styled.a`
 `;
 
 const Card = styled.div`
-  width: 330px;
-  height: 430px;
-  border: 3px solid #235BA9;
+  width: 280px;
+  height: 360px;
+  border: 2px solid #235BA9;
   background-color: #fff;
   text-align: left;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   overflow: visible;
-  padding: 0 20px;
+  padding: 0 16px;
   cursor: pointer;
 
   .activity-title {
-    font-size: 23px;
+    font-size: 19px;
     font-weight: bold;
-    margin-top: 40px;
-    margin-bottom: 10px;
+    margin-top: 30px;
+    margin-bottom: 8px;
     font-family: NotoSansCustom;
     word-break: keep-all;
     overflow: hidden; 
@@ -96,18 +95,18 @@ const Card = styled.div`
 
 const ImageWrapper = styled.div`
   width: 100%;
-  height: 230px;
+  height: 180px;
   position: relative;
   justify-content: center;
   align-items: center;
   box-sizing: border-box;
   overflow: visible;
-  left: -20px;
+  left: -16px;
 `;
 
 const IssueImage = styled.img`
-  width: 324px;
-  height: 230px;
+  width: 276px;
+  height: 180px;
   object-fit: cover;
   object-position: top; 
   display: block;
@@ -115,28 +114,28 @@ const IssueImage = styled.img`
 
 const BookmarkIcon = styled.img`
   position: absolute;
-  bottom: -45.5px;
-  right : -20px;
-  width: 55px;
-  height: 55px;
+  bottom: -35px;
+  right: -16px;
+  width: 45px;
+  height: 45px;
   cursor: pointer;
   z-index: 10;
 `;
 
 const Tags = styled.p`
-  font-size: 18px;
+  font-size: 15px;
   margin: 0;
   margin-top: auto;
   span {
     color: #235BA9;
-    margin-right: 10px;
+    margin-right: 8px;
   }
 `;
 
 const DateText = styled.p`
-  font-size: 15px;
+  font-size: 13px;
   color: #808080;
-  margin-top: 8px;
+  margin-top: 6px;
 `;
 
 const ClosedBadge = styled.div`
@@ -145,8 +144,8 @@ const ClosedBadge = styled.div`
   left: -1px;
   background-color: #656565;
   color: white;
-  font-size: 15px;
-  padding: 8px 20px;
+  font-size: 13px;
+  padding: 6px 16px;
   z-index: 20;
   font-family: 'NotoSansCustom';
   display: flex;

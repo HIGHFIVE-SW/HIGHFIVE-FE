@@ -63,12 +63,7 @@ const UserPage = () => {
     keyword: user.keyword || '환경',
   };
 
-  const dummyTypeStats = [
-    { activityType: 'CONTEST', count: 4 },
-    { activityType: 'VOLUNTEER', count: 2 },
-    { activityType: 'INTERNSHIP', count: 1 },
-    { activityType: 'SUPPORTERS', count: 0 },
-  ];
+
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0 });
@@ -156,11 +151,11 @@ const UserPage = () => {
             <ContentSection>
               {activeTab === 'statistics' && (
                 <GraphSection>
-                  <ActivityTrendChart />
-                  <ActivityTypeChart data={dummyTypeStats} />
+                  <ActivityTrendChart userId={user.userId || user.id} />
+                  <ActivityTypeChart userId={user.userId || user.id} />
                 </GraphSection>
               )}
-              {activeTab === 'posts' && <MyPostList />}
+              {activeTab === 'posts' && <MyPostList userId={user.userId || user.id} />}
             </ContentSection>
           </RightPanel>
         </PageWrapper>
@@ -267,7 +262,7 @@ const CardTitle = styled.h4`
 `;
 
 const LevelImage = styled.img`
-  width: 60px;
+  width: 67px;
   height: 60px;
   margin-bottom: 8px;
 `;

@@ -201,20 +201,18 @@ const RankNumber = styled.span`
 `;
 
 const ProfileWrapper = styled.div`
-  width: 48px;
-  height: 48px;
   background: white;
   border-radius: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
   border: ${({ isCurrentUser }) =>
-    isCurrentUser ? '2px solid #235BA9' : 'none'};
+    isCurrentUser ? '2px solid #235BA9' : '0.1px solid #C4C4C4'};
 `;
 
 const RankIcon = styled.img`
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   object-fit: cover;
 `;
@@ -240,8 +238,8 @@ const TopRankWrapper = styled.div`
 `;
 
 const TopRankIcon = styled.img`
-  width: 100px;
-  height: 100px;
+  width: 10%;
+  height: 10%;
   margin-bottom: 8px;
 `;
 
