@@ -37,43 +37,43 @@ src/
 ### 🎨 화면 구성
 |로그인|
 |:---:|
-|<img src="https://github.com/user-attachments/assets/0ff433de-dd62-40e1-8009-ade1058d9b56" width="600"/>|
+|<img src="https://github.com/user-attachments/assets/0ff433de-dd62-40e1-8009-ade1058d9b56" width="800"/>|
 |온보딩, 구글 로그인|
 
 |챗봇 Trendy|
 |:---:|
-|<img src="https://github.com/user-attachments/assets/d58ad7c3-c82c-483f-918e-192ee59e1a58" width="600"/>|
+|<img src="https://github.com/user-attachments/assets/d58ad7c3-c82c-483f-918e-192ee59e1a58" width="800"/>|
 |웹 기반 검색, 개인형 맞춤형 대외활동 추천, 키워드 기반 대외활동 추천, 일상 대화|
 
 
 |글로벌 이슈, 대외 활동 페이지|
 |:---:|
-|<img src="https://github.com/user-attachments/assets/7cf7bef9-f7cf-41c5-928b-a81e9a83b98d" width="600"/>|
+|<img src="https://github.com/user-attachments/assets/7cf7bef9-f7cf-41c5-928b-a81e9a83b98d" width="800"/>|
 |글로벌 이슈 기사 페이지, 대외활동 페이지|
 
 |자유 게시판 페이지|
 |:---:|
-|<img src="https://github.com/user-attachments/assets/62fb37e0-1c32-458a-af5d-ce05306b6fb6" width="600"/>|
+|<img src="https://github.com/user-attachments/assets/62fb37e0-1c32-458a-af5d-ce05306b6fb6" width="800"/>|
 |자유 게시판 목록, 글쓰기, 댓글|
 
 |후기 게시판 페이지|
 |:---:|
-|<img src="https://github.com/user-attachments/assets/c290cc18-9cbc-45e8-a350-54c87f33861c" width="600"/>|
+|<img src="https://github.com/user-attachments/assets/c290cc18-9cbc-45e8-a350-54c87f33861c" width="800"/>|
 |후기 게시판 목록, 글쓰기, 대외활동과 활동 사진 비교 후 인증|
 
 |검색|
 |:---:|
-|<img src="https://github.com/user-attachments/assets/6251d8a9-d778-49a2-ac21-b9ec41e0a7c1" width="600"/>|
+|<img src="https://github.com/user-attachments/assets/6251d8a9-d778-49a2-ac21-b9ec41e0a7c1" width="800"/>|
 |글로벌 이슈 기사 & 대외활동 검색, 자유 게시물 & 후기 게시물 검색|
 
 |마이페이지 & 랭킹|
 |:---:|
-|<img src="https://github.com/user-attachments/assets/d8cb4b56-1fce-43e5-bb21-5a621e85b135" width="600"/>|
+|<img src="https://github.com/user-attachments/assets/d8cb4b56-1fce-43e5-bb21-5a621e85b135" width="800"/>|
 |마이페이지 : 나의 활동 기록, 북마크, 작성한 글/랭킹|
 
 |프로필 편집|
 |:---:|
-|<img src="https://github.com/user-attachments/assets/1585bec9-4c28-4df9-97aa-7bc6e58b7f81" width="600"/>|
+|<img src="https://github.com/user-attachments/assets/1585bec9-4c28-4df9-97aa-7bc6e58b7f81" width="800"/>|
 |이미지, 관심분야 편집|
 
 <br />
@@ -94,7 +94,4 @@ src/
 ![Slack](https://img.shields.io/badge/Slack-4A154B?style=for-the-badge&logo=slack&logoColor=white)
 
 <br />
-
-## 시스템 아키텍처
-<img src="https://github.com/user-attachments/assets/e4fb8ffb-7f4e-494c-ae3c-5ba50d7276ef" />
 
